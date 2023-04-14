@@ -5,7 +5,7 @@ This project benchmarks several open source vector math libraries against one an
 Note that this repository was created with `cmake-init`, and much of what is here is boilerplate related to it.  The only really important thing in the repository is `src/main.cpp`, which includes all of the benchmarking code.
 
 # Results
-The following benchmarks were run on an AMD Ryzen 9 5900HS after running `pyperf system tune`.
+The following measurements were taken on an AMD Ryzen 9 5900HS using Pop!_OS 22.04 LTS after running `pyperf system tune`.
 
 |               ns/op |                op/s |    err% |          ins/op |          cyc/op |    IPC |         bra/op |   miss% |     total | benchmark
 |--------------------:|--------------------:|--------:|----------------:|----------------:|-------:|---------------:|--------:|----------:|:----------
