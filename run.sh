@@ -15,6 +15,7 @@ ninja || (
 )
 
 echo "# Benchmark Results" > BENCHMARKS.md
+echo "The following measurements were taken on an AMD Ryzen 9 5900HS using Pop!_OS 22.04 LTS after running `pyperf system tune`." >> BENCHMARKS.md
 echo "" >> BENCHMARKS.md
 
 echo "## SSE 4.2" >> BENCHMARKS.md
