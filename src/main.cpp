@@ -786,6 +786,7 @@ int main(int argc, char** argv)
         mathbench::matrices::construct_perspective_projection_matrix(
             matrixBench);
         mathbench::matrices::create_ortho_projection_matrix(matrixBench);
+        mathbench::matrices::vector_matrix_multiply(matrixBench);
     }
     return 0;
 }
