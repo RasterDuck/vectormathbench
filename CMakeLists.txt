@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED on)
 
@@ -38,14 +38,19 @@ target_include_directories(sony_vectormath INTERFACE ${sony_vectormath_SOURCE_DI
 
 add_library(vmb_common INTERFACE)
 target_link_libraries(vmb_common INTERFACE glm DirectXMath sony_vectormath)
-target_compile_definitions(vmb_common INTERFACE _XM_SSE_INTRINSICS_)
 target_sources(vmb_common INTERFACE src/main.cpp)
 
 if (UNIX)
+  # Required for DXM
+  target_include_directories(vmb_common INTERFACE src/shims/linux)
+  
   # Ensure we're targeting x86-64
   target_compile_options(vmb_common INTERFACE -march=x86-64)
-  target_compile_options(vmb_common INTERFACE -O3)
-  target_include_directories(vmb_common INTERFACE src/shims/linux)
+  
+  # If we're not in debug config
+  if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_options(vmb_common INTERFACE -O3)
+  endif()
 endif()
 
 add_executable(vectormathbench_sse42)
@@ -53,7 +58,7 @@ target_link_libraries(vectormathbench_sse42 PRIVATE vmb_common)
 set_property(TARGET vectormathbench_sse42 PROPERTY OUTPUT_NAME vectormathbench_sse42)
 
 if (UNIX)
-  target_compile_options(vectormathbench_sse42 PRIVATE -msse4.2)
+  target_compile_options(vectormathbench_sse42 PRIVATE -msse4.2 -mno-avx)
 endif()
 
 add_executable(vectormathbench_avx)

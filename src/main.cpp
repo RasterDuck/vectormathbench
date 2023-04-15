@@ -763,6 +763,42 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(results.sonyVec4);
                 });
         }
+
+        void matrix_matrix_multiply(ankerl::nanobench::Bench& bench)
+        {
+            bench.run("Matrix matrix multiply SimpleMath",
+                [&]
+                {
+                    results.smMat4 = results.smMat4 * results.smMat4;
+                    ankerl::nanobench::doNotOptimizeAway(results.smMat4);
+                });
+
+            bench.run("Matrix matrix multiply glm",
+                [&]
+                {
+                    results.glmMat4 = results.glmMat4 * results.glmMat4;
+                    ankerl::nanobench::doNotOptimizeAway(results.glmMat4);
+                });
+
+            bench.run("Matrix matrix multiply DXM",
+                [&]
+                {
+                    using namespace DirectX;
+
+                    auto dxMatA = results.dxMatA;
+                    auto dxMatB = results.dxMatA;
+                    results.dxMatA = XMMatrixMultiply(dxMatA, dxMatB);
+                    ankerl::nanobench::doNotOptimizeAway(results.dxMatA);
+                });
+
+            bench.run("Matrix matrix multiply Vectormath",
+                [&]
+                {
+                    using namespace Vectormath;
+                    results.sonyMat4 = results.sonyMat4 * results.sonyMat4;
+                    ankerl::nanobench::doNotOptimizeAway(results.sonyMat4);
+                });
+        }
     }  // namespace matrices
 }  // namespace mathbench
 
@@ -788,6 +824,7 @@ int main(int argc, char** argv)
             matrixBench);
         mathbench::matrices::create_ortho_projection_matrix(matrixBench);
         mathbench::matrices::vector_matrix_multiply(matrixBench);
+        mathbench::matrices::matrix_matrix_multiply(matrixBench);
     }
     return 0;
 }
