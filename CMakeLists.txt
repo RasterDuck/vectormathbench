@@ -33,8 +33,6 @@ CPMAddPackage(
   DOWNLOAD_ONLY YES
 )
 
-
-
 add_library(sony_vectormath INTERFACE)
 target_include_directories(sony_vectormath INTERFACE ${sony_vectormath_SOURCE_DIR})
 
@@ -46,26 +44,32 @@ target_sources(vmb_common INTERFACE src/main.cpp)
 if (UNIX)
   # Ensure we're targeting x86-64
   target_compile_options(vmb_common INTERFACE -march=x86-64)
+  target_compile_options(vmb_common INTERFACE -O3)
   target_include_directories(vmb_common INTERFACE src/shims/linux)
+endif()
+
+add_executable(vectormathbench_sse42)
+target_link_libraries(vectormathbench_sse42 PRIVATE vmb_common)
+set_property(TARGET vectormathbench_sse42 PROPERTY OUTPUT_NAME vectormathbench_sse42)
+
+if (UNIX)
+  target_compile_options(vectormathbench_sse42 PRIVATE -msse4.2)
 endif()
 
 add_executable(vectormathbench_avx)
 target_link_libraries(vectormathbench_avx PRIVATE vmb_common)
 set_property(TARGET vectormathbench_avx PROPERTY OUTPUT_NAME vectormathbench_avx)
-target_compile_definitions(vectormathbench_avx PRIVATE __AVX__)
-target_compile_definitions(vectormathbench_avx PRIVATE _XM_AVX_INTRINSICS_)
 
 if (UNIX)
   target_compile_options(vectormathbench_avx PRIVATE -mavx)
 endif()
 
-add_executable(vectormathbench_sse)
-target_link_libraries(vectormathbench_sse PRIVATE vmb_common)
-set_property(TARGET vectormathbench_sse PROPERTY OUTPUT_NAME vectormathbench_sse)
-target_compile_definitions(vectormathbench_sse PRIVATE __SSE__)
+add_executable(vectormathbench_avx2)
+target_link_libraries(vectormathbench_avx2 PRIVATE vmb_common)
+set_property(TARGET vectormathbench_avx2 PROPERTY OUTPUT_NAME vectormathbench_avx2)
 
 if (UNIX)
-  target_compile_options(vectormathbench_sse PRIVATE -msse)
+  target_compile_options(vectormathbench_avx2 PRIVATE -mfma -mavx2)
 endif()
 
 # # ---- Install rules ----
