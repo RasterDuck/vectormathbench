@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
+set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD_REQUIRED on)
 
 include(cmake/prelude.cmake)
 
@@ -41,9 +43,13 @@ add_library(sony_vectormath INTERFACE)
 target_include_directories(sony_vectormath INTERFACE ${sony_vectormath_SOURCE_DIR})
 
 target_link_libraries(vectormathbench_exe PRIVATE glm DirectXMath sony_vectormath)
+target_compile_definitions(vectormathbench_exe PRIVATE __AVX__)
+target_compile_definitions(vectormathbench_exe PRIVATE _XM_AVX_INTRINSICS_)
+target_compile_definitions(vectormathbench_exe PRIVATE _XM_SSE_INTRINSICS_)
 
 if (UNIX)
   target_include_directories(vectormathbench_exe PRIVATE src/shims/linux)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx")
 endif()
 
 # ---- Install rules ----
