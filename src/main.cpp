@@ -771,15 +771,16 @@ int main(int argc, char** argv)
     {
         ankerl::nanobench::Bench vectorBench;
         vectorBench.name("Vectors");
-        vectorBench.minEpochIterations(10533656);
+        vectorBench.minEpochIterations(114336014);
         mathbench::vectors::addition(vectorBench);
         mathbench::vectors::complex1(vectorBench);
         mathbench::vectors::complex2vec3(vectorBench);
         mathbench::vectors::complex3vec4(vectorBench);
     }
+
     {
         ankerl::nanobench::Bench matrixBench;
-        matrixBench.minEpochIterations(10533656);
+        // matrixBench.minEpochIterations(10533656);
         matrixBench.name("Matrices");
         mathbench::matrices::construct_model_matrix(matrixBench);
         mathbench::matrices::construct_view_matrix(matrixBench);

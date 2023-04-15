@@ -21,12 +21,6 @@ include(cmake/cpm.cmake)
 
 # ---- Declare executable ----
 
-add_executable(vectormathbench_exe src/main.cpp)
-add_executable(vectormathbench::exe ALIAS vectormathbench_exe)
-
-set_property(TARGET vectormathbench_exe PROPERTY OUTPUT_NAME vectormathbench)
-
-target_compile_features(vectormathbench_exe PRIVATE cxx_std_17)
 
 CPMAddPackage("gh:g-truc/glm#0.9.9.8@0.9.9.8")
 CPMAddPackage("gh:g-truc/glm#0.9.9.8@0.9.9.8")
@@ -39,24 +33,46 @@ CPMAddPackage(
   DOWNLOAD_ONLY YES
 )
 
+
+
 add_library(sony_vectormath INTERFACE)
 target_include_directories(sony_vectormath INTERFACE ${sony_vectormath_SOURCE_DIR})
 
-target_link_libraries(vectormathbench_exe PRIVATE glm DirectXMath sony_vectormath)
-target_compile_definitions(vectormathbench_exe PRIVATE __AVX__)
-target_compile_definitions(vectormathbench_exe PRIVATE _XM_AVX_INTRINSICS_)
-target_compile_definitions(vectormathbench_exe PRIVATE _XM_SSE_INTRINSICS_)
+add_library(vmb_common INTERFACE)
+target_link_libraries(vmb_common INTERFACE glm DirectXMath sony_vectormath)
+target_compile_definitions(vmb_common INTERFACE _XM_SSE_INTRINSICS_)
+target_sources(vmb_common INTERFACE src/main.cpp)
 
 if (UNIX)
-  target_include_directories(vectormathbench_exe PRIVATE src/shims/linux)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mavx")
+  # Ensure we're targeting x86-64
+  target_compile_options(vmb_common INTERFACE -march=x86-64)
+  target_include_directories(vmb_common INTERFACE src/shims/linux)
 endif()
 
-# ---- Install rules ----
+add_executable(vectormathbench_avx)
+target_link_libraries(vectormathbench_avx PRIVATE vmb_common)
+set_property(TARGET vectormathbench_avx PROPERTY OUTPUT_NAME vectormathbench_avx)
+target_compile_definitions(vectormathbench_avx PRIVATE __AVX__)
+target_compile_definitions(vectormathbench_avx PRIVATE _XM_AVX_INTRINSICS_)
 
-if(NOT CMAKE_SKIP_INSTALL_RULES)
-  include(cmake/install-rules.cmake)
+if (UNIX)
+  target_compile_options(vectormathbench_avx PRIVATE -mavx)
 endif()
+
+add_executable(vectormathbench_sse)
+target_link_libraries(vectormathbench_sse PRIVATE vmb_common)
+set_property(TARGET vectormathbench_sse PROPERTY OUTPUT_NAME vectormathbench_sse)
+target_compile_definitions(vectormathbench_sse PRIVATE __SSE__)
+
+if (UNIX)
+  target_compile_options(vectormathbench_sse PRIVATE -msse)
+endif()
+
+# # ---- Install rules ----
+
+# if(NOT CMAKE_SKIP_INSTALL_RULES)
+#   include(cmake/install-rules.cmake)
+# endif()
 
 # ---- Developer mode ----
 

@@ -15,6 +15,13 @@ ninja || (
 )
 
 echo "# Benchmark Results" > BENCHMARKS.md
+echo "" >> BENCHMARKS.md
 
-./vectormathbench >> BENCHMARKS.md
+echo "## SSE" >> BENCHMARKS.md
+./vectormathbench_sse >> BENCHMARKS.md
+
+echo "" >> BENCHMARKS.md
+echo "## AVX" >> BENCHMARKS.md
+./vectormathbench_avx >> BENCHMARKS.md
+
 cp BENCHMARKS.md ../BENCHMARKS.md
