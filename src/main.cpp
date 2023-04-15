@@ -1,3 +1,5 @@
+#include "sse/vectormath.hpp"
+#include "vec2d.hpp"
 #define ANKERL_NANOBENCH_IMPLEMENT
 #include "nanobench.h"
 
@@ -6,11 +8,20 @@
 #include <type_traits>
 
 #include <DirectXMath.h>
-#include "simplemath.hpp"
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include "simplemath.hpp"
+
+// Sony vectormath
+#include <vectormath.hpp>
+
+namespace Vectormath
+{
+    using Vector3 = Vectormath::SSE::Vector3;
+    using Vector4 = Vectormath::SSE::Vector4;
+}  // namespace Vectormath
 
 namespace mathbench
 {
@@ -35,6 +46,9 @@ namespace mathbench
         DirectX::XMFLOAT2 dxVec2;
         DirectX::XMFLOAT3 dxVec3;
         DirectX::XMFLOAT4 dxVec4;
+        Vectormath::Vector2 sonyVec2;
+        Vectormath::Vector3 sonyVec3;
+        Vectormath::Vector4 sonyVec4;
 
         DirectX::XMVECTOR dxVecA;
         DirectX::XMVECTOR dxVecB;
@@ -50,7 +64,7 @@ namespace mathbench
                 ankerl::nanobench::doNotOptimizeAway(results.intnum);
             });
 
-        bench.run("DirectX::SimpleMath::Vector2 addition",
+        bench.run("SimpleMath::Vector2 addition",
             [&]
             {
                 results.smVec2 = DirectX::SimpleMath::Vector2(1.0f, 2.0f) +
@@ -58,7 +72,7 @@ namespace mathbench
                 ankerl::nanobench::doNotOptimizeAway(results.smVec2);
             });
 
-        bench.run("DirectX::SimpleMath::Vector3 addition",
+        bench.run("SimpleMath::Vector3 addition",
             [&]
             {
                 results.smVec3 =
@@ -67,7 +81,7 @@ namespace mathbench
                 ankerl::nanobench::doNotOptimizeAway(results.smVec3);
             });
 
-        bench.run("DirectX::SimpleMath::Vector4 addition",
+        bench.run("SimpleMath::Vector4 addition",
             [&]
             {
                 results.smVec4 =
@@ -161,11 +175,35 @@ namespace mathbench
                     DirectX::XMVECTOR{}, DirectX::XMVECTOR{});
                 ankerl::nanobench::doNotOptimizeAway(results.dxVecC);
             });
+
+        bench.run("Vectormath::Vector2 addition",
+            [&]
+            {
+                results.sonyVec2 = Vectormath::Vector2(1.0f, 2.0f) +
+                                   Vectormath::Vector2(3.0f, 4.0f);
+                ankerl::nanobench::doNotOptimizeAway(results.sonyVec2);
+            });
+
+        bench.run("Vectormath::Vector3 addition",
+            [&]
+            {
+                results.sonyVec3 = Vectormath::Vector3(1.0f, 2.0f, 3.0f) +
+                                   Vectormath::Vector3(3.0f, 4.0f, 5.0f);
+                ankerl::nanobench::doNotOptimizeAway(results.sonyVec3);
+            });
+
+        bench.run("Vectormath::Vector4 addition",
+            [&]
+            {
+                results.sonyVec4 = Vectormath::Vector4(1.0f, 2.0f, 3.0f, 4.0f) +
+                                   Vectormath::Vector4(3.0f, 4.0f, 5.0f, 6.0f);
+                ankerl::nanobench::doNotOptimizeAway(results.sonyVec4);
+            });
     }
 
     void complex1(ankerl::nanobench::Bench& bench)
     {
-        bench.run("Complex operation 1 with DirectX::SimpleMath::Vector*",
+        bench.run("Complex operation 1 with SimpleMath::Vector*",
             [&]
             {
                 DirectX::SimpleMath::Vector2 vec2a(1.0f, 2.0f);
@@ -261,11 +299,31 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(results.dxVec4);
                 });
         }
+
+        bench.run("Complex operation 1 with Vectormath",
+            [&]
+            {
+                using namespace Vectormath;
+                Vector2 vec2a(1.0f, 2.0f);
+                Vector2 vec2b(3.0f, 4.0f);
+                Vector3 vec3a(1.0f, 2.0f, 3.0f);
+                Vector3 vec3b(3.0f, 4.0f, 5.0f);
+                Vector4 vec4a(1.0f, 2.0f, 3.0f, 4.0f);
+                Vector4 vec4b(3.0f, 4.0f, 5.0f, 6.0f);
+
+                auto x = dot(vec2a, vec2b);
+                auto y = dot(cross(vec3a, vec3b), vec3b);
+                auto z = dot(vec4a, vec4b);
+                auto w = dot(vec4a + vec4b, vec4b);
+
+                results.sonyVec4 = Vector4(x, y, z, w);
+                ankerl::nanobench::doNotOptimizeAway(results.sonyVec4);
+            });
     }
 
     void complex2vec3(ankerl::nanobench::Bench& bench)
     {
-        bench.run("Complex operation 2 with DirectX::SimpleMath::Vector3",
+        bench.run("Complex operation 2 with SimpleMath::Vector3",
             [&]
             {
                 DirectX::SimpleMath::Vector3 vec3a(1.0f, 2.0f, 3.0f);
@@ -340,11 +398,33 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(results.dxVec3);
                 });
         }
+
+        bench.run("Complex operation 2 with Vectormath",
+            [&]
+            {
+                using namespace Vectormath;
+                Vector3 vec3a(1.0f, 2.0f, 3.0f);
+                Vector3 vec3b(3.0f, 4.0f, 5.0f);
+                Vector3 vec3c(5.0f, 6.0f, 7.0f);
+                Vector3 vec3d(7.0f, 8.0f, 9.0f);
+
+                auto stepOne = (vec3a + vec3b);
+                auto stepTwo = vec3c - vec3d;
+
+                // Vectormath does not have a memberwise multiplication
+                results.sonyVec3 =
+                    cross(Vector3(stepOne.getX() * stepTwo.getX(),
+                              stepOne.getY() * stepTwo.getY(),
+                              stepOne.getZ() * stepTwo.getZ()),
+                        vec3a);
+
+                ankerl::nanobench::doNotOptimizeAway(results.sonyVec3);
+            });
     }
 
     void complex3vec4(ankerl::nanobench::Bench& bench)
     {
-        bench.run("Complex operation 3 with DirectX::SimpleMath::Vector4",
+        bench.run("Complex operation 3 with SimpleMath::Vector4",
             [&]
             {
                 DirectX::SimpleMath::Vector4 vec3a(1.0f, 2.0f, 3.0f, 4.0f);
@@ -413,6 +493,24 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(results.dxVec4);
                 });
         }
+
+        bench.run("Complex operation 3 with Vectormath",
+            [&]
+            {
+                using namespace Vectormath;
+                Vector4 vec4a(1.0f, 2.0f, 3.0f, 4.0f);
+                Vector4 vec4b(3.0f, 4.0f, 5.0f, 6.0f);
+                Vector4 vec4c(5.0f, 6.0f, 7.0f, 8.0f);
+                Vector4 vec4d(7.0f, 8.0f, 9.0f, 10.0f);
+
+                Vector4 stepOne = (vec4a + vec4b);
+                Vector4 stepTwo = vec4c - vec4d;
+                results.sonyVec4 = Vector4(stepOne.getX() * stepTwo.getX(),
+                    stepOne.getY() * stepTwo.getY(),
+                    stepOne.getZ() * stepTwo.getZ(),
+                    stepOne.getW() * stepTwo.getW());
+                ankerl::nanobench::doNotOptimizeAway(results.sonyVec4);
+            });
     }
 }  // namespace mathbench
 
