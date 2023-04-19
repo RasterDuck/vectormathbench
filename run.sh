@@ -29,4 +29,4 @@ echo "" >> BENCHMARKS.md
 echo "## AVX2" >> BENCHMARKS.md
 ./vectormathbench_avx2 >> BENCHMARKS.md
 
-cp BENCHMARKS.md ../BENCHMARKS.md
+# cp BENCHMARKS.md ../BENCHMARKS.md

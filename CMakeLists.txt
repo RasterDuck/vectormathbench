@@ -25,6 +25,7 @@ include(cmake/cpm.cmake)
 CPMAddPackage("gh:g-truc/glm#0.9.9.8@0.9.9.8")
 CPMAddPackage("gh:g-truc/glm#0.9.9.8@0.9.9.8")
 CPMAddPackage("gh:microsoft/DirectXMath#dec2022")
+CPMAddPackage("gh:move-engine/move-vectormath#caeccd4cee9c9f6e274fbec1617983278ef83f19")
 
 CPMAddPackage(
   NAME sony_vectormath
@@ -37,7 +38,7 @@ add_library(sony_vectormath INTERFACE)
 target_include_directories(sony_vectormath INTERFACE ${sony_vectormath_SOURCE_DIR})
 
 add_library(vmb_common INTERFACE)
-target_link_libraries(vmb_common INTERFACE glm DirectXMath sony_vectormath)
+target_link_libraries(vmb_common INTERFACE glm DirectXMath sony_vectormath move::vectormath)
 target_sources(vmb_common INTERFACE src/main.cpp)
 
 if (UNIX)
@@ -47,6 +48,8 @@ if (UNIX)
   # Ensure we're targeting x86-64
   target_compile_options(vmb_common INTERFACE -march=x86-64)
   
+  target_compile_definitions(vmb_common INTERFACE -DGLM_FORCE_PURE=1)
+
   # If we're not in debug config
   if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_options(vmb_common INTERFACE -O3)
