@@ -86,6 +86,7 @@ namespace mathbench
         Vectormath::Matrix4 sonyMat4a;
         Vectormath::Matrix4 sonyMat4b;
         Vectormath::Matrix4 sonyMat4c;
+        move::vectormath::fastvec2 fastVec2;
         move::vectormath::fastvec3 fastVec3;
         move::vectormath::fastvec4 fastVec4;
         move::vectormath::fastmat4 fastmat4a;
@@ -220,6 +221,15 @@ namespace mathbench
                         Vectormath::Vector4(1.0f, 2.0f, 3.0f, 4.0f) +
                         Vectormath::Vector4(3.0f, 4.0f, 5.0f, 6.0f);
                     ankerl::nanobench::doNotOptimizeAway(results.sonyVec4);
+                });
+
+            bench.run("move::fastvec2 addition",
+                [&]
+                {
+                    using namespace move::vectormath;
+                    results.fastVec2 =
+                        fastvec2(1.0f, 2.0f) + fastvec2(3.0f, 4.0f);
+                    ankerl::nanobench::doNotOptimizeAway(results.fastVec2);
                 });
 
             bench.run("move::fastvec3 addition",
@@ -364,10 +374,8 @@ namespace mathbench
                 [&]
                 {
                     using namespace move::vectormath;
-                    fastvec3 vec2a(
-                        1.0f, 2.0f, 0.0f);  // vec2 not implemented yet
-                    fastvec3 vec2b(
-                        3.0f, 4.0f, 0.0f);  // vec2 not implemented yet
+                    fastvec2 vec2a(1.0f, 2.0f);
+                    fastvec2 vec2b(3.0f, 4.0f);
                     fastvec3 vec3a(1.0f, 2.0f, 3.0f);
                     fastvec3 vec3b(3.0f, 4.0f, 5.0f);
                     fastvec4 vec4a(1.0f, 2.0f, 3.0f, 4.0f);
@@ -701,13 +709,26 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(results.sonyMat4a);
                 });
 
-            bench.run("Construct model matrix move::vectormath",
+            bench.run("Construct model matrix move::vectormath (manual)",
+                [&]
+                {
+                    using namespace move::vectormath;
+                    results.fastmat4a = fastmat4::create_translation(1, 2, 3) *
+                                        fastmat4::create_rotation_x(0.5f) *
+                                        fastmat4::create_rotation_y(0.5f) *
+                                        fastmat4::create_rotation_z(0.5f) *
+                                        fastmat4::create_scale(1, 2, 3);
+
+                    ankerl::nanobench::doNotOptimizeAway(results.fastmat4a);
+                });
+
+            bench.run("Construct model matrix move::vectormath (builtin)",
                 [&]
                 {
                     using namespace move::vectormath;
                     results.fastmat4a = fastmat4::create_transformation_matrix(
                         fastvec3(1, 2, 3),
-                        fastquat::rotation_roll_pitch_yaw(0.5f, 0.5f, 0.5f),
+                        fastquat::from_pitch_yaw_roll(0.5f, 0.5f, 0.5f),
                         fastvec3(1, 2, 3));
 
                     ankerl::nanobench::doNotOptimizeAway(results.fastmat4a);
