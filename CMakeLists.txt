@@ -25,7 +25,7 @@ include(cmake/cpm.cmake)
 CPMAddPackage("gh:g-truc/glm#0.9.9.8@0.9.9.8")
 CPMAddPackage("gh:g-truc/glm#0.9.9.8@0.9.9.8")
 CPMAddPackage("gh:microsoft/DirectXMath#dec2022")
-CPMAddPackage("gh:move-engine/move-vectormath#e31a4a95604e095124831bc78d9ddbb74e44e360")
+CPMAddPackage("gh:move-engine/move-vectormath#3d4778723cbad8619e9f483ce5f6c9ccc624ed9e")
 
 CPMAddPackage(
   NAME sony_vectormath
