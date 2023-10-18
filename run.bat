@@ -8,24 +8,24 @@ if not exist build (
     popd
 )
 
-@REM set OS_NAME=
-@REM set OS_VERSION=
-@REM set CPU_NAME=
+set OS_NAME=
+set OS_VERSION=
+set CPU_NAME=
 
-@REM REM Capture OS Name
-@REM for /f "tokens=2*" %%i in ('systeminfo ^| findstr /B /C:"OS Name"') do (
-@REM     set OS_NAME=%%j
-@REM )
+REM Capture OS Name
+for /f "tokens=2*" %%i in ('systeminfo ^| findstr /B /C:"OS Name"') do (
+    set OS_NAME=%%j
+)
 
-@REM REM Capture OS Version
-@REM for /f "tokens=2*" %%i in ('systeminfo ^| findstr /B /C:"OS Version"') do (
-@REM     set OS_VERSION=%%j
-@REM )
+REM Capture OS Version
+for /f "tokens=2*" %%i in ('systeminfo ^| findstr /B /C:"OS Version"') do (
+    set OS_VERSION=%%j
+)
 
-@REM REM Capture CPU Name
-@REM for /f "tokens=2 delims==" %%i in ('wmic cpu get name /value') do (
-@REM     set CPU_NAME=%%i
-@REM )
+REM Capture CPU Name
+for /f "tokens=2 delims==" %%i in ('wmic cpu get name /value') do (
+    set CPU_NAME=%%i
+)
 
 pushd build
     cmake --build . || (

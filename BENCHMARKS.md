@@ -1,8 +1,10 @@
 # Benchmark Results
 
+> NOTE: These benchmarks are out of date and do not include [RTM](https://github.com/nfrechette/rtm), which seems to be the fastest of the available libraries for most of the tested functionality (though it has the fewest features by a wide margin).  See [here](./intermediate-benchmarks.md) for current benchmarks from a single machine.  Full benchmarks will be rerun at some point, at which this document will be updated.
+
 ## Author's analysis
 
-TL;DR: Based on these benchmarks, it seems that the generally highest performing configuration across both AMD and Intel is DXM with SSE4.2, though it trades blows with Vectormath for matrix operations and GLM for vector operations.
+TL;DR: Based on these benchmarks, it seems that the generally highest performing configuration across both AMD and Intel is DXM with SSE4.2, though it trades blows with Vectormath for matrix operations and GLM for vector operations.  However based on initial benchmarks of RTM on a single machine, it seems like it may be generally faster than DXM under the same configurations.  The rest of this section was written before RTM was added.
 
 * DXM seems to generally be the fastest for matrix ops (especially forming a model matrix) and trades blows with the other libraries for vector ops.
 * SimpleMath introduces non-negligible overhead over DXM for most operations, but for some it is essentially identical.  I also think it could probably be improved to lower the performance gap for the slower operations, but I haven't experimented with this.  I see very little reason that SimpleMath couldn't be roughly as fast as Vectormath's C++ interface.
