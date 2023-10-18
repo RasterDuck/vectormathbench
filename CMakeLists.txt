@@ -23,9 +23,17 @@ include(cmake/cpm.cmake)
 
 
 CPMAddPackage("gh:g-truc/glm#0.9.9.8@0.9.9.8")
-CPMAddPackage("gh:g-truc/glm#0.9.9.8@0.9.9.8")
 CPMAddPackage("gh:microsoft/DirectXMath#dec2022")
 CPMAddPackage("gh:move-engine/move-vectormath#3d4778723cbad8619e9f483ce5f6c9ccc624ed9e")
+CPMAddPackage(
+  NAME rtm
+  GITHUB_REPOSITORY nfrechette/rtm
+  GIT_TAG v2.1.5
+  DOWNLOAD_ONLY YES
+)
+
+add_library(rtm INTERFACE)
+target_include_directories(rtm INTERFACE ${rtm_SOURCE_DIR}/includes)
 
 CPMAddPackage(
   NAME sony_vectormath
@@ -38,7 +46,7 @@ add_library(sony_vectormath INTERFACE)
 target_include_directories(sony_vectormath INTERFACE ${sony_vectormath_SOURCE_DIR})
 
 add_library(vmb_common INTERFACE)
-target_link_libraries(vmb_common INTERFACE glm DirectXMath sony_vectormath move::vectormath)
+target_link_libraries(vmb_common INTERFACE glm DirectXMath sony_vectormath move::vectormath rtm rtm)
 target_sources(vmb_common INTERFACE src/main.cpp)
 
 if (UNIX)
@@ -60,23 +68,22 @@ add_executable(vectormathbench_sse42)
 target_link_libraries(vectormathbench_sse42 PRIVATE vmb_common)
 set_property(TARGET vectormathbench_sse42 PROPERTY OUTPUT_NAME vectormathbench_sse42)
 
-if (UNIX)
-  target_compile_options(vectormathbench_sse42 PRIVATE -msse4.2 -mno-avx)
-endif()
-
 add_executable(vectormathbench_avx)
 target_link_libraries(vectormathbench_avx PRIVATE vmb_common)
 set_property(TARGET vectormathbench_avx PROPERTY OUTPUT_NAME vectormathbench_avx)
 
-if (UNIX)
-  target_compile_options(vectormathbench_avx PRIVATE -mavx)
-endif()
 
 add_executable(vectormathbench_avx2)
 target_link_libraries(vectormathbench_avx2 PRIVATE vmb_common)
 set_property(TARGET vectormathbench_avx2 PROPERTY OUTPUT_NAME vectormathbench_avx2)
 
-if (UNIX)
+if (WIN32)
+  target_compile_options(vectormathbench_sse42 PRIVATE /arch:SSE42)
+  target_compile_options(vectormathbench_avx PRIVATE /arch:AVX)
+  target_compile_options(vectormathbench_avx2 PRIVATE /arch:AVX2)
+elseif (UNIX)
+  target_compile_options(vectormathbench_sse42 PRIVATE -msse4.2 -mno-avx)
+  target_compile_options(vectormathbench_avx PRIVATE -mavx)
   target_compile_options(vectormathbench_avx2 PRIVATE -mfma -mavx2)
 endif()
 

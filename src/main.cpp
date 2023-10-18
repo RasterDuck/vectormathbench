@@ -1,4 +1,9 @@
 #include <math.h>
+#include "glm/ext/matrix_clip_space.hpp"
+#include "rtm/impl/matrix_common.h"
+#define ANKERL_NANOBENCH_IMPLEMENT
+#include "nanobench.h"
+
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
@@ -41,12 +46,199 @@ namespace std
 #include <move/vectormath.hpp>
 #include "simplemath.hpp"
 
+#include <rtm/macros.h>
+#include <rtm/math.h>
+#include <rtm/matrix4x4d.h>
+#include <rtm/matrix4x4f.h>
+#include <rtm/quatd.h>
+#include <rtm/quatf.h>
+#include <rtm/qvvd.h>
+#include <rtm/qvvf.h>
+#include <rtm/vector4d.h>
+#include <rtm/vector4f.h>
+
+// Sony vectormath
+#include <vectormath.hpp>
+
 namespace Vectormath
 {
     using Vector3 = Vectormath::SSE::Vector3;
     using Vector4 = Vectormath::SSE::Vector4;
     using Matrix4 = Vectormath::SSE::Matrix4;
 }  // namespace Vectormath
+
+namespace rtm
+{
+    namespace camera
+    {
+        template <typename mat_type = rtm::matrix4x4f,
+            typename vec_type = rtm::vector4f>
+        inline mat_type look_at_rh(
+            const vec_type& eye, const vec_type& center, const vec_type& up)
+        {
+            // Largely taken from GLM's implementation
+            using namespace rtm;
+            const vec_type lookDir(vector_normalize3(vector_sub(eye, center)));
+            const vec_type rightDir(
+                vector_normalize3(vector_mul(vector_cross3(up, lookDir), 1)));
+            const vec_type actualUpDir(vector_cross3(lookDir, rightDir));
+
+            mat_type result = matrix_identity();
+            result.x_axis = vector_set_w(rightDir, 0);
+            result.y_axis = vector_set_w(actualUpDir, 0);
+            result.z_axis = vector_set_w(lookDir, 0);
+            result = matrix_transpose(result);
+
+            if constexpr (std::is_same_v<mat_type, matrix4x4d>)
+            {
+                result.w_axis =
+                    vector_set_w(vector_set(-double(vector_dot3(rightDir, eye)),
+                                     -double(vector_dot3(actualUpDir, eye)),
+                                     -double(vector_dot3(lookDir, eye))),
+                        1);
+            }
+            else
+            {
+                result.w_axis =
+                    vector_set_w(vector_set(-float(vector_dot3(rightDir, eye)),
+                                     -float(vector_dot3(actualUpDir, eye)),
+                                     -float(vector_dot3(lookDir, eye))),
+                        1);
+            }
+            return result;
+        }
+
+        template <typename mat_type = rtm::matrix4x4f,
+            typename vec_type = rtm::vector4f>
+        inline mat_type look_at_lh(
+            const vec_type& eye, const vec_type& center, const vec_type& up)
+        {
+            // Largely taken from GLM's implementation
+            using namespace rtm;
+            const vec_type lookDir(vector_normalize3(vector_sub(center, eye)));
+            const vec_type rightDir(
+                vector_normalize3(vector_mul(vector_cross3(up, lookDir), 1)));
+            const vec_type actualUpDir(vector_cross3(lookDir, rightDir));
+
+            mat_type result = matrix_identity();
+            result.x_axis = vector_set_w(rightDir, 0);
+            result.y_axis = vector_set_w(actualUpDir, 0);
+            result.z_axis = vector_set_w(lookDir, 0);
+            result = matrix_transpose(result);
+
+            if constexpr (std::is_same_v<mat_type, matrix4x4d>)
+            {
+                result.w_axis =
+                    vector_set_w(vector_set(-double(vector_dot3(rightDir, eye)),
+                                     -double(vector_dot3(actualUpDir, eye)),
+                                     -double(vector_dot3(lookDir, eye))),
+                        1);
+            }
+            else
+            {
+                result.w_axis =
+                    vector_set_w(vector_set(-float(vector_dot3(rightDir, eye)),
+                                     -float(vector_dot3(actualUpDir, eye)),
+                                     -float(vector_dot3(lookDir, eye))),
+                        1);
+            }
+            return result;
+        }
+
+        // template <typename mat_type = rtm::matrix4x4f>
+        inline rtm::matrix4x4f perspective_fov_rh(
+            float FovAngleY, float AspectRatio, float NearZ, float FarZ)
+        {
+            using mat_type = rtm::matrix4x4f;
+            using value_type = float;
+
+            assert(NearZ > 0.f && FarZ > 0.f);
+            assert(!XMScalarNearEqual(FovAngleY, 0.0f, 0.00001f * 2.0f));
+            assert(!XMScalarNearEqual(AspectRatio, 0.0f, 0.00001f));
+            assert(!XMScalarNearEqual(FarZ, NearZ, 0.00001f));
+
+            value_type SinFov;
+            value_type CosFov;
+            rtm::scalar_sincos(0.5f * FovAngleY, SinFov, CosFov);
+
+            value_type Height = CosFov / SinFov;
+            value_type Width = Height / AspectRatio;
+            value_type fRange = FarZ / (NearZ - FarZ);
+
+            mat_type result;
+            result.x_axis = vector_set(Width, 0.0f, 0.0f, 0.0f);
+            result.y_axis = vector_set(0.0f, Height, 0.0f, 0.0f);
+            result.z_axis = vector_set(0.0f, 0.0f, fRange, -1.0f);
+            result.w_axis = vector_set(0.0f, 0.0f, fRange * NearZ, 0.0f);
+            return result;
+        }
+
+        inline rtm::matrix4x4d perspective_fov_rh(
+            double FovAngleY, double AspectRatio, double NearZ, double FarZ)
+        {
+            using mat_type = rtm::matrix4x4d;
+            using value_type = double;
+
+            assert(NearZ > 0.f && FarZ > 0.f);
+            assert(!XMScalarNearEqual(FovAngleY, 0.0f, 0.00001f * 2.0f));
+            assert(!XMScalarNearEqual(AspectRatio, 0.0f, 0.00001f));
+            assert(!XMScalarNearEqual(FarZ, NearZ, 0.00001f));
+
+            value_type SinFov;
+            value_type CosFov;
+            rtm::scalar_sincos(0.5f * FovAngleY, SinFov, CosFov);
+
+            value_type Height = CosFov / SinFov;
+            value_type Width = Height / AspectRatio;
+            value_type fRange = FarZ / (NearZ - FarZ);
+
+            mat_type result;
+            result.x_axis = vector_set(Width, 0.0, 0.0, 0.0);
+            result.y_axis = vector_set(0.0, Height, 0.0, 0.0);
+            result.z_axis = vector_set(0.0, 0.0, fRange, -1.0);
+            result.w_axis = vector_set(0.0, 0.0, fRange * NearZ, 0.0);
+            return result;
+        }
+
+        inline rtm::matrix4x4f ortho_rh(
+            float width, float height, float near, float far)
+        {
+            using mat_type = rtm::matrix4x4f;
+            using value_type = float;
+
+            assert(!XMScalarNearEqual(width, 0.0f, 0.00001f));
+            assert(!XMScalarNearEqual(height, 0.0f, 0.00001f));
+            assert(!XMScalarNearEqual(far, near, 0.00001f));
+
+            value_type fRange = 1.0f / (near - far);
+            mat_type result;
+            result.x_axis = vector_set(2.0f / width, 0.0f, 0.0f, 0.0f);
+            result.y_axis = vector_set(0.0f, 2.0f / height, 0.0f, 0.0f);
+            result.z_axis = vector_set(0.0f, 0.0f, fRange, 0.0f);
+            result.w_axis = vector_set(0.0f, 0.0f, fRange * near, 1.0f);
+            return result;
+        }
+
+        inline rtm::matrix4x4d ortho_rh(
+            double width, double height, double near, double far)
+        {
+            using mat_type = rtm::matrix4x4d;
+            using value_type = double;
+
+            assert(!XMScalarNearEqual(width, 0.0, 0.00001));
+            assert(!XMScalarNearEqual(height, 0.0, 0.00001));
+            assert(!XMScalarNearEqual(far, near, 0.00001));
+
+            value_type fRange = 1.0f / (near - far);
+            mat_type result;
+            result.x_axis = vector_set(2.0f / width, 0.0, 0.0, 0.0);
+            result.y_axis = vector_set(0.0, 2.0f / height, 0.0, 0.0);
+            result.z_axis = vector_set(0.0, 0.0, fRange, 0.0);
+            result.w_axis = vector_set(0.0, 0.0, fRange * near, 1.0);
+            return result;
+        }
+    }  // namespace camera
+}  // namespace rtm
 
 namespace mathbench
 {
@@ -62,24 +254,32 @@ namespace mathbench
 
         int intnum;
         float floatnum;
+
+        // SimpleMath
         DirectX::SimpleMath::Vector2 smVec2;
         DirectX::SimpleMath::Vector3 smVec3;
         DirectX::SimpleMath::Vector4 smVec4;
         DirectX::SimpleMath::Matrix smMat4a;
         DirectX::SimpleMath::Matrix smMat4b;
         DirectX::SimpleMath::Matrix smMat4c;
+
+        // glm
         glm::vec2 glmVec2;
         glm::vec3 glmVec3;
         glm::vec4 glmVec4;
         glm::mat4 glmMat4a;
         glm::mat4 glmMat4b;
         glm::mat4 glmMat4c;
+
+        // DirectXMath
         DirectX::XMFLOAT2 dxVec2;
         DirectX::XMFLOAT3 dxVec3;
         DirectX::XMFLOAT4 dxVec4;
         DirectX::XMFLOAT4X4 dxMat4a;
         DirectX::XMFLOAT4X4 dxMat4b;
         DirectX::XMFLOAT4X4 dxMat4c;
+
+        // Sony vectormath
         Vectormath::Vector2 sonyVec2;
         Vectormath::Vector3 sonyVec3;
         Vectormath::Vector4 sonyVec4;
@@ -87,6 +287,7 @@ namespace mathbench
         Vectormath::Matrix4 sonyMat4b;
         Vectormath::Matrix4 sonyMat4c;
 
+        // move::vectormath
         move::vectormath::vec2 mvVec2;
         move::vectormath::vec3 mvVec3;
         move::vectormath::vec4 mvVec4;
@@ -94,6 +295,7 @@ namespace mathbench
         move::vectormath::mat4 mvMat4b;
         move::vectormath::mat4 mvMat4c;
 
+        // move::vectormath::fast*
         move::vectormath::fastvec2 fastVec2;
         move::vectormath::fastvec3 fastVec3;
         move::vectormath::fastvec4 fastVec4;
@@ -101,6 +303,37 @@ namespace mathbench
         move::vectormath::fastmat4 fastmat4b;
         move::vectormath::fastmat4 fastmat4c;
 
+        // rtm
+        rtm::vector4f rtmVec4f;
+        rtm::vector4f rtmVec4fa;
+        rtm::vector4f rtmVec4fb;
+        rtm::vector4d rtmVec4d;
+        rtm::vector4d rtmVec4da;
+        rtm::vector4d rtmVec4db;
+
+        rtm::matrix3x4f rtmMat3x4f;
+        rtm::matrix3x4f rtmMat3x4fa;
+        rtm::matrix3x4d rtmMat3x4d;
+        rtm::matrix3x4d rtmMat3x4da;
+
+        rtm::matrix4x4f rtmMat4f;
+        rtm::matrix4x4f rtmMat4fa;
+        rtm::matrix4x4f rtmMat4fb;
+        rtm::matrix4x4f rtmMat4fc;
+        rtm::matrix4x4d rtmMat4d;
+        rtm::matrix4x4d rtmMat4da;
+        rtm::matrix4x4d rtmMat4db;
+        rtm::matrix4x4d rtmMat4dc;
+        rtm::qvvf rtmQvvf;
+        rtm::qvvf rtmQvvfa;
+        rtm::qvvf rtmQvvfb;
+        rtm::qvvf rtmQvvfc;
+        rtm::qvvd rtmQvvd;
+        rtm::qvvd rtmQvvda;
+        rtm::qvvd rtmQvvdb;
+        rtm::qvvd rtmQvvdc;
+
+        // DirectXMath
         DirectX::XMVECTOR dxVecA;
         DirectX::XMVECTOR dxVecB;
         DirectX::XMVECTOR dxVecC;
@@ -281,6 +514,28 @@ namespace mathbench
                     results.fastVec4 = fastvec4(1.0f, 2.0f, 3.0f, 4.0f) +
                                        fastvec4(3.0f, 4.0f, 5.0f, 6.0f);
                     ankerl::nanobench::doNotOptimizeAway(results.fastVec4);
+                });
+
+            bench.run("rtm::vector4f addition",
+                [&]
+                {
+                    using namespace rtm;
+                    results.rtmVec4f =
+                        rtm::vector_add(vector_set(1.0f, 2.0f, 3.0f, 4.0f),
+                            vector_set(3.0f, 4.0f, 5.0f, 6.0f));
+
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4f);
+                });
+
+            bench.run("rtm::vector4d addition",
+                [&]
+                {
+                    using namespace rtm;
+                    results.rtmVec4d =
+                        rtm::vector_add(vector_set(1.0, 2.0, 3.0, 4.0),
+                            vector_set(3.0, 4.0, 5.0, 6.0));
+
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4d);
                 });
         }
 
@@ -700,6 +955,40 @@ namespace mathbench
                     results.fastVec4 = (vec4a + vec4b) * vec4c - vec4d;
                     ankerl::nanobench::doNotOptimizeAway(results.fastVec4);
                 });
+
+            bench.run("Complex operation 3 with rtm::vector4f",
+                [&]
+                {
+                    using namespace rtm;
+                    vector4f vec4a = vector_set(1.0f, 2.0f, 3.0f, 4.0f);
+                    vector4f vec4b = vector_set(3.0f, 4.0f, 5.0f, 6.0f);
+                    vector4f vec4c = vector_set(5.0f, 6.0f, 7.0f, 8.0f);
+                    vector4f vec4d = vector_set(7.0f, 8.0f, 9.0f, 10.0f);
+
+                    vector4f stepOne =
+                        vector_mul(vector_add(vec4a, vec4b), vec4c);
+                    vector4f stepTwo = vector_sub(stepOne, vec4d);
+
+                    results.rtmVec4f = stepTwo;
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4f);
+                });
+
+            bench.run("Complex operation 3 with rtm::vector4d",
+                [&]
+                {
+                    using namespace rtm;
+                    vector4d vec4a = vector_set(1.0, 2.0, 3.0, 4.0);
+                    vector4d vec4b = vector_set(3.0, 4.0, 5.0, 6.0);
+                    vector4d vec4c = vector_set(5.0, 6.0, 7.0, 8.0);
+                    vector4d vec4d = vector_set(7.0, 8.0, 9.0, 10.0);
+
+                    vector4d stepOne =
+                        vector_mul(vector_add(vec4a, vec4b), vec4c);
+                    vector4d stepTwo = vector_sub(stepOne, vec4d);
+
+                    results.rtmVec4d = stepTwo;
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4d);
+                });
         }
     }  // namespace vectors
 
@@ -840,6 +1129,78 @@ namespace mathbench
 
                     ankerl::nanobench::doNotOptimizeAway(results.mvMat4a);
                 });
+
+            bench.run("Construct rtm::qvvf (~transformation matrix)",
+                [&]
+                {
+                    using namespace rtm;
+                    results.rtmQvvf = qvv_set(quat_set(0.5f, 0.5f, 0.5f, 1.0f),
+                        vector_set(1.0f, 2.0f, 3.0f, 0.0f),
+                        vector_set(1.0f, 2.0f, 3.0f, 0.0f));
+
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmQvvf);
+                });
+
+            bench.run("Construct rtm::qvvd (~transformation matrix)",
+                [&]
+                {
+                    using namespace rtm;
+                    results.rtmQvvd = qvv_set(quat_set(0.5, 0.5, 0.5, 1.0),
+                        vector_set(1.0, 2.0, 3.0, 0.0),
+                        vector_set(1.0, 2.0, 3.0, 0.0));
+
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmQvvf);
+                });
+
+            bench.run("Construct model matrix rtm::matrix3x4f",
+                [&]
+                {
+                    using namespace rtm;
+                    auto qvv = qvv_set(quat_set(0.5f, 0.5f, 0.5f, 1.0f),
+                        vector_set(1.0f, 2.0f, 3.0f, 0.0f),
+                        vector_set(1.0f, 2.0f, 3.0f, 0.0f));
+
+                    results.rtmMat3x4fa = matrix_from_qvv(qvv);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat3x4fa);
+                });
+
+            bench.run("Construct model matrix rtm::matrix3x4d",
+                [&]
+                {
+                    using namespace rtm;
+                    auto qvv = qvv_set(quat_set(0.5, 0.5, 0.5, 1.0),
+                        vector_set(1.0, 2.0, 3.0, 0.0),
+                        vector_set(1.0, 2.0, 3.0, 0.0));
+
+                    results.rtmMat3x4da = matrix_from_qvv(qvv);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat3x4da);
+                });
+
+            bench.run("Construct model matrix rtm::matrix4x4f",
+                [&]
+                {
+                    using namespace rtm;
+                    auto qvv = qvv_set(quat_set(0.5f, 0.5f, 0.5f, 1.0f),
+                        vector_set(1.0f, 2.0f, 3.0f, 0.0f),
+                        vector_set(1.0f, 2.0f, 3.0f, 0.0f));
+
+                    results.rtmMat4fa = matrix_cast(matrix_from_qvv(qvv));
+                    results.rtmMat4fa.z_axis =
+                        vector_set_w(results.rtmMat4fa.z_axis, 1);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4fa);
+                });
+
+            bench.run("Construct model matrix rtm::matrix4x4d",
+                [&]
+                {
+                    using namespace rtm;
+                    auto qvv = qvv_set(quat_set(0.5, 0.5, 0.5, 1.0),
+                        vector_set(1.0, 2.0, 3.0, 0.0),
+                        vector_set(1.0, 2.0, 3.0, 0.0));
+
+                    results.rtmMat4da = matrix_cast(matrix_from_qvv(qvv));
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4da);
+                });
         }
 
         void construct_view_matrix(ankerl::nanobench::Bench& bench)
@@ -904,6 +1265,30 @@ namespace mathbench
 
                     ankerl::nanobench::doNotOptimizeAway(results.mvMat4a);
                 });
+
+            bench.run("Construct view matrix rtm::matrix4x4f",
+                [&]
+                {
+                    using namespace rtm;
+                    results.rtmMat4fa =
+                        rtm::camera::look_at_rh<matrix4x4f, vector4f>(
+                            vector_set(1.0f, 2.0f, 3.0f, 0.0f),
+                            vector_set(4.0f, 5.0f, 6.0f, 0.0f),
+                            vector_set(7.0f, 8.0f, 9.0f, 0.0f));
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4fa);
+                });
+
+            bench.run("Construct view matrix rtm::matrix4x4d",
+                [&]
+                {
+                    using namespace rtm;
+                    results.rtmMat4da =
+                        rtm::camera::look_at_rh<matrix4x4d, vector4d>(
+                            vector_set(1.0, 2.0, 3.0, 0.0),
+                            vector_set(4.0, 5.0, 6.0, 0.0),
+                            vector_set(7.0, 8.0, 9.0, 0.0));
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4da);
+                });
         }
 
         void construct_perspective_projection_matrix(
@@ -961,6 +1346,24 @@ namespace mathbench
                         mat4::create_perspective(0.5f, 1.0f, 0.1f, 100.0f);
 
                     ankerl::nanobench::doNotOptimizeAway(results.mvMat4a);
+                });
+
+            bench.run("Construct perspective matrix rtm::matrix4x4f",
+                [&]
+                {
+                    using namespace rtm;
+                    results.rtmMat4fa = rtm::camera::perspective_fov_rh(
+                        0.5f, 1.0f, 0.1f, 100.0f);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4fa);
+                });
+
+            bench.run("Construct perspective matrix rtm::matrix4x4d",
+                [&]
+                {
+                    using namespace rtm;
+                    results.rtmMat4da =
+                        rtm::camera::perspective_fov_rh(0.5, 1.0, 0.1, 100.0);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4da);
                 });
         }
 
@@ -1020,6 +1423,24 @@ namespace mathbench
 
                     ankerl::nanobench::doNotOptimizeAway(results.mvMat4a);
                 });
+
+            bench.run("Construct ortho matrix rtm::matrix4x4f",
+                [&]
+                {
+                    using namespace rtm;
+                    results.rtmMat4fa =
+                        rtm::camera::ortho_rh(1280, 720, 0.1f, 100.0f);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4fa);
+                });
+
+            bench.run("Construct ortho matrix rtm::matrix4x4d",
+                [&]
+                {
+                    using namespace rtm;
+                    results.rtmMat4da =
+                        rtm::camera::ortho_rh(1280, 720, 0.1, 100.0);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4da);
+                });
         }
 
         void vector_matrix_multiply(ankerl::nanobench::Bench& bench)
@@ -1064,6 +1485,44 @@ namespace mathbench
                     results.fastVec4 = results.fastmat4a * results.fastVec4;
                     ankerl::nanobench::doNotOptimizeAway(results.fastVec4);
                 });
+
+            bench.run("Vector matrix multiply rtm::matrix4x4f",
+                [&]
+                {
+                    using namespace rtm;
+                    results.rtmVec4f =
+                        matrix_mul_vector(results.rtmVec4fa, results.rtmMat4fa);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4f);
+                });
+
+            bench.run("Vector matrix multiply rtm::matrix4x4d",
+                [&]
+                {
+                    using namespace rtm;
+                    results.rtmVec4d =
+                        matrix_mul_vector(results.rtmVec4da, results.rtmMat4da);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4d);
+                });
+
+            bench.run("Point QVV multiply rtm::qvvf",
+                [&]
+                {
+                    using namespace rtm;
+                    results.rtmVec4f =
+                        qvv_mul_point3(results.rtmVec4fa, results.rtmQvvf);
+
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4f);
+                });
+
+            bench.run("Point QVV multiply rtm::qvvd",
+                [&]
+                {
+                    using namespace rtm;
+                    results.rtmVec4d =
+                        qvv_mul_point3(results.rtmVec4da, results.rtmQvvd);
+
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4d);
+                });
         }
 
         void matrix_matrix_multiply(ankerl::nanobench::Bench& bench)
@@ -1107,16 +1566,108 @@ namespace mathbench
                     results.fastmat4a = results.fastmat4b * results.fastmat4c;
                     ankerl::nanobench::doNotOptimizeAway(results.fastmat4a);
                 });
+
+            bench.run("Matrix matrix multiply move::vectormath",
+                [&]
+                {
+                    using namespace move::vectormath;
+                    results.mvMat4a = results.mvMat4b * results.mvMat4c;
+                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4a);
+                });
+
+            bench.run("QVV QVV multiply rtm::qvvf",
+                [&]
+                {
+                    using namespace rtm;
+                    results.rtmQvvfa =
+                        qvv_mul(results.rtmQvvfb, results.rtmQvvfc);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmQvvf);
+                });
+
+            bench.run("QVV QVV multiply rtm::qvvd",
+                [&]
+                {
+                    using namespace rtm;
+                    results.rtmQvvda =
+                        qvv_mul(results.rtmQvvdb, results.rtmQvvdc);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmQvvda);
+                });
+
+            bench.run("Matrix matrix multiply rtm::matrix4x4f",
+                [&]
+                {
+                    using namespace rtm;
+                    results.rtmMat4fa =
+                        matrix_mul(results.rtmMat4fb, results.rtmMat4fc);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4fa);
+                });
+
+            bench.run("Matrix matrix multiply rtm::matrix4x4d",
+                [&]
+                {
+                    using namespace rtm;
+                    results.rtmMat4da =
+                        matrix_mul(results.rtmMat4db, results.rtmMat4dc);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4da);
+                });
         }
     }  // namespace matrices
 }  // namespace mathbench
 
+inline void test_camera_matrix_funcs()
+{
+    auto smMat = DirectX::SimpleMath::Matrix::CreateOrthographic(
+        0.5f, 1.0f, 0.1f, 100.0f);
+    auto glmMat = glm::ortho(0.5f, 1.0f, 0.1f, 100.0f);
+    auto rtmMat = rtm::camera::ortho_rh(0.5f, 1.0f, 0.1f, 100.0f);
+
+    printf("GLM: \n");
+    for (int x = 0; x < 4; ++x)
+    {
+        for (int y = 0; y < 4; ++y)
+        {
+            printf("%f ", glmMat[x][y]);
+        }
+        printf("\n");
+    }
+
+    printf("SimpleMath:\n");
+    printf("%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n",
+        float(smMat._11), float(smMat._12), float(smMat._13), float(smMat._14),
+        float(smMat._21), float(smMat._22), float(smMat._23), float(smMat._24),
+        float(smMat._31), float(smMat._32), float(smMat._33), float(smMat._34),
+        float(smMat._41), float(smMat._42), float(smMat._43), float(smMat._44));
+
+    printf("RTM: \n");
+    printf("%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n%f %f %f %f\n",
+        float(rtm::vector_get_x(rtmMat.x_axis)),
+        float(rtm::vector_get_y(rtmMat.x_axis)),
+        float(rtm::vector_get_z(rtmMat.x_axis)),
+        float(rtm::vector_get_w(rtmMat.x_axis)),
+        float(rtm::vector_get_x(rtmMat.y_axis)),
+        float(rtm::vector_get_y(rtmMat.y_axis)),
+        float(rtm::vector_get_z(rtmMat.y_axis)),
+        float(rtm::vector_get_w(rtmMat.y_axis)),
+        float(rtm::vector_get_x(rtmMat.z_axis)),
+        float(rtm::vector_get_y(rtmMat.z_axis)),
+        float(rtm::vector_get_z(rtmMat.z_axis)),
+        float(rtm::vector_get_w(rtmMat.z_axis)),
+        float(rtm::vector_get_x(rtmMat.w_axis)),
+        float(rtm::vector_get_y(rtmMat.w_axis)),
+        float(rtm::vector_get_z(rtmMat.w_axis)),
+        float(rtm::vector_get_w(rtmMat.w_axis)));
+}
+
 int main(int argc, char** argv)
 {
+    constexpr int iterations = 10000000;
+    // test_camera_matrix_funcs();
+    // if (true) return 0;
+
     {
         ankerl::nanobench::Bench vectorBench;
         vectorBench.name("Vectors");
-        vectorBench.minEpochIterations(114336014);
+        vectorBench.minEpochIterations(iterations);
         mathbench::vectors::addition(vectorBench);
         mathbench::vectors::complex1(vectorBench);
         mathbench::vectors::complex2vec3(vectorBench);
@@ -1125,7 +1676,7 @@ int main(int argc, char** argv)
 
     {
         ankerl::nanobench::Bench matrixBench;
-        matrixBench.minEpochIterations(10533656);
+        matrixBench.minEpochIterations(iterations);
         matrixBench.name("Matrices");
         mathbench::matrices::construct_model_matrix(matrixBench);
         mathbench::matrices::construct_view_matrix(matrixBench);
