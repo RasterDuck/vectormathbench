@@ -6,7 +6,7 @@ Note that this repository was created with `cmake-init`, and much of what is her
 
 # Results
 
-TL;DR: Based on these benchmarks, it seems that the generally highest performing configuration across both AMD and Intel is DXM with SSE4.2, though it trades blows with Sony's Vectormath for matrix operations and GLM for vector operations.
+TL;DR: Based on these benchmarks, it seems that the generally highest performing configuration across both AMD and Intel is DXM with SSE4.2, though it trades blows with Vectormath for matrix operations and GLM for vector operations.  However based on initial benchmarks of RTM on a single machine, it seems like it may be generally faster than DXM under the same configurations.  More investigation is required.
 
 See the [BENCHMARKS](BENCHMARKS.md) document for more details.
 
