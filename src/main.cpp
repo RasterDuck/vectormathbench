@@ -1,6 +1,7 @@
 #include <math.h>
 #include "glm/ext/matrix_clip_space.hpp"
 #include "rtm/impl/matrix_common.h"
+#include "rtm/scalard.h"
 #define ANKERL_NANOBENCH_IMPLEMENT
 #include "nanobench.h"
 
@@ -73,7 +74,8 @@ namespace rtm
     {
         template <typename mat_type = rtm::matrix4x4f,
             typename vec_type = rtm::vector4f>
-        inline mat_type look_at_rh(
+        RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE constexpr mat_type
+        look_at_rh(
             const vec_type& eye, const vec_type& center, const vec_type& up)
         {
             // Largely taken from GLM's implementation
@@ -110,7 +112,8 @@ namespace rtm
 
         template <typename mat_type = rtm::matrix4x4f,
             typename vec_type = rtm::vector4f>
-        inline mat_type look_at_lh(
+        RTM_DISABLE_SECURITY_COOKIE_CHECK RTM_FORCE_INLINE constexpr mat_type
+        look_at_lh(
             const vec_type& eye, const vec_type& center, const vec_type& up)
         {
             // Largely taken from GLM's implementation
@@ -146,69 +149,72 @@ namespace rtm
         }
 
         // template <typename mat_type = rtm::matrix4x4f>
-        inline rtm::matrix4x4f perspective_fov_rh(
-            float FovAngleY, float AspectRatio, float NearZ, float FarZ)
+        RTM_DISABLE_SECURITY_COOKIE_CHECK
+        RTM_FORCE_INLINE rtm::matrix4x4f perspective_fov_rh(
+            float fovY, float aspectRatio, float near, float far)
         {
             using mat_type = rtm::matrix4x4f;
             using value_type = float;
 
-            assert(NearZ > 0.f && FarZ > 0.f);
-            assert(!XMScalarNearEqual(FovAngleY, 0.0f, 0.00001f * 2.0f));
-            assert(!XMScalarNearEqual(AspectRatio, 0.0f, 0.00001f));
-            assert(!XMScalarNearEqual(FarZ, NearZ, 0.00001f));
+            assert(near > 0.f && far > 0.f);
+            assert(!scalar_near_equal(fovY, 0.0f, 0.00001f * 2.0f));
+            assert(!scalar_near_equal(aspectRatio, 0.0f, 0.00001f));
+            assert(!scalar_near_equal(far, near, 0.00001f));
 
             value_type SinFov;
             value_type CosFov;
-            rtm::scalar_sincos(0.5f * FovAngleY, SinFov, CosFov);
+            rtm::scalar_sincos(0.5f * fovY, SinFov, CosFov);
 
             value_type Height = CosFov / SinFov;
-            value_type Width = Height / AspectRatio;
-            value_type fRange = FarZ / (NearZ - FarZ);
+            value_type Width = Height / aspectRatio;
+            value_type fRange = far / (near - far);
 
             mat_type result;
             result.x_axis = vector_set(Width, 0.0f, 0.0f, 0.0f);
             result.y_axis = vector_set(0.0f, Height, 0.0f, 0.0f);
             result.z_axis = vector_set(0.0f, 0.0f, fRange, -1.0f);
-            result.w_axis = vector_set(0.0f, 0.0f, fRange * NearZ, 0.0f);
+            result.w_axis = vector_set(0.0f, 0.0f, fRange * near, 0.0f);
             return result;
         }
 
-        inline rtm::matrix4x4d perspective_fov_rh(
-            double FovAngleY, double AspectRatio, double NearZ, double FarZ)
+        RTM_DISABLE_SECURITY_COOKIE_CHECK
+        RTM_FORCE_INLINE rtm::matrix4x4d perspective_fov_rh(
+            double fovY, double aspectRatio, double near, double far)
         {
             using mat_type = rtm::matrix4x4d;
             using value_type = double;
 
-            assert(NearZ > 0.f && FarZ > 0.f);
-            assert(!XMScalarNearEqual(FovAngleY, 0.0f, 0.00001f * 2.0f));
-            assert(!XMScalarNearEqual(AspectRatio, 0.0f, 0.00001f));
-            assert(!XMScalarNearEqual(FarZ, NearZ, 0.00001f));
+            assert(near > 0. && far > 0.);
+            assert(!scalar_near_equal(fovY, 0.0, 0.00001 * 2.0));
+            assert(!scalar_near_equal(aspectRatio, 0.0, 0.00001));
+            assert(!scalar_near_equal(far, near, 0.00001));
 
             value_type SinFov;
             value_type CosFov;
-            rtm::scalar_sincos(0.5f * FovAngleY, SinFov, CosFov);
+            rtm::scalar_sincos(0.5f * fovY, SinFov, CosFov);
 
             value_type Height = CosFov / SinFov;
-            value_type Width = Height / AspectRatio;
-            value_type fRange = FarZ / (NearZ - FarZ);
+            value_type Width = Height / aspectRatio;
+            value_type fRange = far / (near - far);
 
             mat_type result;
             result.x_axis = vector_set(Width, 0.0, 0.0, 0.0);
             result.y_axis = vector_set(0.0, Height, 0.0, 0.0);
             result.z_axis = vector_set(0.0, 0.0, fRange, -1.0);
-            result.w_axis = vector_set(0.0, 0.0, fRange * NearZ, 0.0);
+            result.w_axis = vector_set(0.0, 0.0, fRange * near, 0.0);
             return result;
         }
 
-        inline rtm::matrix4x4f ortho_rh(
+        RTM_DISABLE_SECURITY_COOKIE_CHECK
+        RTM_FORCE_INLINE rtm::matrix4x4f ortho_rh(
             float width, float height, float near, float far)
         {
             using mat_type = rtm::matrix4x4f;
             using value_type = float;
 
-            assert(!XMScalarNearEqual(width, 0.0f, 0.00001f));
-            assert(!XMScalarNearEqual(height, 0.0f, 0.00001f));
-            assert(!XMScalarNearEqual(far, near, 0.00001f));
+            assert(!scalar_near_equal(width, 0.0f, 0.00001f));
+            assert(!scalar_near_equal(height, 0.0f, 0.00001f));
+            assert(!scalar_near_equal(far, near, 0.00001f));
 
             value_type fRange = 1.0f / (near - far);
             mat_type result;
@@ -219,20 +225,21 @@ namespace rtm
             return result;
         }
 
-        inline rtm::matrix4x4d ortho_rh(
+        RTM_DISABLE_SECURITY_COOKIE_CHECK
+        RTM_FORCE_INLINE rtm::matrix4x4d ortho_rh(
             double width, double height, double near, double far)
         {
             using mat_type = rtm::matrix4x4d;
             using value_type = double;
 
-            assert(!XMScalarNearEqual(width, 0.0, 0.00001));
-            assert(!XMScalarNearEqual(height, 0.0, 0.00001));
-            assert(!XMScalarNearEqual(far, near, 0.00001));
+            assert(!scalar_near_equal(width, 0.0, 0.00001));
+            assert(!scalar_near_equal(height, 0.0, 0.00001));
+            assert(!scalar_near_equal(far, near, 0.00001));
 
             value_type fRange = 1.0f / (near - far);
             mat_type result;
-            result.x_axis = vector_set(2.0f / width, 0.0, 0.0, 0.0);
-            result.y_axis = vector_set(0.0, 2.0f / height, 0.0, 0.0);
+            result.x_axis = vector_set(2.0 / width, 0.0, 0.0, 0.0);
+            result.y_axis = vector_set(0.0, 2.0 / height, 0.0, 0.0);
             result.z_axis = vector_set(0.0, 0.0, fRange, 0.0);
             result.w_axis = vector_set(0.0, 0.0, fRange * near, 1.0);
             return result;
