@@ -24,16 +24,17 @@ include(cmake/cpm.cmake)
 
 CPMAddPackage("gh:g-truc/glm#0.9.9.8@0.9.9.8")
 CPMAddPackage("gh:microsoft/DirectXMath#dec2022")
-CPMAddPackage("gh:move-engine/move-vectormath#3d4778723cbad8619e9f483ce5f6c9ccc624ed9e")
-CPMAddPackage(
-  NAME rtm
-  GITHUB_REPOSITORY nfrechette/rtm
-  GIT_TAG v2.1.5
-  DOWNLOAD_ONLY YES
-)
+CPMAddPackage("gh:move-engine/move-vectormath#df81704d884f1a00b817098c1e10020f627a4654")
 
-add_library(rtm INTERFACE)
-target_include_directories(rtm INTERFACE ${rtm_SOURCE_DIR}/includes)
+# CPMAddPackage(
+#   NAME rtm
+#   GITHUB_REPOSITORY nfrechette/rtm
+#   GIT_TAG v2.1.5
+#   DOWNLOAD_ONLY YES
+# )
+
+# add_library(rtm INTERFACE)
+# target_include_directories(rtm INTERFACE ${rtm_SOURCE_DIR}/includes)
 
 CPMAddPackage(
   NAME sony_vectormath
