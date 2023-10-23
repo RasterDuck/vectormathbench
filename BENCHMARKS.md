@@ -1,6 +1,6 @@
 # Benchmark Results
 
-> NOTE: These benchmarks are out of date and do not include [RTM](https://github.com/nfrechette/rtm), which seems to be the fastest of the available libraries for most of the tested functionality (though it has the fewest features by a wide margin).  See [here](./intermediate-benchmarks.md) for current benchmarks from a single machine.  Full benchmarks will be rerun at some point, at which this document will be updated.
+> NOTE: These benchmarks are out of date.  They use an old version of [move::vectormath](https://github.com/move-engine/move-vectormath) which was based on DXM and do not include [RTM](https://github.com/nfrechette/rtm), which seems to be the fastest of the available libraries for most of the tested functionality (though it has the fewest features by a wide margin).  See [here](./intermediate-benchmarks.md) for current benchmarks from a single machine.  Full benchmarks will be rerun at some point, at which this document will be updated.
 
 ## Author's analysis
 
