@@ -142,7 +142,7 @@ jobs:
             set CPU_NAME=%%i
         )
         
-        echo # Benchmark Results > BENCHMARK.md
+        echo # Benchmark Results (windows-2022) > BENCHMARK.md
         echo. >> BENCHMARK.md
         
         echo ## System Info >> BENCHMARK.md
@@ -169,7 +169,7 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       working-directory: build
       run: |
-        echo "# Benchmark Results" > BENCHMARK.md
+        echo "# Benchmark Results (ubuntu-latest)" > BENCHMARK.md
         echo "" >> BENCHMARK.md
 
         echo ## System Info >> BENCHMARK.md
