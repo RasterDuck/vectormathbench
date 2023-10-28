@@ -678,10 +678,10 @@ namespace mathbench
                     vec4f vec4a(1.0f, 2.0f, 3.0f, 4.0f);
                     vec4f vec4b(3.0f, 4.0f, 5.0f, 6.0f);
 
-                    auto x = vec2a.dot(vec2b);
-                    auto y = vec3a.cross(vec3b).dot(vec3b);
-                    auto z = vec4a.dot(vec4b);
-                    auto w = (vec4a + vec4b).dot(vec4b);
+                    auto x = vec2f::dot(vec2a, vec2b);
+                    auto y = vec3f::dot(vec3f::cross(vec3a, vec3b), vec3b);
+                    auto z = vec4f::dot(vec4a, vec4b);
+                    auto w = vec4f::dot((vec4a + vec4b), vec4b);
 
                     results.mvVec4f = move::vectormath::vec4f(x, y, z, w);
                     ankerl::nanobench::doNotOptimizeAway(results.mvVec4f);
@@ -698,10 +698,10 @@ namespace mathbench
                     vec4d vec4a(1.0f, 2.0f, 3.0f, 4.0f);
                     vec4d vec4b(3.0f, 4.0f, 5.0f, 6.0f);
 
-                    auto x = vec2a.dot(vec2b);
-                    auto y = vec3a.cross(vec3b).dot(vec3b);
-                    auto z = vec4a.dot(vec4b);
-                    auto w = (vec4a + vec4b).dot(vec4b);
+                    auto x = vec2d::dot(vec2a, vec2b);
+                    auto y = vec3d::dot(vec3d::cross(vec3a, vec3b), vec3b);
+                    auto z = vec4d::dot(vec4a, vec4b);
+                    auto w = vec4d::dot((vec4a + vec4b), vec4b);
 
                     results.mvVec4d = move::vectormath::vec4d(x, y, z, w);
                     ankerl::nanobench::doNotOptimizeAway(results.mvVec4d);
@@ -821,7 +821,7 @@ namespace mathbench
                     auto stepOne = (vec3a + vec3b);
                     auto stepTwo = vec3c - vec3d;
 
-                    results.mvVec3f = (stepOne * stepTwo).cross(vec3a);
+                    results.mvVec3f = vec3f::cross((stepOne * stepTwo), vec3a);
                     ankerl::nanobench::doNotOptimizeAway(results.mvVec3f);
                 });
 
@@ -837,7 +837,7 @@ namespace mathbench
                     auto stepOne = (vec3a + vec3b);
                     auto stepTwo = vec3c - vec3d;
 
-                    results.mvVec3d = (stepOne * stepTwo).cross(vec3a);
+                    results.mvVec3d = vec3d::cross((stepOne * stepTwo), vec3a);
                     ankerl::nanobench::doNotOptimizeAway(results.mvVec3d);
                 });
         }
@@ -1487,7 +1487,7 @@ namespace mathbench
                 [&]
                 {
                     using namespace move::vectormath;
-                    results.mvVec4f = results.mvMat4fa * results.mvVec4f;
+                    results.mvVec4f = results.mvVec4f * results.mvMat4fa;
                     ankerl::nanobench::doNotOptimizeAway(results.mvVec4f);
                 });
 
@@ -1495,7 +1495,7 @@ namespace mathbench
                 [&]
                 {
                     using namespace move::vectormath;
-                    results.mvVec4d = results.mvMat4da * results.mvVec4d;
+                    results.mvVec4d = results.mvVec4d * results.mvMat4da;
                     ankerl::nanobench::doNotOptimizeAway(results.mvVec4d);
                 });
 
