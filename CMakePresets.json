@@ -12,22 +12,22 @@
       "warnings": {
         "dev": true,
         "deprecated": true,
-        "uninitialized": true,
         "unusedCli": true,
         "systemVars": false
       },
       "errors": {
         "dev": true,
         "deprecated": true
+      },
+      "cacheVariables": {
+        "CPM_USE_LOCAL_PACKAGES": false
       }
     },
     {
       "name": "dev-mode",
       "hidden": true,
       "inherits": "cmake-pedantic",
-      "cacheVariables": {
-        "vectormathbench_DEVELOPER_MODE": "ON"
-      }
+      "cacheVariables": {}
     },
     {
       "name": "cppcheck",
@@ -72,14 +72,20 @@
       "name": "ci-unix",
       "generator": "Unix Makefiles",
       "hidden": true,
-      "inherits": ["flags-unix", "ci-std"],
+      "inherits": [
+        "flags-unix",
+        "ci-std"
+      ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
       }
     },
     {
       "name": "ci-win64",
-      "inherits": ["flags-windows", "ci-std"],
+      "inherits": [
+        "flags-windows",
+        "ci-std"
+      ],
       "generator": "Visual Studio 17 2022",
       "architecture": "x64",
       "hidden": true
@@ -99,7 +105,10 @@
     },
     {
       "name": "ci-coverage",
-      "inherits": ["coverage-unix", "dev-mode"],
+      "inherits": [
+        "coverage-unix",
+        "dev-mode"
+      ],
       "cacheVariables": {
         "COVERAGE_HTML_COMMAND": ""
       }
@@ -107,7 +116,10 @@
     {
       "name": "ci-sanitize",
       "binaryDir": "${sourceDir}/build/sanitize",
-      "inherits": ["ci-unix", "dev-mode"],
+      "inherits": [
+        "ci-unix",
+        "dev-mode"
+      ],
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Sanitize",
         "CMAKE_CXX_FLAGS_SANITIZE": "-O2 -g -fsanitize=address,undefined -fno-omit-frame-pointer -fno-common"
@@ -120,15 +132,29 @@
     },
     {
       "name": "ci-macos",
-      "inherits": ["ci-build", "ci-unix", "dev-mode"]
+      "inherits": [
+        "ci-build",
+        "ci-unix",
+        "dev-mode"
+      ]
     },
     {
       "name": "ci-ubuntu",
-      "inherits": ["ci-build", "ci-unix", "clang-tidy", "cppcheck", "dev-mode"]
+      "inherits": [
+        "ci-build",
+        "ci-unix",
+        "clang-tidy",
+        "cppcheck",
+        "dev-mode"
+      ]
     },
     {
       "name": "ci-windows",
-      "inherits": ["ci-build", "ci-win64", "dev-mode"]
+      "inherits": [
+        "ci-build",
+        "ci-win64",
+        "dev-mode"
+      ]
     }
   ]
 }
