@@ -142,51 +142,54 @@ jobs:
             set CPU_NAME=%%i
         )
         
-        echo # Benchmark Results > $GITHUB_STEP_SUMMARY
-        echo. >> $GITHUB_STEP_SUMMARY
+        echo # Benchmark Results > BENCHMARK.md
+        echo. >> BENCHMARK.md
         
-        echo ## System Info >> $GITHUB_STEP_SUMMARY
-        echo CPU: %CPU_NAME% >> $GITHUB_STEP_SUMMARY
-        echo OS: %OS_NAME% >> $GITHUB_STEP_SUMMARY
-        echo OS Version: %OS_VERSION% >> $GITHUB_STEP_SUMMARY
+        echo ## System Info >> BENCHMARK.md
+        echo CPU: %CPU_NAME% >> BENCHMARK.md
+        echo OS: %OS_NAME% >> BENCHMARK.md
+        echo OS Version: %OS_VERSION% >> BENCHMARK.md
     
-        echo. >> $GITHUB_STEP_SUMMARY
+        echo. >> BENCHMARK.md
     
-        echo ## SSE 4.2 >> $GITHUB_STEP_SUMMARY
-        vectormathbench_sse42.exe >> $GITHUB_STEP_SUMMARY
+        echo ## SSE 4.2 >> BENCHMARK.md
+        vectormathbench_sse42.exe >> BENCHMARK.md
     
-        echo. >> $GITHUB_STEP_SUMMARY
-        echo ## AVX >> $GITHUB_STEP_SUMMARY
-        vectormathbench_avx.exe >> $GITHUB_STEP_SUMMARY
+        echo. >> BENCHMARK.md
+        echo ## AVX >> BENCHMARK.md
+        vectormathbench_avx.exe >> BENCHMARK.md
     
-        echo. >> $GITHUB_STEP_SUMMARY
-        echo ## AVX2 >> $GITHUB_STEP_SUMMARY
-        vectormathbench_avx2.exe >> $GITHUB_STEP_SUMMARY
+        echo. >> BENCHMARK.md
+        echo ## AVX2 >> BENCHMARK.md
+        vectormathbench_avx2.exe >> BENCHMARK.md
+
+        cat BENCHMARK.md >> $GITHUB_STEP_SUMMARY
     
     - name: Run Benchmark
       if: matrix.os == 'ubuntu-latest'
       working-directory: build
       run: |
-        echo "# Benchmark Results" > $GITHUB_STEP_SUMMARY
-        echo "The following measurements were taken on an AMD Ryzen 9 5900HS using Pop!_OS 22.04 LTS after running `pyperf system tune`." >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "# Benchmark Results" > BENCHMARK.md
+        echo "" >> BENCHMARK.md
 
-        echo ## System Info >> $GITHUB_STEP_SUMMARY
-        echo CPU: $(lscpu | grep "Model name" | sed -e 's/Model name: *//') >> $GITHUB_STEP_SUMMARY
-        echo OS: $(lsb_release -d | sed -e 's/Description: *//') >> $GITHUB_STEP_SUMMARY
-        echo OS Version: $(lsb_release -r | sed -e 's/Release: *//') >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
+        echo ## System Info >> BENCHMARK.md
+        echo CPU: $(lscpu | grep "Model name" | sed -e 's/Model name: *//') >> BENCHMARK.md
+        echo OS: $(lsb_release -d | sed -e 's/Description: *//') >> BENCHMARK.md
+        echo OS Version: $(lsb_release -r | sed -e 's/Release: *//') >> BENCHMARK.md
+        echo "" >> BENCHMARK.md
         
-        echo "## SSE 4.2" >> $GITHUB_STEP_SUMMARY
-        ./vectormathbench_sse42 >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## SSE 4.2" >> BENCHMARK.md
+        ./vectormathbench_sse42 >> BENCHMARK.md
+        echo "" >> BENCHMARK.md
         
-        echo "## AVX" >> $GITHUB_STEP_SUMMARY
-        ./vectormathbench_avx >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## AVX" >> BENCHMARK.md
+        ./vectormathbench_avx >> BENCHMARK.md
+        echo "" >> BENCHMARK.md
         
-        echo "## AVX2" >> $GITHUB_STEP_SUMMARY
-        ./vectormathbench_avx2 >> $GITHUB_STEP_SUMMARY
+        echo "## AVX2" >> BENCHMARK.md
+        ./vectormathbench_avx2 >> BENCHMARK.md
+
+        cat BENCHMARK.md >> $GITHUB_STEP_SUMMARY
 
 
   # docs:
