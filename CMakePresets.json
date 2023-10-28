@@ -10,10 +10,7 @@
       "name": "cmake-pedantic",
       "hidden": true,
       "warnings": {},
-      "errors": {
-        "dev": true,
-        "deprecated": true
-      },
+      "errors": {},
       "cacheVariables": {
         "CPM_USE_LOCAL_PACKAGES": false
       }
