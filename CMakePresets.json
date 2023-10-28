@@ -9,12 +9,7 @@
     {
       "name": "cmake-pedantic",
       "hidden": true,
-      "warnings": {
-        "dev": true,
-        "deprecated": true,
-        "unusedCli": true,
-        "systemVars": false
-      },
+      "warnings": {},
       "errors": {
         "dev": true,
         "deprecated": true
