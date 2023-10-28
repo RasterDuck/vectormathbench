@@ -163,7 +163,7 @@ jobs:
         echo ## AVX2 >> BENCHMARK.md
         vectormathbench_avx2.exe >> BENCHMARK.md
 
-        cat BENCHMARK.md >> $GITHUB_STEP_SUMMARY
+        cat BENCHMARK.md >> %GITHUB_STEP_SUMMARY%
     
     - name: Run Benchmark
       if: matrix.os == 'ubuntu-latest'
