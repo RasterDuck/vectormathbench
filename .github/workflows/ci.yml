@@ -120,6 +120,7 @@ jobs:
 
     - name: Run Benchmark
       if: matrix.os == 'windows-2022'
+      shell: cmd
       working-directory: build/Release
       run: |
         set OS_NAME=
