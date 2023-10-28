@@ -163,7 +163,7 @@ jobs:
         vectormathbench_avx2.exe >> $GITHUB_STEP_SUMMARY
     
     - name: Run Benchmark
-      if: matrix.os == matrix.os == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-latest'
       working-directory: build
       run: |
         echo "# Benchmark Results" > $GITHUB_STEP_SUMMARY
