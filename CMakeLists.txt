@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
-set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD 20)
 set (CMAKE_CXX_STANDARD_REQUIRED on)
 
 include(cmake/prelude.cmake)
@@ -11,6 +11,13 @@ project(
     HOMEPAGE_URL "https://github.com/rasterduck/vectormathbench"
     LANGUAGES CXX
 )
+
+# Add fdiagnostics-color=always when the compiler supports it
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag("-fdiagnostics-color" HAS_DIAGNOSTICS_COLOR)
+if (HAS_DIAGNOSTICS_COLOR)
+  add_compile_options(-fdiagnostics-color=always)
+endif()
 
 include(cmake/project-is-top-level.cmake)
 include(cmake/variables.cmake)
@@ -24,7 +31,7 @@ include(cmake/cpm.cmake)
 
 CPMAddPackage("gh:g-truc/glm#0.9.9.8@0.9.9.8")
 CPMAddPackage("gh:microsoft/DirectXMath#dec2022")
-CPMAddPackage("gh:move-engine/move-vectormath#92965ceeeb88f31e713f234f298562ac10453ad9")
+CPMAddPackage("gh:move-engine/move-vectormath#37101ca9112cc8d3333224b60e01f39b41909bc0")
 
 # CPMAddPackage(
 #   NAME rtm

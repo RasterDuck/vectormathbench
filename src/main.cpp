@@ -44,11 +44,11 @@ namespace std
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
-#include <move/vectormath/mat4.hpp>
-#include <move/vectormath/quat.hpp>
-#include <move/vectormath/vec2.hpp>
-#include <move/vectormath/vec3.hpp>
-#include <move/vectormath/vec4.hpp>
+#include <move/math/mat4x4.hpp>
+#include <move/math/quat.hpp>
+#include <move/math/vec2.hpp>
+#include <move/math/vec3.hpp>
+#include <move/math/vec4.hpp>
 #include "simplemath.hpp"
 
 #include <rtm/macros.h>
@@ -298,21 +298,21 @@ namespace mathbench
         Vectormath::Matrix4 sonyMat4b;
         Vectormath::Matrix4 sonyMat4c;
 
-        // move::vectormath (float)
-        move::vectormath::vec2f mvVec2f;
-        move::vectormath::vec3f mvVec3f;
-        move::vectormath::vec4f mvVec4f;
-        move::vectormath::mat4f mvMat4fa;
-        move::vectormath::mat4f mvMat4fb;
-        move::vectormath::mat4f mvMat4fc;
+        // move::math (float)
+        move::math::float2 mvVec2f;
+        move::math::fast_float3 mvVec3f;
+        move::math::fast_float4 mvVec4f;
+        move::math::float4x4 mvMat4x4fa;
+        move::math::float4x4 mvMat4x4fb;
+        move::math::float4x4 mvMat4x4fc;
 
-        // move::vectormath (double)
-        move::vectormath::vec2d mvVec2d;
-        move::vectormath::vec3d mvVec3d;
-        move::vectormath::vec4d mvVec4d;
-        move::vectormath::mat4d mvMat4da;
-        move::vectormath::mat4d mvMat4db;
-        move::vectormath::mat4d mvMat4dc;
+        // move::math (double)
+        move::math::double2 mvVec2d;
+        move::math::fast_double3 mvVec3d;
+        move::math::fast_double4 mvVec4d;
+        move::math::double4x4 mvMat4x4da;
+        move::math::double4x4 mvMat4x4db;
+        move::math::double4x4 mvMat4x4dc;
 
         // rtm
         rtm::vector4f rtmVec4f;
@@ -327,14 +327,14 @@ namespace mathbench
         rtm::matrix3x4d rtmMat3x4d;
         rtm::matrix3x4d rtmMat3x4da;
 
-        rtm::matrix4x4f rtmMat4f;
-        rtm::matrix4x4f rtmMat4fa;
-        rtm::matrix4x4f rtmMat4fb;
-        rtm::matrix4x4f rtmMat4fc;
-        rtm::matrix4x4d rtmMat4d;
-        rtm::matrix4x4d rtmMat4da;
-        rtm::matrix4x4d rtmMat4db;
-        rtm::matrix4x4d rtmMat4dc;
+        rtm::matrix4x4f rtmMat4x4f;
+        rtm::matrix4x4f rtmMat4x4fa;
+        rtm::matrix4x4f rtmMat4x4fb;
+        rtm::matrix4x4f rtmMat4x4fc;
+        rtm::matrix4x4d rtmMat4x4d;
+        rtm::matrix4x4d rtmMat4x4da;
+        rtm::matrix4x4d rtmMat4x4db;
+        rtm::matrix4x4d rtmMat4x4dc;
         rtm::qvvf rtmQvvf;
         rtm::qvvf rtmQvvfa;
         rtm::qvvf rtmQvvfb;
@@ -478,7 +478,7 @@ namespace mathbench
             bench.run("move::vec2f addition (float)",
                 [&]
                 {
-                    using namespace move::vectormath;
+                    using namespace move::math;
                     results.mvVec2f = vec2f(1.0f, 2.0f) + vec2f(3.0f, 4.0f);
                     ankerl::nanobench::doNotOptimizeAway(results.mvVec2f);
                 });
@@ -486,7 +486,7 @@ namespace mathbench
             bench.run("move::vec3f addition (float)",
                 [&]
                 {
-                    using namespace move::vectormath;
+                    using namespace move::math;
                     results.mvVec3f =
                         vec3f(1.0f, 2.0f, 3.0f) + vec3f(3.0f, 4.0f, 5.0f);
                     ankerl::nanobench::doNotOptimizeAway(results.mvVec3f);
@@ -494,7 +494,7 @@ namespace mathbench
             bench.run("move::vec4f addition (float)",
                 [&]
                 {
-                    using namespace move::vectormath;
+                    using namespace move::math;
                     results.mvVec4f = vec4f(1.0f, 2.0f, 3.0f, 4.0f) +
                                       vec4f(3.0f, 4.0f, 5.0f, 6.0f);
                     ankerl::nanobench::doNotOptimizeAway(results.mvVec4f);
@@ -503,7 +503,7 @@ namespace mathbench
             bench.run("move::vec2d addition (double)",
                 [&]
                 {
-                    using namespace move::vectormath;
+                    using namespace move::math;
                     results.mvVec2d = vec2d(1.0f, 2.0f) + vec2d(3.0f, 4.0f);
                     ankerl::nanobench::doNotOptimizeAway(results.mvVec2d);
                 });
@@ -511,7 +511,7 @@ namespace mathbench
             bench.run("move::vec3d addition (double)",
                 [&]
                 {
-                    using namespace move::vectormath;
+                    using namespace move::math;
                     results.mvVec3d =
                         vec3d(1.0f, 2.0f, 3.0f) + vec3d(3.0f, 4.0f, 5.0f);
                     ankerl::nanobench::doNotOptimizeAway(results.mvVec3d);
@@ -519,7 +519,7 @@ namespace mathbench
             bench.run("move::vec4d addition (double)",
                 [&]
                 {
-                    using namespace move::vectormath;
+                    using namespace move::math;
                     results.mvVec4d = vec4d(1.0f, 2.0f, 3.0f, 4.0f) +
                                       vec4d(3.0f, 4.0f, 5.0f, 6.0f);
                     ankerl::nanobench::doNotOptimizeAway(results.mvVec4d);
@@ -667,10 +667,10 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(results.sonyVec4);
                 });
 
-            bench.run("Complex operation 1 with move::vectormath::* (float)",
+            bench.run("Complex operation 1 with move::math::* (float)",
                 [&]
                 {
-                    using namespace move::vectormath;
+                    using namespace move::math;
                     vec2f vec2a(1.0f, 2.0f);
                     vec2f vec2b(3.0f, 4.0f);
                     vec3f vec3a(1.0f, 2.0f, 3.0f);
@@ -683,14 +683,14 @@ namespace mathbench
                     auto z = vec4f::dot(vec4a, vec4b);
                     auto w = vec4f::dot((vec4a + vec4b), vec4b);
 
-                    results.mvVec4f = move::vectormath::vec4f(x, y, z, w);
+                    results.mvVec4f = move::math::vec4f(x, y, z, w);
                     ankerl::nanobench::doNotOptimizeAway(results.mvVec4f);
                 });
 
-            bench.run("Complex operation 1 with move::vectormath::* (double)",
+            bench.run("Complex operation 1 with move::math::* (double)",
                 [&]
                 {
-                    using namespace move::vectormath;
+                    using namespace move::math;
                     vec2d vec2a(1.0f, 2.0f);
                     vec2d vec2b(3.0f, 4.0f);
                     vec3d vec3a(1.0f, 2.0f, 3.0f);
@@ -703,7 +703,7 @@ namespace mathbench
                     auto z = vec4d::dot(vec4a, vec4b);
                     auto w = vec4d::dot((vec4a + vec4b), vec4b);
 
-                    results.mvVec4d = move::vectormath::vec4d(x, y, z, w);
+                    results.mvVec4d = move::math::vec4d(x, y, z, w);
                     ankerl::nanobench::doNotOptimizeAway(results.mvVec4d);
                 });
         }
@@ -809,10 +809,10 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(results.sonyVec3);
                 });
 
-            bench.run("Complex operation 2 with move::vectormath (float)",
+            bench.run("Complex operation 2 with move::math (float)",
                 [&]
                 {
-                    using namespace move::vectormath;
+                    using namespace move::math;
                     vec3f vec3a(1.0f, 2.0f, 3.0f);
                     vec3f vec3b(3.0f, 4.0f, 5.0f);
                     vec3f vec3c(5.0f, 6.0f, 7.0f);
@@ -825,10 +825,10 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(results.mvVec3f);
                 });
 
-            bench.run("Complex operation 2 with move::vectormath (double)",
+            bench.run("Complex operation 2 with move::math (double)",
                 [&]
                 {
-                    using namespace move::vectormath;
+                    using namespace move::math;
                     vec3d vec3a(1.0f, 2.0f, 3.0f);
                     vec3d vec3b(3.0f, 4.0f, 5.0f);
                     vec3d vec3c(5.0f, 6.0f, 7.0f);
@@ -934,10 +934,10 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(results.sonyVec4);
                 });
 
-            bench.run("Complex operation 3 with move::vectormath (float)",
+            bench.run("Complex operation 3 with move::math (float)",
                 [&]
                 {
-                    using namespace move::vectormath;
+                    using namespace move::math;
                     vec4f vec4a(1.0f, 2.0f, 3.0f, 4.0f);
                     vec4f vec4b(3.0f, 4.0f, 5.0f, 6.0f);
                     vec4f vec4c(5.0f, 6.0f, 7.0f, 8.0f);
@@ -947,10 +947,10 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(results.mvVec4f);
                 });
 
-            bench.run("Complex operation 3 with move::vectormath (double)",
+            bench.run("Complex operation 3 with move::math (double)",
                 [&]
                 {
-                    using namespace move::vectormath;
+                    using namespace move::math;
                     vec4d vec4a(1.0f, 2.0f, 3.0f, 4.0f);
                     vec4d vec4b(3.0f, 4.0f, 5.0f, 6.0f);
                     vec4d vec4c(5.0f, 6.0f, 7.0f, 8.0f);
@@ -1083,57 +1083,50 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(results.sonyMat4a);
                 });
 
-            bench.run("Construct model matrix move::vectormath (manual, float)",
+            bench.run("Construct model matrix move::math (manual, float)",
                 [&]
                 {
-                    using namespace move::vectormath;
-                    results.mvMat4fa = mat4f::create_translation(1, 2, 3) *
-                                       mat4f::create_rotation_x(0.5f) *
-                                       mat4f::create_rotation_y(0.5f) *
-                                       mat4f::create_rotation_z(0.5f) *
-                                       mat4f::create_scale(1, 2, 3);
+                    using namespace move::math;
+                    results.mvMat4x4fa =
+                        mat4x4f::translation({1, 2, 3}) *
+                        mat4x4f::rotation_x(0.5f) * mat4x4f::rotation_y(0.5f) *
+                        mat4x4f::rotation_z(0.5f) * mat4x4f::scale(1, 2, 3);
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4fa);
+                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4fa);
                 });
 
-            bench.run(
-                "Construct model matrix move::vectormath (builtin, float)",
+            bench.run("Construct model matrix move::math (builtin, float)",
                 [&]
                 {
-                    using namespace move::vectormath;
-                    results.mvMat4fa =
-                        mat4f::create_transformation(vec3f(1, 2, 3),
-                            quatf::from_pitch_yaw_roll(0.5f, 0.5f, 0.5f),
-                            vec3f(1, 2, 3));
+                    using namespace move::math;
+                    results.mvMat4x4fa = mat4x4f::trs(
+                        {1, 2, 3}, quatf::euler(0.5f, 0.5f, 0.5f), {1, 2, 3});
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4fa);
+                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4fa);
                 });
 
-            bench.run(
-                "Construct model matrix move::vectormath (manual, double)",
+            bench.run("Construct model matrix move::math (manual, double)",
                 [&]
                 {
-                    using namespace move::vectormath;
-                    results.mvMat4da = mat4d::create_translation(1, 2, 3) *
-                                       mat4d::create_rotation_x(0.5f) *
-                                       mat4d::create_rotation_y(0.5f) *
-                                       mat4d::create_rotation_z(0.5f) *
-                                       mat4d::create_scale(1, 2, 3);
+                    using namespace move::math;
+                    results.mvMat4x4da =
+                        mat4x4d::translation({1, 2, 3}) *
+                        mat4x4d::rotation(quatd::euler(0.5, 0.5, 0.5)) *
+                        mat4x4d::scale(1, 2, 3);
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4da);
+                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4da);
                 });
 
-            bench.run(
-                "Construct model matrix move::vectormath (builtin, double)",
+            bench.run("Construct model matrix move::math (builtin, double)",
                 [&]
                 {
-                    using namespace move::vectormath;
-                    results.mvMat4da =
-                        mat4d::create_transformation(vec3d(1, 2, 3),
-                            quatd::from_pitch_yaw_roll(0.5f, 0.5f, 0.5f),
-                            vec3d(1, 2, 3));
+                    using namespace move::math;
+                    // results.mvMat4x4da =
+                    //     mat4x4d::trs(vec3d(1, 2, 3),
+                    //         quatd::euler(0.5f, 0.5f, 0.5f),
+                    //         vec3d(1, 2, 3));
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4da);
+                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4da);
                 });
 
             bench.run("Construct rtm::qvvf (~transformation matrix)",
@@ -1190,10 +1183,10 @@ namespace mathbench
                         vector_set(1.0f, 2.0f, 3.0f, 0.0f),
                         vector_set(1.0f, 2.0f, 3.0f, 0.0f));
 
-                    results.rtmMat4fa = matrix_cast(matrix_from_qvv(qvv));
-                    results.rtmMat4fa.z_axis =
-                        vector_set_w(results.rtmMat4fa.z_axis, 1);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4fa);
+                    results.rtmMat4x4fa = matrix_cast(matrix_from_qvv(qvv));
+                    results.rtmMat4x4fa.z_axis =
+                        vector_set_w(results.rtmMat4x4fa.z_axis, 1);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4fa);
                 });
 
             bench.run("Construct model matrix rtm::matrix4x4d",
@@ -1204,8 +1197,8 @@ namespace mathbench
                         vector_set(1.0, 2.0, 3.0, 0.0),
                         vector_set(1.0, 2.0, 3.0, 0.0));
 
-                    results.rtmMat4da = matrix_cast(matrix_from_qvv(qvv));
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4da);
+                    results.rtmMat4x4da = matrix_cast(matrix_from_qvv(qvv));
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4da);
                 });
         }
 
@@ -1251,48 +1244,48 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(results.sonyMat4a);
                 });
 
-            bench.run("Construct view matrix move::vectormath (float)",
+            bench.run("Construct view matrix move::math (float)",
                 [&]
                 {
-                    using namespace move::vectormath;
-                    results.mvMat4fa = mat4f::create_look_at(
+                    using namespace move::math;
+                    results.mvMat4x4fa = mat4x4f::look_at(
                         vec3f(1, 2, 3), vec3f(4, 5, 6), vec3f(7, 8, 9));
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4fa);
+                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4fa);
                 });
 
-            bench.run("Construct view matrix move::vectormath (double)",
+            bench.run("Construct view matrix move::math (double)",
                 [&]
                 {
-                    using namespace move::vectormath;
-                    results.mvMat4da = mat4d::create_look_at(
-                        vec3d(1, 2, 3), vec3d(4, 5, 6), vec3d(7, 8, 9));
+                    using namespace move::math;
+                    results.mvMat4x4da =
+                        mat4x4d::look_at({1, 2, 3}, {4, 5, 6}, {7, 8, 9});
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4da);
+                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4da);
                 });
 
             bench.run("Construct view matrix rtm::matrix4x4f",
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmMat4fa =
+                    results.rtmMat4x4fa =
                         rtm::camera::look_at_rh<matrix4x4f, vector4f>(
                             vector_set(1.0f, 2.0f, 3.0f, 0.0f),
                             vector_set(4.0f, 5.0f, 6.0f, 0.0f),
                             vector_set(7.0f, 8.0f, 9.0f, 0.0f));
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4fa);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4fa);
                 });
 
             bench.run("Construct view matrix rtm::matrix4x4d",
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmMat4da =
+                    results.rtmMat4x4da =
                         rtm::camera::look_at_rh<matrix4x4d, vector4d>(
                             vector_set(1.0, 2.0, 3.0, 0.0),
                             vector_set(4.0, 5.0, 6.0, 0.0),
                             vector_set(7.0, 8.0, 9.0, 0.0));
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4da);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4da);
                 });
         }
 
@@ -1333,46 +1326,46 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(results.sonyMat4a);
                 });
 
-            bench.run("Construct perspective matrix move::vectormath (float)",
+            bench.run("Construct perspective matrix move::math (float)",
                 [&]
                 {
-                    using namespace move::vectormath;
-                    results.mvMat4fa =
-                        mat4f::create_perspective(0.5f, 1.0f, 0.1f, 100.0f);
+                    using namespace move::math;
+                    results.mvMat4x4fa =
+                        mat4x4f::perspective(0.5f, 1.0f, 0.1f, 100.0f);
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4fa);
+                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4fa);
                 });
 
-            bench.run("Construct perspective matrix move::vectormath (double)",
+            bench.run("Construct perspective matrix move::math (double)",
                 [&]
                 {
-                    using namespace move::vectormath;
-                    results.mvMat4da =
-                        mat4d::create_perspective(0.5f, 1.0f, 0.1f, 100.0f);
+                    using namespace move::math;
+                    results.mvMat4x4da =
+                        mat4x4d::perspective(0.5f, 1.0f, 0.1f, 100.0f);
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4da);
+                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4da);
                 });
 
             bench.run("Construct perspective matrix rtm::matrix4x4f",
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmMat4fa = rtm::camera::perspective_fov_rh(
+                    results.rtmMat4x4fa = rtm::camera::perspective_fov_rh(
                         0.5f, 1.0f, 0.1f, 100.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4fa);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4fa);
                 });
 
             bench.run("Construct perspective matrix rtm::matrix4x4d",
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmMat4da =
+                    results.rtmMat4x4da =
                         rtm::camera::perspective_fov_rh(0.5, 1.0, 0.1, 100.0);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4da);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4da);
                 });
         }
 
-        void create_ortho_projection_matrix(ankerl::nanobench::Bench& bench)
+        void ortho_projection_matrix(ankerl::nanobench::Bench& bench)
         {
             bench.run("Construct ortho matrix SimpleMath",
                 [&]
@@ -1409,42 +1402,42 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(results.sonyMat4a);
                 });
 
-            bench.run("Construct ortho matrix move::vectormath (float)",
+            bench.run("Construct ortho matrix move::math (float)",
                 [&]
                 {
-                    using namespace move::vectormath;
-                    results.mvMat4fa =
-                        mat4f::create_ortho(1280, 720, 0.1f, 100.0f);
+                    using namespace move::math;
+                    results.mvMat4x4fa =
+                        mat4x4f::orthographic(1280, 720, 0.1f, 100.0f);
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4fa);
+                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4fa);
                 });
 
-            bench.run("Construct ortho matrix move::vectormath (double)",
+            bench.run("Construct ortho matrix move::math (double)",
                 [&]
                 {
-                    using namespace move::vectormath;
-                    results.mvMat4da =
-                        mat4d::create_ortho(1280, 720, 0.1f, 100.0f);
+                    using namespace move::math;
+                    results.mvMat4x4da =
+                        mat4x4d::orthographic(1280, 720, 0.1f, 100.0f);
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4da);
+                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4da);
                 });
 
             bench.run("Construct ortho matrix rtm::matrix4x4f",
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmMat4fa =
+                    results.rtmMat4x4fa =
                         rtm::camera::ortho_rh(1280.0f, 720.f, 0.1f, 100.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4fa);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4fa);
                 });
 
             bench.run("Construct ortho matrix rtm::matrix4x4d",
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmMat4da =
+                    results.rtmMat4x4da =
                         rtm::camera::ortho_rh(1280., 720., 0.1, 100.0);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4da);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4da);
                 });
         }
 
@@ -1483,19 +1476,19 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(results.sonyVec4);
                 });
 
-            bench.run("Vector matrix multiply move::vectormath (float)",
+            bench.run("Vector matrix multiply move::math (float)",
                 [&]
                 {
-                    using namespace move::vectormath;
-                    results.mvVec4f = results.mvVec4f * results.mvMat4fa;
+                    using namespace move::math;
+                    results.mvVec4f = results.mvVec4f * results.mvMat4x4fa;
                     ankerl::nanobench::doNotOptimizeAway(results.mvVec4f);
                 });
 
-            bench.run("Vector matrix multiply move::vectormath (double)",
+            bench.run("Vector matrix multiply move::math (double)",
                 [&]
                 {
-                    using namespace move::vectormath;
-                    results.mvVec4d = results.mvVec4d * results.mvMat4da;
+                    using namespace move::math;
+                    results.mvVec4d = results.mvVec4d * results.mvMat4x4da;
                     ankerl::nanobench::doNotOptimizeAway(results.mvVec4d);
                 });
 
@@ -1503,8 +1496,8 @@ namespace mathbench
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmVec4f =
-                        matrix_mul_vector(results.rtmVec4fa, results.rtmMat4fa);
+                    results.rtmVec4f = matrix_mul_vector(
+                        results.rtmVec4fa, results.rtmMat4x4fa);
                     ankerl::nanobench::doNotOptimizeAway(results.rtmVec4f);
                 });
 
@@ -1512,8 +1505,8 @@ namespace mathbench
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmVec4d =
-                        matrix_mul_vector(results.rtmVec4da, results.rtmMat4da);
+                    results.rtmVec4d = matrix_mul_vector(
+                        results.rtmVec4da, results.rtmMat4x4da);
                     ankerl::nanobench::doNotOptimizeAway(results.rtmVec4d);
                 });
 
@@ -1572,20 +1565,22 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(results.sonyMat4a);
                 });
 
-            bench.run("Matrix matrix multiply move::vectormath (float)",
+            bench.run("Matrix matrix multiply move::math (float)",
                 [&]
                 {
-                    using namespace move::vectormath;
-                    results.mvMat4fa = results.mvMat4fb * results.mvMat4fc;
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4fa);
+                    using namespace move::math;
+                    results.mvMat4x4fa =
+                        results.mvMat4x4fb * results.mvMat4x4fc;
+                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4fa);
                 });
 
-            bench.run("Matrix matrix multiply move::vectormath (double)",
+            bench.run("Matrix matrix multiply move::math (double)",
                 [&]
                 {
-                    using namespace move::vectormath;
-                    results.mvMat4da = results.mvMat4db * results.mvMat4dc;
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4da);
+                    using namespace move::math;
+                    results.mvMat4x4da =
+                        results.mvMat4x4db * results.mvMat4x4dc;
+                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4da);
                 });
 
             bench.run("QVV QVV multiply rtm::qvvf",
@@ -1610,18 +1605,18 @@ namespace mathbench
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmMat4fa =
-                        matrix_mul(results.rtmMat4fb, results.rtmMat4fc);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4fa);
+                    results.rtmMat4x4fa =
+                        matrix_mul(results.rtmMat4x4fb, results.rtmMat4x4fc);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4fa);
                 });
 
             bench.run("Matrix matrix multiply rtm::matrix4x4d",
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmMat4da =
-                        matrix_mul(results.rtmMat4db, results.rtmMat4dc);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4da);
+                    results.rtmMat4x4da =
+                        matrix_mul(results.rtmMat4x4db, results.rtmMat4x4dc);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4da);
                 });
         }
     }  // namespace matrices
@@ -1677,27 +1672,36 @@ int main(int argc, char** argv)
     // test_camera_matrix_funcs();
     // if (true) return 0;
 
+    try
     {
-        ankerl::nanobench::Bench vectorBench;
-        vectorBench.name("Vectors");
-        vectorBench.minEpochIterations(iterations);
-        mathbench::vectors::addition(vectorBench);
-        mathbench::vectors::complex1(vectorBench);
-        mathbench::vectors::complex2vec3(vectorBench);
-        mathbench::vectors::complex3vec4(vectorBench);
-    }
+        {
+            ankerl::nanobench::Bench vectorBench;
+            vectorBench.name("Vectors");
+            vectorBench.minEpochIterations(iterations);
+            mathbench::vectors::addition(vectorBench);
+            mathbench::vectors::complex1(vectorBench);
+            mathbench::vectors::complex2vec3(vectorBench);
+            mathbench::vectors::complex3vec4(vectorBench);
+        }
 
+        {
+            ankerl::nanobench::Bench matrixBench;
+            matrixBench.minEpochIterations(iterations);
+            matrixBench.name("Matrices");
+            mathbench::matrices::construct_model_matrix(matrixBench);
+            mathbench::matrices::construct_view_matrix(matrixBench);
+            mathbench::matrices::construct_perspective_projection_matrix(
+                matrixBench);
+            mathbench::matrices::ortho_projection_matrix(matrixBench);
+            mathbench::matrices::vector_matrix_multiply(matrixBench);
+            mathbench::matrices::matrix_matrix_multiply(matrixBench);
+        }
+
+        printf("Benchmark complete\n");
+    }
+    catch (const std::exception& e)
     {
-        ankerl::nanobench::Bench matrixBench;
-        matrixBench.minEpochIterations(iterations);
-        matrixBench.name("Matrices");
-        mathbench::matrices::construct_model_matrix(matrixBench);
-        mathbench::matrices::construct_view_matrix(matrixBench);
-        mathbench::matrices::construct_perspective_projection_matrix(
-            matrixBench);
-        mathbench::matrices::create_ortho_projection_matrix(matrixBench);
-        mathbench::matrices::vector_matrix_multiply(matrixBench);
-        mathbench::matrices::matrix_matrix_multiply(matrixBench);
+        std::cerr << e.what() << std::endl;
     }
     return 0;
 }
