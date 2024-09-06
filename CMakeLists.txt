@@ -31,7 +31,7 @@ include(cmake/cpm.cmake)
 
 CPMAddPackage("gh:g-truc/glm#0.9.9.8@0.9.9.8")
 CPMAddPackage("gh:microsoft/DirectXMath#dec2022")
-CPMAddPackage("gh:move-engine/move-vectormath#82593b2c0dc59f6511ff9cca877d2c579c5cbdbb")
+CPMAddPackage("gh:move-engine/move-vectormath#33673bec3f7910cd6d23fb20f516f9cd6cad8421")
 
 # CPMAddPackage(
 #   NAME rtm
