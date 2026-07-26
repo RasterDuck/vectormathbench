@@ -20,6 +20,7 @@
 #include <DirectXMath.h>
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -42,6 +43,8 @@
 #include <rtm/vector4d.h>
 #include <rtm/vector4f.h>
 
+#include "intersections.hpp"
+
 // Sony vectormath
 #include <vectormath.hpp>
 
@@ -49,6 +52,7 @@ namespace Vectormath
 {
     using Vector3 = Vectormath::SSE::Vector3;
     using Vector4 = Vectormath::SSE::Vector4;
+    using Quat = Vectormath::SSE::Quat;
     using Matrix4 = Vectormath::SSE::Matrix4;
 }  // namespace Vectormath
 
@@ -976,6 +980,704 @@ namespace mathbench
         }
     }  // namespace vectors
 
+    namespace workloads
+    {
+        template <typename Ops>
+        void benchmark_ray_aabb_case(ankerl::nanobench::Bench& bench,
+            const char* name, typename Ops::vector origin,
+            typename Ops::vector direction, typename Ops::vector boundsMin,
+            typename Ops::vector boundsMax)
+        {
+            bench.run(name,
+                [=]() mutable
+                {
+                    ankerl::nanobench::doNotOptimizeAway(origin);
+                    ankerl::nanobench::doNotOptimizeAway(direction);
+                    ankerl::nanobench::doNotOptimizeAway(boundsMin);
+                    ankerl::nanobench::doNotOptimizeAway(boundsMax);
+                    auto result = geometry::intersect_ray_aabb<Ops>(
+                        origin, direction, boundsMin, boundsMax);
+                    ankerl::nanobench::doNotOptimizeAway(result);
+                });
+        }
+
+        template <typename Ops>
+        void benchmark_ray_triangle_case(ankerl::nanobench::Bench& bench,
+            const char* name, typename Ops::vector origin,
+            typename Ops::vector direction, typename Ops::vector vertex0,
+            typename Ops::vector vertex1, typename Ops::vector vertex2)
+        {
+            bench.run(name,
+                [=]() mutable
+                {
+                    ankerl::nanobench::doNotOptimizeAway(origin);
+                    ankerl::nanobench::doNotOptimizeAway(direction);
+                    ankerl::nanobench::doNotOptimizeAway(vertex0);
+                    ankerl::nanobench::doNotOptimizeAway(vertex1);
+                    ankerl::nanobench::doNotOptimizeAway(vertex2);
+                    auto result = geometry::intersect_ray_triangle<Ops>(
+                        origin, direction, vertex0, vertex1, vertex2);
+                    ankerl::nanobench::doNotOptimizeAway(result);
+                });
+        }
+
+        void ray_aabb_intersection(ankerl::nanobench::Bench& bench)
+        {
+            using sm_ops = geometry::simplemath_ops;
+            using sm_vec = sm_ops::vector;
+            benchmark_ray_aabb_case<sm_ops>(bench, "Ray-AABB hit SimpleMath",
+                sm_vec(0.25f, 0.1f, -4.0f), sm_vec(0.1f, 0.05f, 1.0f),
+                sm_vec(-1.0f, -1.0f, -1.0f), sm_vec(1.0f, 1.0f, 1.0f));
+            benchmark_ray_aabb_case<sm_ops>(bench, "Ray-AABB miss SimpleMath",
+                sm_vec(4.0f, 4.0f, -4.0f), sm_vec(0.1f, 0.05f, 1.0f),
+                sm_vec(-1.0f, -1.0f, -1.0f), sm_vec(1.0f, 1.0f, 1.0f));
+
+            using glm_ops = geometry::glm_ops;
+            using glm_vec = glm_ops::vector;
+            benchmark_ray_aabb_case<glm_ops>(bench, "Ray-AABB hit glm",
+                glm_vec(0.25f, 0.1f, -4.0f), glm_vec(0.1f, 0.05f, 1.0f),
+                glm_vec(-1.0f), glm_vec(1.0f));
+            benchmark_ray_aabb_case<glm_ops>(bench, "Ray-AABB miss glm",
+                glm_vec(4.0f, 4.0f, -4.0f), glm_vec(0.1f, 0.05f, 1.0f),
+                glm_vec(-1.0f), glm_vec(1.0f));
+
+            using dx_ops = geometry::directxmath_ops;
+            benchmark_ray_aabb_case<dx_ops>(bench, "Ray-AABB hit DXM",
+                DirectX::XMVectorSet(0.25f, 0.1f, -4.0f, 0.0f),
+                DirectX::XMVectorSet(0.1f, 0.05f, 1.0f, 0.0f),
+                DirectX::XMVectorReplicate(-1.0f),
+                DirectX::XMVectorReplicate(1.0f));
+            benchmark_ray_aabb_case<dx_ops>(bench, "Ray-AABB miss DXM",
+                DirectX::XMVectorSet(4.0f, 4.0f, -4.0f, 0.0f),
+                DirectX::XMVectorSet(0.1f, 0.05f, 1.0f, 0.0f),
+                DirectX::XMVectorReplicate(-1.0f),
+                DirectX::XMVectorReplicate(1.0f));
+
+            using sony_ops = geometry::vectormath_ops;
+            using sony_vec = sony_ops::vector;
+            benchmark_ray_aabb_case<sony_ops>(bench, "Ray-AABB hit Vectormath",
+                sony_vec(0.25f, 0.1f, -4.0f), sony_vec(0.1f, 0.05f, 1.0f),
+                sony_vec(-1.0f), sony_vec(1.0f));
+            benchmark_ray_aabb_case<sony_ops>(bench, "Ray-AABB miss Vectormath",
+                sony_vec(4.0f, 4.0f, -4.0f), sony_vec(0.1f, 0.05f, 1.0f),
+                sony_vec(-1.0f), sony_vec(1.0f));
+
+            using mvf_ops = geometry::move_ops<float>;
+            using mvf_vec = mvf_ops::vector;
+            benchmark_ray_aabb_case<mvf_ops>(bench, "Ray-AABB hit move::float3",
+                mvf_vec(0.25f, 0.1f, -4.0f), mvf_vec(0.1f, 0.05f, 1.0f),
+                mvf_vec(-1.0f, -1.0f, -1.0f), mvf_vec(1.0f, 1.0f, 1.0f));
+            benchmark_ray_aabb_case<mvf_ops>(bench,
+                "Ray-AABB miss move::float3", mvf_vec(4.0f, 4.0f, -4.0f),
+                mvf_vec(0.1f, 0.05f, 1.0f), mvf_vec(-1.0f, -1.0f, -1.0f),
+                mvf_vec(1.0f, 1.0f, 1.0f));
+
+            using mvd_ops = geometry::move_ops<double>;
+            using mvd_vec = mvd_ops::vector;
+            benchmark_ray_aabb_case<mvd_ops>(bench,
+                "Ray-AABB hit move::double3", mvd_vec(0.25, 0.1, -4.0),
+                mvd_vec(0.1, 0.05, 1.0), mvd_vec(-1.0, -1.0, -1.0),
+                mvd_vec(1.0, 1.0, 1.0));
+            benchmark_ray_aabb_case<mvd_ops>(bench,
+                "Ray-AABB miss move::double3", mvd_vec(4.0, 4.0, -4.0),
+                mvd_vec(0.1, 0.05, 1.0), mvd_vec(-1.0, -1.0, -1.0),
+                mvd_vec(1.0, 1.0, 1.0));
+
+            using rtmf_ops = geometry::rtm_ops<float>;
+            benchmark_ray_aabb_case<rtmf_ops>(bench,
+                "Ray-AABB hit rtm::vector4f",
+                rtm::vector_set(0.25f, 0.1f, -4.0f, 0.0f),
+                rtm::vector_set(0.1f, 0.05f, 1.0f, 0.0f),
+                rtm::vector_set(-1.0f), rtm::vector_set(1.0f));
+            benchmark_ray_aabb_case<rtmf_ops>(bench,
+                "Ray-AABB miss rtm::vector4f",
+                rtm::vector_set(4.0f, 4.0f, -4.0f, 0.0f),
+                rtm::vector_set(0.1f, 0.05f, 1.0f, 0.0f),
+                rtm::vector_set(-1.0f), rtm::vector_set(1.0f));
+
+            using rtmd_ops = geometry::rtm_ops<double>;
+            benchmark_ray_aabb_case<rtmd_ops>(bench,
+                "Ray-AABB hit rtm::vector4d",
+                rtm::vector_set(0.25, 0.1, -4.0, 0.0),
+                rtm::vector_set(0.1, 0.05, 1.0, 0.0), rtm::vector_set(-1.0),
+                rtm::vector_set(1.0));
+            benchmark_ray_aabb_case<rtmd_ops>(bench,
+                "Ray-AABB miss rtm::vector4d",
+                rtm::vector_set(4.0, 4.0, -4.0, 0.0),
+                rtm::vector_set(0.1, 0.05, 1.0, 0.0), rtm::vector_set(-1.0),
+                rtm::vector_set(1.0));
+        }
+
+        void ray_triangle_intersection(ankerl::nanobench::Bench& bench)
+        {
+            using sm_ops = geometry::simplemath_ops;
+            using sm_vec = sm_ops::vector;
+            benchmark_ray_triangle_case<sm_ops>(bench,
+                "Ray-triangle hit SimpleMath", sm_vec(0.25f, 0.25f, -2.0f),
+                sm_vec(0.0f, 0.0f, 1.0f), sm_vec(0.0f, 0.0f, 0.0f),
+                sm_vec(1.0f, 0.0f, 0.0f), sm_vec(0.0f, 1.0f, 0.0f));
+            benchmark_ray_triangle_case<sm_ops>(bench,
+                "Ray-triangle miss SimpleMath", sm_vec(1.5f, 1.5f, -2.0f),
+                sm_vec(0.0f, 0.0f, 1.0f), sm_vec(0.0f, 0.0f, 0.0f),
+                sm_vec(1.0f, 0.0f, 0.0f), sm_vec(0.0f, 1.0f, 0.0f));
+
+            using glm_ops = geometry::glm_ops;
+            using glm_vec = glm_ops::vector;
+            benchmark_ray_triangle_case<glm_ops>(bench, "Ray-triangle hit glm",
+                glm_vec(0.25f, 0.25f, -2.0f), glm_vec(0.0f, 0.0f, 1.0f),
+                glm_vec(0.0f), glm_vec(1.0f, 0.0f, 0.0f),
+                glm_vec(0.0f, 1.0f, 0.0f));
+            benchmark_ray_triangle_case<glm_ops>(bench, "Ray-triangle miss glm",
+                glm_vec(1.5f, 1.5f, -2.0f), glm_vec(0.0f, 0.0f, 1.0f),
+                glm_vec(0.0f), glm_vec(1.0f, 0.0f, 0.0f),
+                glm_vec(0.0f, 1.0f, 0.0f));
+
+            using dx_ops = geometry::directxmath_ops;
+            benchmark_ray_triangle_case<dx_ops>(bench, "Ray-triangle hit DXM",
+                DirectX::XMVectorSet(0.25f, 0.25f, -2.0f, 0.0f),
+                DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f),
+                DirectX::XMVectorZero(),
+                DirectX::XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f),
+                DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+            benchmark_ray_triangle_case<dx_ops>(bench, "Ray-triangle miss DXM",
+                DirectX::XMVectorSet(1.5f, 1.5f, -2.0f, 0.0f),
+                DirectX::XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f),
+                DirectX::XMVectorZero(),
+                DirectX::XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f),
+                DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+
+            using sony_ops = geometry::vectormath_ops;
+            using sony_vec = sony_ops::vector;
+            benchmark_ray_triangle_case<sony_ops>(bench,
+                "Ray-triangle hit Vectormath", sony_vec(0.25f, 0.25f, -2.0f),
+                sony_vec(0.0f, 0.0f, 1.0f), sony_vec(0.0f),
+                sony_vec(1.0f, 0.0f, 0.0f), sony_vec(0.0f, 1.0f, 0.0f));
+            benchmark_ray_triangle_case<sony_ops>(bench,
+                "Ray-triangle miss Vectormath", sony_vec(1.5f, 1.5f, -2.0f),
+                sony_vec(0.0f, 0.0f, 1.0f), sony_vec(0.0f),
+                sony_vec(1.0f, 0.0f, 0.0f), sony_vec(0.0f, 1.0f, 0.0f));
+
+            using mvf_ops = geometry::move_ops<float>;
+            using mvf_vec = mvf_ops::vector;
+            benchmark_ray_triangle_case<mvf_ops>(bench,
+                "Ray-triangle hit move::float3", mvf_vec(0.25f, 0.25f, -2.0f),
+                mvf_vec(0.0f, 0.0f, 1.0f), mvf_vec(0.0f, 0.0f, 0.0f),
+                mvf_vec(1.0f, 0.0f, 0.0f), mvf_vec(0.0f, 1.0f, 0.0f));
+            benchmark_ray_triangle_case<mvf_ops>(bench,
+                "Ray-triangle miss move::float3", mvf_vec(1.5f, 1.5f, -2.0f),
+                mvf_vec(0.0f, 0.0f, 1.0f), mvf_vec(0.0f, 0.0f, 0.0f),
+                mvf_vec(1.0f, 0.0f, 0.0f), mvf_vec(0.0f, 1.0f, 0.0f));
+
+            using mvd_ops = geometry::move_ops<double>;
+            using mvd_vec = mvd_ops::vector;
+            benchmark_ray_triangle_case<mvd_ops>(bench,
+                "Ray-triangle hit move::double3", mvd_vec(0.25, 0.25, -2.0),
+                mvd_vec(0.0, 0.0, 1.0), mvd_vec(0.0, 0.0, 0.0),
+                mvd_vec(1.0, 0.0, 0.0), mvd_vec(0.0, 1.0, 0.0));
+            benchmark_ray_triangle_case<mvd_ops>(bench,
+                "Ray-triangle miss move::double3", mvd_vec(1.5, 1.5, -2.0),
+                mvd_vec(0.0, 0.0, 1.0), mvd_vec(0.0, 0.0, 0.0),
+                mvd_vec(1.0, 0.0, 0.0), mvd_vec(0.0, 1.0, 0.0));
+
+            using rtmf_ops = geometry::rtm_ops<float>;
+            benchmark_ray_triangle_case<rtmf_ops>(bench,
+                "Ray-triangle hit rtm::vector4f",
+                rtm::vector_set(0.25f, 0.25f, -2.0f, 0.0f),
+                rtm::vector_set(0.0f, 0.0f, 1.0f, 0.0f), rtm::vector_zero(),
+                rtm::vector_set(1.0f, 0.0f, 0.0f, 0.0f),
+                rtm::vector_set(0.0f, 1.0f, 0.0f, 0.0f));
+            benchmark_ray_triangle_case<rtmf_ops>(bench,
+                "Ray-triangle miss rtm::vector4f",
+                rtm::vector_set(1.5f, 1.5f, -2.0f, 0.0f),
+                rtm::vector_set(0.0f, 0.0f, 1.0f, 0.0f), rtm::vector_zero(),
+                rtm::vector_set(1.0f, 0.0f, 0.0f, 0.0f),
+                rtm::vector_set(0.0f, 1.0f, 0.0f, 0.0f));
+
+            using rtmd_ops = geometry::rtm_ops<double>;
+            benchmark_ray_triangle_case<rtmd_ops>(bench,
+                "Ray-triangle hit rtm::vector4d",
+                rtm::vector_set(0.25, 0.25, -2.0, 0.0),
+                rtm::vector_set(0.0, 0.0, 1.0, 0.0), rtm::vector_zero(),
+                rtm::vector_set(1.0, 0.0, 0.0, 0.0),
+                rtm::vector_set(0.0, 1.0, 0.0, 0.0));
+            benchmark_ray_triangle_case<rtmd_ops>(bench,
+                "Ray-triangle miss rtm::vector4d",
+                rtm::vector_set(1.5, 1.5, -2.0, 0.0),
+                rtm::vector_set(0.0, 0.0, 1.0, 0.0), rtm::vector_zero(),
+                rtm::vector_set(1.0, 0.0, 0.0, 0.0),
+                rtm::vector_set(0.0, 1.0, 0.0, 0.0));
+        }
+
+        void normalize_direction(ankerl::nanobench::Bench& bench)
+        {
+            DirectX::SimpleMath::Vector3 smDirection(3.0f, -2.0f, 7.0f);
+            bench.run("Normalize direction SimpleMath",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(smDirection);
+                    results.smVec3 = smDirection;
+                    results.smVec3.Normalize();
+                    ankerl::nanobench::doNotOptimizeAway(results.smVec3);
+                });
+
+            glm::vec3 glmDirection(3.0f, -2.0f, 7.0f);
+            bench.run("Normalize direction glm",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(glmDirection);
+                    results.glmVec3 = glm::normalize(glmDirection);
+                    ankerl::nanobench::doNotOptimizeAway(results.glmVec3);
+                });
+
+            DirectX::XMVECTOR dxDirection =
+                DirectX::XMVectorSet(3.0f, -2.0f, 7.0f, 0.0f);
+            bench.run("Normalize direction DXM",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(dxDirection);
+                    results.dxVecA = DirectX::XMVector3Normalize(dxDirection);
+                    ankerl::nanobench::doNotOptimizeAway(results.dxVecA);
+                });
+
+            Vectormath::Vector3 sonyDirection(3.0f, -2.0f, 7.0f);
+            bench.run("Normalize direction Vectormath",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(sonyDirection);
+                    results.sonyVec3 = normalize(sonyDirection);
+                    ankerl::nanobench::doNotOptimizeAway(results.sonyVec3);
+                });
+
+            move::math::float3 mvDirection(3.0f, -2.0f, 7.0f);
+            bench.run("Normalize direction move::float3",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(mvDirection);
+                    results.mvVec3f = mvDirection.normalized();
+                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3f);
+                });
+
+            move::math::double3 mvDirectionD(3.0, -2.0, 7.0);
+            bench.run("Normalize direction move::double3",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(mvDirectionD);
+                    results.mvVec3d = mvDirectionD.normalized();
+                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3d);
+                });
+
+            rtm::vector4f rtmDirection =
+                rtm::vector_set(3.0f, -2.0f, 7.0f, 0.0f);
+            bench.run("Normalize direction rtm::vector4f",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(rtmDirection);
+                    results.rtmVec4f = rtm::vector_normalize3(rtmDirection);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4f);
+                });
+
+            rtm::vector4d rtmDirectionD = rtm::vector_set(3.0, -2.0, 7.0, 0.0);
+            bench.run("Normalize direction rtm::vector4d",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(rtmDirectionD);
+                    results.rtmVec4d = rtm::vector_normalize3(rtmDirectionD);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4d);
+                });
+        }
+
+        void particle_integration(ankerl::nanobench::Bench& bench)
+        {
+            constexpr float deltaTime = 1.0f / 60.0f;
+            constexpr double deltaTimeD = 1.0 / 60.0;
+
+            DirectX::SimpleMath::Vector3 smPosition(12.0f, 8.0f, -4.0f);
+            DirectX::SimpleMath::Vector3 smVelocity(2.0f, 5.0f, -1.0f);
+            DirectX::SimpleMath::Vector3 smAcceleration(0.0f, -9.81f, 0.0f);
+            bench.run("Particle integration SimpleMath",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(smPosition);
+                    ankerl::nanobench::doNotOptimizeAway(smVelocity);
+                    ankerl::nanobench::doNotOptimizeAway(smAcceleration);
+                    const auto velocity =
+                        smVelocity + smAcceleration * deltaTime;
+                    results.smVec3 = smPosition + velocity * deltaTime;
+                    ankerl::nanobench::doNotOptimizeAway(results.smVec3);
+                });
+
+            glm::vec3 glmPosition(12.0f, 8.0f, -4.0f);
+            glm::vec3 glmVelocity(2.0f, 5.0f, -1.0f);
+            glm::vec3 glmAcceleration(0.0f, -9.81f, 0.0f);
+            bench.run("Particle integration glm",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(glmPosition);
+                    ankerl::nanobench::doNotOptimizeAway(glmVelocity);
+                    ankerl::nanobench::doNotOptimizeAway(glmAcceleration);
+                    const auto velocity =
+                        glmVelocity + glmAcceleration * deltaTime;
+                    results.glmVec3 = glmPosition + velocity * deltaTime;
+                    ankerl::nanobench::doNotOptimizeAway(results.glmVec3);
+                });
+
+            DirectX::XMVECTOR dxPosition =
+                DirectX::XMVectorSet(12.0f, 8.0f, -4.0f, 0.0f);
+            DirectX::XMVECTOR dxVelocity =
+                DirectX::XMVectorSet(2.0f, 5.0f, -1.0f, 0.0f);
+            DirectX::XMVECTOR dxAcceleration =
+                DirectX::XMVectorSet(0.0f, -9.81f, 0.0f, 0.0f);
+            const DirectX::XMVECTOR dxDeltaTime =
+                DirectX::XMVectorReplicate(deltaTime);
+            bench.run("Particle integration DXM",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(dxPosition);
+                    ankerl::nanobench::doNotOptimizeAway(dxVelocity);
+                    ankerl::nanobench::doNotOptimizeAway(dxAcceleration);
+                    const auto velocity = DirectX::XMVectorMultiplyAdd(
+                        dxAcceleration, dxDeltaTime, dxVelocity);
+                    results.dxVecA = DirectX::XMVectorMultiplyAdd(
+                        velocity, dxDeltaTime, dxPosition);
+                    ankerl::nanobench::doNotOptimizeAway(results.dxVecA);
+                });
+
+            Vectormath::Vector3 sonyPosition(12.0f, 8.0f, -4.0f);
+            Vectormath::Vector3 sonyVelocity(2.0f, 5.0f, -1.0f);
+            Vectormath::Vector3 sonyAcceleration(0.0f, -9.81f, 0.0f);
+            bench.run("Particle integration Vectormath",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(sonyPosition);
+                    ankerl::nanobench::doNotOptimizeAway(sonyVelocity);
+                    ankerl::nanobench::doNotOptimizeAway(sonyAcceleration);
+                    const auto velocity =
+                        sonyVelocity + sonyAcceleration * deltaTime;
+                    results.sonyVec3 = sonyPosition + velocity * deltaTime;
+                    ankerl::nanobench::doNotOptimizeAway(results.sonyVec3);
+                });
+
+            move::math::float3 mvPosition(12.0f, 8.0f, -4.0f);
+            move::math::float3 mvVelocity(2.0f, 5.0f, -1.0f);
+            move::math::float3 mvAcceleration(0.0f, -9.81f, 0.0f);
+            bench.run("Particle integration move::float3",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(mvPosition);
+                    ankerl::nanobench::doNotOptimizeAway(mvVelocity);
+                    ankerl::nanobench::doNotOptimizeAway(mvAcceleration);
+                    const auto velocity =
+                        mvVelocity + mvAcceleration * deltaTime;
+                    results.mvVec3f = mvPosition + velocity * deltaTime;
+                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3f);
+                });
+
+            move::math::double3 mvPositionD(12.0, 8.0, -4.0);
+            move::math::double3 mvVelocityD(2.0, 5.0, -1.0);
+            move::math::double3 mvAccelerationD(0.0, -9.81, 0.0);
+            bench.run("Particle integration move::double3",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(mvPositionD);
+                    ankerl::nanobench::doNotOptimizeAway(mvVelocityD);
+                    ankerl::nanobench::doNotOptimizeAway(mvAccelerationD);
+                    const auto velocity =
+                        mvVelocityD + mvAccelerationD * deltaTimeD;
+                    results.mvVec3d = mvPositionD + velocity * deltaTimeD;
+                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3d);
+                });
+
+            rtm::vector4f rtmPosition =
+                rtm::vector_set(12.0f, 8.0f, -4.0f, 0.0f);
+            rtm::vector4f rtmVelocity =
+                rtm::vector_set(2.0f, 5.0f, -1.0f, 0.0f);
+            rtm::vector4f rtmAcceleration =
+                rtm::vector_set(0.0f, -9.81f, 0.0f, 0.0f);
+            bench.run("Particle integration rtm::vector4f",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(rtmPosition);
+                    ankerl::nanobench::doNotOptimizeAway(rtmVelocity);
+                    ankerl::nanobench::doNotOptimizeAway(rtmAcceleration);
+                    const auto velocity = rtm::vector_add(rtmVelocity,
+                        rtm::vector_mul(rtmAcceleration, deltaTime));
+                    results.rtmVec4f = rtm::vector_add(
+                        rtmPosition, rtm::vector_mul(velocity, deltaTime));
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4f);
+                });
+
+            rtm::vector4d rtmPositionD = rtm::vector_set(12.0, 8.0, -4.0, 0.0);
+            rtm::vector4d rtmVelocityD = rtm::vector_set(2.0, 5.0, -1.0, 0.0);
+            rtm::vector4d rtmAccelerationD =
+                rtm::vector_set(0.0, -9.81, 0.0, 0.0);
+            bench.run("Particle integration rtm::vector4d",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(rtmPositionD);
+                    ankerl::nanobench::doNotOptimizeAway(rtmVelocityD);
+                    ankerl::nanobench::doNotOptimizeAway(rtmAccelerationD);
+                    const auto velocity = rtm::vector_add(rtmVelocityD,
+                        rtm::vector_mul(rtmAccelerationD, deltaTimeD));
+                    results.rtmVec4d = rtm::vector_add(
+                        rtmPositionD, rtm::vector_mul(velocity, deltaTimeD));
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4d);
+                });
+        }
+
+        void camera_basis(ankerl::nanobench::Bench& bench)
+        {
+            DirectX::SimpleMath::Vector3 smEye(4.0f, 2.0f, -8.0f);
+            DirectX::SimpleMath::Vector3 smTarget(1.0f, 3.0f, 2.0f);
+            DirectX::SimpleMath::Vector3 smUp(0.0f, 1.0f, 0.0f);
+            bench.run("Camera basis SimpleMath",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(smEye);
+                    ankerl::nanobench::doNotOptimizeAway(smTarget);
+                    ankerl::nanobench::doNotOptimizeAway(smUp);
+                    auto forward = smTarget - smEye;
+                    forward.Normalize();
+                    auto right = smUp.Cross(forward);
+                    right.Normalize();
+                    const auto correctedUp = forward.Cross(right);
+                    results.smVec3 = right + correctedUp;
+                    ankerl::nanobench::doNotOptimizeAway(results.smVec3);
+                });
+
+            glm::vec3 glmEye(4.0f, 2.0f, -8.0f);
+            glm::vec3 glmTarget(1.0f, 3.0f, 2.0f);
+            glm::vec3 glmUp(0.0f, 1.0f, 0.0f);
+            bench.run("Camera basis glm",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(glmEye);
+                    ankerl::nanobench::doNotOptimizeAway(glmTarget);
+                    ankerl::nanobench::doNotOptimizeAway(glmUp);
+                    const auto forward = glm::normalize(glmTarget - glmEye);
+                    const auto right =
+                        glm::normalize(glm::cross(glmUp, forward));
+                    const auto correctedUp = glm::cross(forward, right);
+                    results.glmVec3 = right + correctedUp;
+                    ankerl::nanobench::doNotOptimizeAway(results.glmVec3);
+                });
+
+            DirectX::XMVECTOR dxEye =
+                DirectX::XMVectorSet(4.0f, 2.0f, -8.0f, 0.0f);
+            DirectX::XMVECTOR dxTarget =
+                DirectX::XMVectorSet(1.0f, 3.0f, 2.0f, 0.0f);
+            DirectX::XMVECTOR dxUp =
+                DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+            bench.run("Camera basis DXM",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(dxEye);
+                    ankerl::nanobench::doNotOptimizeAway(dxTarget);
+                    ankerl::nanobench::doNotOptimizeAway(dxUp);
+                    const auto forward = DirectX::XMVector3Normalize(
+                        DirectX::XMVectorSubtract(dxTarget, dxEye));
+                    const auto right = DirectX::XMVector3Normalize(
+                        DirectX::XMVector3Cross(dxUp, forward));
+                    const auto correctedUp =
+                        DirectX::XMVector3Cross(forward, right);
+                    results.dxVecA = DirectX::XMVectorAdd(right, correctedUp);
+                    ankerl::nanobench::doNotOptimizeAway(results.dxVecA);
+                });
+
+            Vectormath::Vector3 sonyEye(4.0f, 2.0f, -8.0f);
+            Vectormath::Vector3 sonyTarget(1.0f, 3.0f, 2.0f);
+            Vectormath::Vector3 sonyUp(0.0f, 1.0f, 0.0f);
+            bench.run("Camera basis Vectormath",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(sonyEye);
+                    ankerl::nanobench::doNotOptimizeAway(sonyTarget);
+                    ankerl::nanobench::doNotOptimizeAway(sonyUp);
+                    const auto forward = normalize(sonyTarget - sonyEye);
+                    const auto right = normalize(cross(sonyUp, forward));
+                    const auto correctedUp = cross(forward, right);
+                    results.sonyVec3 = right + correctedUp;
+                    ankerl::nanobench::doNotOptimizeAway(results.sonyVec3);
+                });
+
+            move::math::float3 mvEye(4.0f, 2.0f, -8.0f);
+            move::math::float3 mvTarget(1.0f, 3.0f, 2.0f);
+            move::math::float3 mvUp(0.0f, 1.0f, 0.0f);
+            bench.run("Camera basis move::float3",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(mvEye);
+                    ankerl::nanobench::doNotOptimizeAway(mvTarget);
+                    ankerl::nanobench::doNotOptimizeAway(mvUp);
+                    const auto forward = (mvTarget - mvEye).normalized();
+                    const auto right =
+                        move::math::float3::cross(mvUp, forward).normalized();
+                    const auto correctedUp =
+                        move::math::float3::cross(forward, right);
+                    results.mvVec3f = right + correctedUp;
+                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3f);
+                });
+
+            move::math::double3 mvEyeD(4.0, 2.0, -8.0);
+            move::math::double3 mvTargetD(1.0, 3.0, 2.0);
+            move::math::double3 mvUpD(0.0, 1.0, 0.0);
+            bench.run("Camera basis move::double3",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(mvEyeD);
+                    ankerl::nanobench::doNotOptimizeAway(mvTargetD);
+                    ankerl::nanobench::doNotOptimizeAway(mvUpD);
+                    const auto forward = (mvTargetD - mvEyeD).normalized();
+                    const auto right =
+                        move::math::double3::cross(mvUpD, forward).normalized();
+                    const auto correctedUp =
+                        move::math::double3::cross(forward, right);
+                    results.mvVec3d = right + correctedUp;
+                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3d);
+                });
+
+            rtm::vector4f rtmEye = rtm::vector_set(4.0f, 2.0f, -8.0f, 0.0f);
+            rtm::vector4f rtmTarget = rtm::vector_set(1.0f, 3.0f, 2.0f, 0.0f);
+            rtm::vector4f rtmUp = rtm::vector_set(0.0f, 1.0f, 0.0f, 0.0f);
+            bench.run("Camera basis rtm::vector4f",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(rtmEye);
+                    ankerl::nanobench::doNotOptimizeAway(rtmTarget);
+                    ankerl::nanobench::doNotOptimizeAway(rtmUp);
+                    const auto forward = rtm::vector_normalize3(
+                        rtm::vector_sub(rtmTarget, rtmEye));
+                    const auto right = rtm::vector_normalize3(
+                        rtm::vector_cross3(rtmUp, forward));
+                    const auto correctedUp = rtm::vector_cross3(forward, right);
+                    results.rtmVec4f = rtm::vector_add(right, correctedUp);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4f);
+                });
+
+            rtm::vector4d rtmEyeD = rtm::vector_set(4.0, 2.0, -8.0, 0.0);
+            rtm::vector4d rtmTargetD = rtm::vector_set(1.0, 3.0, 2.0, 0.0);
+            rtm::vector4d rtmUpD = rtm::vector_set(0.0, 1.0, 0.0, 0.0);
+            bench.run("Camera basis rtm::vector4d",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(rtmEyeD);
+                    ankerl::nanobench::doNotOptimizeAway(rtmTargetD);
+                    ankerl::nanobench::doNotOptimizeAway(rtmUpD);
+                    const auto forward = rtm::vector_normalize3(
+                        rtm::vector_sub(rtmTargetD, rtmEyeD));
+                    const auto right = rtm::vector_normalize3(
+                        rtm::vector_cross3(rtmUpD, forward));
+                    const auto correctedUp = rtm::vector_cross3(forward, right);
+                    results.rtmVec4d = rtm::vector_add(right, correctedUp);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4d);
+                });
+        }
+
+        void rotate_direction(ankerl::nanobench::Bench& bench)
+        {
+            DirectX::SimpleMath::Vector3 smDirection(0.25f, 0.5f, 1.0f);
+            auto smRotation =
+                DirectX::SimpleMath::Quaternion::CreateFromAxisAngle(
+                    DirectX::SimpleMath::Vector3(0.0f, 1.0f, 0.0f), 0.35f);
+            bench.run("Rotate direction SimpleMath quaternion",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(smDirection);
+                    ankerl::nanobench::doNotOptimizeAway(smRotation);
+                    results.smVec3 = DirectX::SimpleMath::Vector3::Transform(
+                        smDirection, smRotation);
+                    ankerl::nanobench::doNotOptimizeAway(results.smVec3);
+                });
+
+            glm::vec3 glmDirection(0.25f, 0.5f, 1.0f);
+            glm::quat glmRotation =
+                glm::angleAxis(0.35f, glm::vec3(0.0f, 1.0f, 0.0f));
+            bench.run("Rotate direction glm quaternion",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(glmDirection);
+                    ankerl::nanobench::doNotOptimizeAway(glmRotation);
+                    results.glmVec3 = glmRotation * glmDirection;
+                    ankerl::nanobench::doNotOptimizeAway(results.glmVec3);
+                });
+
+            DirectX::XMVECTOR dxDirection =
+                DirectX::XMVectorSet(0.25f, 0.5f, 1.0f, 0.0f);
+            DirectX::XMVECTOR dxRotation = DirectX::XMQuaternionRotationAxis(
+                DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f), 0.35f);
+            bench.run("Rotate direction DXM quaternion",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(dxDirection);
+                    ankerl::nanobench::doNotOptimizeAway(dxRotation);
+                    results.dxVecA =
+                        DirectX::XMVector3Rotate(dxDirection, dxRotation);
+                    ankerl::nanobench::doNotOptimizeAway(results.dxVecA);
+                });
+
+            Vectormath::Vector3 sonyDirection(0.25f, 0.5f, 1.0f);
+            auto sonyRotation =
+                Vectormath::Quat::rotation(0.35f, Vectormath::Vector3::yAxis());
+            bench.run("Rotate direction Vectormath quaternion",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(sonyDirection);
+                    ankerl::nanobench::doNotOptimizeAway(sonyRotation);
+                    results.sonyVec3 =
+                        Vectormath::SSE::rotate(sonyRotation, sonyDirection);
+                    ankerl::nanobench::doNotOptimizeAway(results.sonyVec3);
+                });
+
+            move::math::float3 mvDirection(0.25f, 0.5f, 1.0f);
+            auto mvRotation = move::math::quatf::rotation_y(0.35f);
+            bench.run("Rotate direction move::math quaternion (float)",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(mvDirection);
+                    ankerl::nanobench::doNotOptimizeAway(mvRotation);
+                    results.mvVec3f = mvDirection * mvRotation;
+                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3f);
+                });
+
+            move::math::double3 mvDirectionD(0.25, 0.5, 1.0);
+            auto mvRotationD = move::math::quatd::rotation_y(0.35);
+            bench.run("Rotate direction move::math quaternion (double)",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(mvDirectionD);
+                    ankerl::nanobench::doNotOptimizeAway(mvRotationD);
+                    results.mvVec3d = mvDirectionD * mvRotationD;
+                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3d);
+                });
+
+            rtm::vector4f rtmDirection =
+                rtm::vector_set(0.25f, 0.5f, 1.0f, 0.0f);
+            rtm::quatf rtmRotation = rtm::quat_from_axis_angle(
+                rtm::vector_set(0.0f, 1.0f, 0.0f, 0.0f), 0.35f);
+            bench.run("Rotate direction rtm::quatf",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(rtmDirection);
+                    ankerl::nanobench::doNotOptimizeAway(rtmRotation);
+                    results.rtmVec4f =
+                        rtm::quat_mul_vector3(rtmDirection, rtmRotation);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4f);
+                });
+
+            rtm::vector4d rtmDirectionD = rtm::vector_set(0.25, 0.5, 1.0, 0.0);
+            rtm::quatd rtmRotationD = rtm::quat_from_axis_angle(
+                rtm::vector_set(0.0, 1.0, 0.0, 0.0), 0.35);
+            bench.run("Rotate direction rtm::quatd",
+                [&]
+                {
+                    ankerl::nanobench::doNotOptimizeAway(rtmDirectionD);
+                    ankerl::nanobench::doNotOptimizeAway(rtmRotationD);
+                    results.rtmVec4d =
+                        rtm::quat_mul_vector3(rtmDirectionD, rtmRotationD);
+                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4d);
+                });
+        }
+    }  // namespace workloads
+
     namespace matrices
     {
         void construct_model_matrix(ankerl::nanobench::Bench& bench)
@@ -1662,6 +2364,18 @@ int main(int argc, char** argv)
             mathbench::vectors::complex1(vectorBench);
             mathbench::vectors::complex2vec3(vectorBench);
             mathbench::vectors::complex3vec4(vectorBench);
+        }
+
+        {
+            ankerl::nanobench::Bench workloadBench;
+            workloadBench.name("Game-loop and graphics workloads");
+            workloadBench.minEpochIterations(iterations);
+            mathbench::workloads::normalize_direction(workloadBench);
+            mathbench::workloads::particle_integration(workloadBench);
+            mathbench::workloads::camera_basis(workloadBench);
+            mathbench::workloads::rotate_direction(workloadBench);
+            mathbench::workloads::ray_aabb_intersection(workloadBench);
+            mathbench::workloads::ray_triangle_intersection(workloadBench);
         }
 
         {
