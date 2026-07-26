@@ -4,8 +4,6 @@ on:
   push:
   pull_request:
   workflow_dispatch:
-  schedule:
-    - cron: "0 8 * * 1"
 
 permissions:
   contents: read
@@ -38,8 +36,8 @@ jobs:
         run: ctest --test-dir build --output-on-failure -C Release
 
   performance:
-    name: Scheduled performance report
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    name: Performance report
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     needs: verify
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -73,3 +71,4 @@ jobs:
           name: vectormathbench-${{ github.run_id }}
           path: benchmark-results
           if-no-files-found: error
+          retention-days: 7
