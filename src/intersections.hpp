@@ -98,6 +98,11 @@ namespace mathbench::geometry
         using scalar = float;
         using vector = DirectX::SimpleMath::Vector3;
 
+        static vector make(scalar x, scalar y, scalar z)
+        {
+            return {x, y, z};
+        }
+
         static vector subtract(const vector& lhs, const vector& rhs)
         {
             return lhs - rhs;
@@ -153,6 +158,11 @@ namespace mathbench::geometry
     {
         using scalar = float;
         using vector = glm::vec3;
+
+        static vector make(scalar x, scalar y, scalar z)
+        {
+            return {x, y, z};
+        }
 
         static vector subtract(const vector& lhs, const vector& rhs)
         {
@@ -210,6 +220,11 @@ namespace mathbench::geometry
         using scalar = float;
         using vector = DirectX::XMVECTOR;
 
+        static vector make(scalar x, scalar y, scalar z)
+        {
+            return DirectX::XMVectorSet(x, y, z, 0.0f);
+        }
+
         static vector subtract(const vector& lhs, const vector& rhs)
         {
             return DirectX::XMVectorSubtract(lhs, rhs);
@@ -265,6 +280,11 @@ namespace mathbench::geometry
     {
         using scalar = float;
         using vector = Vectormath::SSE::Vector3;
+
+        static vector make(scalar x, scalar y, scalar z)
+        {
+            return {x, y, z};
+        }
 
         static vector subtract(const vector& lhs, const vector& rhs)
         {
@@ -322,6 +342,11 @@ namespace mathbench::geometry
     {
         using scalar = T;
         using vector = move::math::vec3<T, move::math::Acceleration::RTM>;
+
+        static vector make(scalar x, scalar y, scalar z)
+        {
+            return {x, y, z};
+        }
 
         static vector subtract(const vector& lhs, const vector& rhs)
         {
@@ -383,6 +408,11 @@ namespace mathbench::geometry
         using scalar = float;
         using vector = rtm::vector4f;
 
+        static vector make(scalar x, scalar y, scalar z)
+        {
+            return rtm::vector_set(x, y, z, 0.0f);
+        }
+
         static vector subtract(const vector& lhs, const vector& rhs)
         {
             return rtm::vector_sub(lhs, rhs);
@@ -439,6 +469,11 @@ namespace mathbench::geometry
     {
         using scalar = double;
         using vector = rtm::vector4d;
+
+        static vector make(scalar x, scalar y, scalar z)
+        {
+            return rtm::vector_set(x, y, z, 0.0);
+        }
 
         static vector subtract(const vector& lhs, const vector& rhs)
         {

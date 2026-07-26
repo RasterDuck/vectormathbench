@@ -12,6 +12,8 @@ project(
     LANGUAGES CXX
 )
 
+include(CTest)
+
 # Add fdiagnostics-color=always when the compiler supports it
 include(CheckCXXCompilerFlag)
 check_cxx_compiler_flag("-fdiagnostics-color" HAS_DIAGNOSTICS_COLOR)
@@ -34,7 +36,7 @@ CPMAddPackage("gh:microsoft/DirectXMath#dec2022")
 CPMAddPackage(
   NAME move-vectormath
   GITHUB_REPOSITORY move-engine/move-vectormath
-  GIT_TAG ba96600d68eaa5eb57a12632f9bfd8375138cf86
+  GIT_TAG 38820c2846c689c3967dcd196076aacbda59c0e2
 )
 
 # CPMAddPackage(
@@ -58,12 +60,17 @@ add_library(sony_vectormath INTERFACE)
 target_include_directories(sony_vectormath INTERFACE ${sony_vectormath_SOURCE_DIR})
 
 add_library(vmb_common INTERFACE)
-target_link_libraries(vmb_common INTERFACE glm DirectXMath sony_vectormath move::vectormath rtm rtm)
+target_link_libraries(vmb_common INTERFACE glm DirectXMath sony_vectormath move::vectormath rtm)
 target_sources(vmb_common INTERFACE src/main.cpp)
 
 if (UNIX)
   # Required for DXM
   target_include_directories(vmb_common INTERFACE src/shims/linux)
+
+  # DirectXMath and Sony Vectormath contain pointer type-punning that is not
+  # valid under GCC's strict-aliasing rules. Without this, optimized AVX builds
+  # can discard DirectXMath stores and benchmark operations that never happen.
+  target_compile_options(vmb_common INTERFACE -fno-strict-aliasing)
   
   # Ensure we're targeting x86-64
   target_compile_options(vmb_common INTERFACE -march=x86-64)
@@ -95,6 +102,21 @@ elseif (UNIX)
   target_compile_options(vectormathbench_sse42 PRIVATE -msse4.2 -mno-avx)
   target_compile_options(vectormathbench_avx PRIVATE -mavx)
   target_compile_options(vectormathbench_avx2 PRIVATE -mfma -mavx2)
+endif()
+
+if(BUILD_TESTING)
+  add_test(
+    NAME vectormathbench_semantic_parity_sse42
+    COMMAND vectormathbench_sse42 --verify-only
+  )
+  add_test(
+    NAME vectormathbench_semantic_parity_avx
+    COMMAND vectormathbench_avx --verify-only
+  )
+  add_test(
+    NAME vectormathbench_semantic_parity_avx2
+    COMMAND vectormathbench_avx2 --verify-only
+  )
 endif()
 
 # # ---- Install rules ----

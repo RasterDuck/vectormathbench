@@ -33,6 +33,11 @@ such as hit and miss paths remain visible as separate rows. This makes the
 nanobench output useful as a detailed view without mixing unrelated operations
 into one large table.
 
+Intersection latency and throughput are intentionally separate capabilities.
+Latency tables expose individual hit and miss paths. Throughput tables process
+256 varied rays with a realistic mixture of hits and misses and report the
+amortized cost per ray.
+
 At the end of a run, the executable prints a compact single-precision ranking
 summary. For every directly comparable capability it reports the fastest
 library, the `move::math` rank, and its gap from the winner. Double-precision
@@ -52,6 +57,13 @@ capability uses 15 epochs, a warm-up phase, and a minimum epoch duration of
 read-only optimization barriers so aggregate values are not copied or written
 back as an artifact of the harness.
 
+Focused register-resident operations report reciprocal throughput: successive
+iterations are independent and an out-of-order CPU can overlap them. A result
+below one nanosecond is therefore possible and should not be read as
+dependency-chain latency or as the cost of updating an array of objects.
+Intersection tables explicitly separate individual-call latency cases from
+256-ray, mixed-input throughput cases.
+
 Matrix throughput benchmarks use independent, non-constant input pairs instead
 of feeding each result into the next iteration. This measures throughput rather
 than a dependency-chain latency unless a benchmark explicitly says otherwise.
@@ -59,6 +71,34 @@ Constant-expression synthetic micro-operations are not run because they are
 especially vulnerable to constant folding and do not resemble frame-loop work.
 GLM is built with its normal configuration rather than being forced into its
 pure scalar implementation.
+
+Before any measurements, the executable checks semantic parity for
+normalization, particle integration, camera-basis construction, quaternion
+rotation, ray-box intersection, and ray-triangle intersection. The checks cover
+all participating single-precision libraries plus Move and RTM double-precision
+intersection adapters. `--verify-only` runs these checks without collecting
+timings. Normal CI runs that mode for every ISA build, which also catches
+compiler- and instruction-set-specific miscompilations.
+
+GCC targets disable strict-aliasing optimization because the compared
+DirectXMath and Sony Vectormath versions use pointer type-punning internally.
+Without that compatibility flag, optimized AVX builds can discard DirectXMath
+stores and produce deceptively low timings for operations that did not occur.
+
+Use `--json PATH` and `--csv PATH` to save every nanobench measurement in
+machine-readable form:
+
+```sh
+./build/vectormathbench_sse42 \
+  --json benchmark-results/sse42.json \
+  --csv benchmark-results/sse42.csv
+```
+
+Push and pull-request CI builds every ISA variant on Linux and Windows and runs
+the semantic checks. Timings run separately on the weekly schedule or through
+the manual workflow trigger because shared hosted runners are too noisy for
+performance gating. Those runs upload Markdown, JSON, and CSV results without
+enforcing unstable regression thresholds.
 
 # Results
 

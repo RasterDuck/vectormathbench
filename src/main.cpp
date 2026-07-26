@@ -9,9 +9,12 @@
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <map>
+#include <optional>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -1028,6 +1031,8 @@ namespace mathbench
 
     namespace workloads
     {
+        constexpr std::size_t intersectionBatchSize = 256;
+
         template <typename Ops>
         void benchmark_ray_aabb_case(ankerl::nanobench::Bench& bench,
             const char* name, typename Ops::vector origin,
@@ -1252,6 +1257,155 @@ namespace mathbench
                 rtm::vector_set(0.0, 0.0, 1.0, 0.0), rtm::vector_zero(),
                 rtm::vector_set(1.0, 0.0, 0.0, 0.0),
                 rtm::vector_set(0.0, 1.0, 0.0, 0.0));
+        }
+
+        template <typename Ops>
+        void benchmark_ray_aabb_batch(
+            ankerl::nanobench::Bench& bench, const char* name)
+        {
+            using scalar = typename Ops::scalar;
+            using vector = typename Ops::vector;
+
+            struct ray_case
+            {
+                vector origin;
+                vector direction;
+            };
+
+            std::vector<ray_case> rays;
+            rays.reserve(intersectionBatchSize);
+            for (std::size_t index = 0; index < intersectionBatchSize; ++index)
+            {
+                const bool shouldHit = index % 3 != 0;
+                const scalar x =
+                    shouldHit ? (scalar(index % 11) - scalar(5)) * scalar(0.08)
+                              : scalar(3.0) + scalar(index % 7) * scalar(0.15);
+                const scalar y =
+                    (scalar((index * 3) % 9) - scalar(4)) * scalar(0.07);
+                const scalar z =
+                    -(scalar(2.0) + scalar(index % 13) * scalar(0.2));
+                const scalar dx =
+                    (scalar(index % 5) - scalar(2)) * scalar(0.015);
+                rays.push_back({Ops::make(x, y, z),
+                    Ops::make(dx, scalar(0.025), scalar(1))});
+            }
+
+            const vector boundsMin =
+                Ops::make(-scalar(1), -scalar(1), -scalar(1));
+            const vector boundsMax = Ops::make(scalar(1), scalar(1), scalar(1));
+            bench.run(name,
+                [rays = std::move(rays), boundsMin, boundsMax]() mutable
+                {
+                    const auto* const rayData = rays.data();
+                    ankerl::nanobench::doNotOptimizeAway(rayData);
+                    scalar distanceSum{};
+                    std::size_t hitCount{};
+                    for (std::size_t index = 0; index < rays.size(); ++index)
+                    {
+                        const auto hit = geometry::intersect_ray_aabb<Ops>(
+                            rayData[index].origin, rayData[index].direction,
+                            boundsMin, boundsMax);
+                        distanceSum += hit.distance;
+                        hitCount += hit.intersects ? 1U : 0U;
+                    }
+                    ankerl::nanobench::doNotOptimizeAway(distanceSum);
+                    ankerl::nanobench::doNotOptimizeAway(hitCount);
+                });
+        }
+
+        void ray_aabb_batch(ankerl::nanobench::Bench& bench)
+        {
+            bench.batch(intersectionBatchSize);
+            benchmark_ray_aabb_batch<geometry::simplemath_ops>(
+                bench, "Ray-AABB mixed batch SimpleMath");
+            benchmark_ray_aabb_batch<geometry::glm_ops>(
+                bench, "Ray-AABB mixed batch glm");
+            benchmark_ray_aabb_batch<geometry::directxmath_ops>(
+                bench, "Ray-AABB mixed batch DXM");
+            benchmark_ray_aabb_batch<geometry::vectormath_ops>(
+                bench, "Ray-AABB mixed batch Vectormath");
+            benchmark_ray_aabb_batch<geometry::move_ops<float>>(
+                bench, "Ray-AABB mixed batch move::float3");
+            benchmark_ray_aabb_batch<geometry::move_ops<double>>(
+                bench, "Ray-AABB mixed batch move::double3");
+            benchmark_ray_aabb_batch<geometry::rtm_ops<float>>(
+                bench, "Ray-AABB mixed batch rtm::vector4f");
+            benchmark_ray_aabb_batch<geometry::rtm_ops<double>>(
+                bench, "Ray-AABB mixed batch rtm::vector4d");
+        }
+
+        template <typename Ops>
+        void benchmark_ray_triangle_batch(
+            ankerl::nanobench::Bench& bench, const char* name)
+        {
+            using scalar = typename Ops::scalar;
+            using vector = typename Ops::vector;
+
+            struct ray_case
+            {
+                vector origin;
+                vector direction;
+            };
+
+            std::vector<ray_case> rays;
+            rays.reserve(intersectionBatchSize);
+            for (std::size_t index = 0; index < intersectionBatchSize; ++index)
+            {
+                const bool shouldHit = index % 3 != 0;
+                const scalar x =
+                    shouldHit ? scalar(0.1) + scalar(index % 5) * scalar(0.08)
+                              : scalar(1.2);
+                const scalar y =
+                    shouldHit ? scalar(0.1) + scalar(index % 3) * scalar(0.06)
+                              : scalar(1.1);
+                const scalar z =
+                    -(scalar(1.0) + scalar(index % 17) * scalar(0.15));
+                rays.push_back({Ops::make(x, y, z),
+                    Ops::make(scalar(0), scalar(0), scalar(1))});
+            }
+
+            const vector vertex0 = Ops::make(scalar(0), scalar(0), scalar(0));
+            const vector vertex1 = Ops::make(scalar(1), scalar(0), scalar(0));
+            const vector vertex2 = Ops::make(scalar(0), scalar(1), scalar(0));
+            bench.run(name,
+                [rays = std::move(rays), vertex0, vertex1, vertex2]() mutable
+                {
+                    const auto* const rayData = rays.data();
+                    ankerl::nanobench::doNotOptimizeAway(rayData);
+                    scalar distanceSum{};
+                    std::size_t hitCount{};
+                    for (std::size_t index = 0; index < rays.size(); ++index)
+                    {
+                        const auto hit = geometry::intersect_ray_triangle<Ops>(
+                            rayData[index].origin, rayData[index].direction,
+                            vertex0, vertex1, vertex2);
+                        distanceSum += hit.distance;
+                        hitCount += hit.intersects ? 1U : 0U;
+                    }
+                    ankerl::nanobench::doNotOptimizeAway(distanceSum);
+                    ankerl::nanobench::doNotOptimizeAway(hitCount);
+                });
+        }
+
+        void ray_triangle_batch(ankerl::nanobench::Bench& bench)
+        {
+            bench.batch(intersectionBatchSize);
+            benchmark_ray_triangle_batch<geometry::simplemath_ops>(
+                bench, "Ray-triangle mixed batch SimpleMath");
+            benchmark_ray_triangle_batch<geometry::glm_ops>(
+                bench, "Ray-triangle mixed batch glm");
+            benchmark_ray_triangle_batch<geometry::directxmath_ops>(
+                bench, "Ray-triangle mixed batch DXM");
+            benchmark_ray_triangle_batch<geometry::vectormath_ops>(
+                bench, "Ray-triangle mixed batch Vectormath");
+            benchmark_ray_triangle_batch<geometry::move_ops<float>>(
+                bench, "Ray-triangle mixed batch move::float3");
+            benchmark_ray_triangle_batch<geometry::move_ops<double>>(
+                bench, "Ray-triangle mixed batch move::double3");
+            benchmark_ray_triangle_batch<geometry::rtm_ops<float>>(
+                bench, "Ray-triangle mixed batch rtm::vector4f");
+            benchmark_ray_triangle_batch<geometry::rtm_ops<double>>(
+                bench, "Ray-triangle mixed batch rtm::vector4d");
         }
 
         void normalize_direction(ankerl::nanobench::Bench& bench)
@@ -2730,6 +2884,354 @@ namespace mathbench
     }  // namespace matrices
 }  // namespace mathbench
 
+namespace mathbench::verification
+{
+    struct vector3_value
+    {
+        double x;
+        double y;
+        double z;
+    };
+
+    void require_vector(std::string_view label, vector3_value actual,
+        vector3_value expected, double tolerance = 1.0e-5)
+    {
+        const auto close = [tolerance](double lhs, double rhs)
+        {
+            return std::abs(lhs - rhs) <= tolerance;
+        };
+        if (!close(actual.x, expected.x) || !close(actual.y, expected.y) ||
+            !close(actual.z, expected.z))
+        {
+            throw std::runtime_error(
+                std::string(label) +
+                " failed semantic parity validation: actual=(" +
+                std::to_string(actual.x) + ", " + std::to_string(actual.y) +
+                ", " + std::to_string(actual.z) + "), expected=(" +
+                std::to_string(expected.x) + ", " + std::to_string(expected.y) +
+                ", " + std::to_string(expected.z) +
+                "), tolerance=" + std::to_string(tolerance));
+        }
+    }
+
+    template <typename Ops>
+    void verify_intersections(std::string_view label)
+    {
+        using scalar = typename Ops::scalar;
+        const auto zero = Ops::make(scalar(0), scalar(0), scalar(0));
+        const auto one = Ops::make(scalar(1), scalar(1), scalar(1));
+        const auto negativeOne = Ops::make(-scalar(1), -scalar(1), -scalar(1));
+        const auto forward = Ops::make(scalar(0), scalar(0), scalar(1));
+
+        const auto boxHit = geometry::intersect_ray_aabb<Ops>(
+            Ops::make(scalar(0.25), scalar(0.1), -scalar(4)), forward,
+            negativeOne, one);
+        const auto boxMiss = geometry::intersect_ray_aabb<Ops>(
+            Ops::make(scalar(4), scalar(4), -scalar(4)), forward, negativeOne,
+            one);
+        const auto boxInside =
+            geometry::intersect_ray_aabb<Ops>(zero, forward, negativeOne, one);
+        const auto triangleHit = geometry::intersect_ray_triangle<Ops>(
+            Ops::make(scalar(0.25), scalar(0.25), -scalar(2)), forward, zero,
+            Ops::make(scalar(1), scalar(0), scalar(0)),
+            Ops::make(scalar(0), scalar(1), scalar(0)));
+        const auto triangleMiss = geometry::intersect_ray_triangle<Ops>(
+            Ops::make(scalar(1.5), scalar(1.5), -scalar(2)), forward, zero,
+            Ops::make(scalar(1), scalar(0), scalar(0)),
+            Ops::make(scalar(0), scalar(1), scalar(0)));
+        const auto triangleParallel = geometry::intersect_ray_triangle<Ops>(
+            Ops::make(scalar(0.25), scalar(0.25), -scalar(2)),
+            Ops::make(scalar(1), scalar(0), scalar(0)), zero,
+            Ops::make(scalar(1), scalar(0), scalar(0)),
+            Ops::make(scalar(0), scalar(1), scalar(0)));
+
+        const double tolerance =
+            std::is_same_v<scalar, float> ? 1.0e-3 : 1.0e-10;
+        const auto near = [tolerance](scalar lhs, double rhs)
+        {
+            return std::abs(static_cast<double>(lhs) - rhs) <= tolerance;
+        };
+        if (!boxHit.intersects || !near(boxHit.distance, 3.0) ||
+            boxMiss.intersects || !boxInside.intersects ||
+            !near(boxInside.distance, 0.0) || !triangleHit.intersects ||
+            !near(triangleHit.distance, 2.0) || triangleMiss.intersects ||
+            triangleParallel.intersects)
+        {
+            throw std::runtime_error(
+                std::string(label) +
+                " failed intersection validation: box "
+                "hit=" +
+                std::to_string(boxHit.intersects) +
+                " distance=" + std::to_string(boxHit.distance) +
+                ", box miss=" + std::to_string(boxMiss.intersects) +
+                ", box inside=" + std::to_string(boxInside.intersects) +
+                ", triangle hit=" + std::to_string(triangleHit.intersects) +
+                " distance=" + std::to_string(triangleHit.distance) +
+                ", triangle miss=" + std::to_string(triangleMiss.intersects) +
+                ", triangle parallel=" +
+                std::to_string(triangleParallel.intersects));
+        }
+    }
+
+    void verify_normalization()
+    {
+        const double inverseLength = 1.0 / std::sqrt(62.0);
+        const vector3_value expected{
+            3.0 * inverseLength, -2.0 * inverseLength, 7.0 * inverseLength};
+
+        DirectX::SimpleMath::Vector3 simple(3.0f, -2.0f, 7.0f);
+        simple.Normalize();
+        require_vector("SimpleMath normalization",
+            {simple.x, simple.y, simple.z}, expected);
+
+        const auto glmValue = glm::normalize(glm::vec3(3.0f, -2.0f, 7.0f));
+        require_vector("GLM normalization",
+            {glmValue.x, glmValue.y, glmValue.z}, expected);
+
+        const auto dxValue = DirectX::XMVector3Normalize(
+            DirectX::XMVectorSet(3.0f, -2.0f, 7.0f, 0.0f));
+        require_vector("DirectXMath normalization",
+            {DirectX::XMVectorGetX(dxValue), DirectX::XMVectorGetY(dxValue),
+                DirectX::XMVectorGetZ(dxValue)},
+            expected);
+
+        const auto sonyValue =
+            normalize(Vectormath::Vector3(3.0f, -2.0f, 7.0f));
+        require_vector("Sony Vectormath normalization",
+            {float(sonyValue.getX()), float(sonyValue.getY()),
+                float(sonyValue.getZ())},
+            expected);
+
+        const auto moveValue =
+            move::math::float3(3.0f, -2.0f, 7.0f).normalized();
+        require_vector("move::math normalization",
+            {moveValue.get_x(), moveValue.get_y(), moveValue.get_z()},
+            expected);
+
+        const auto rtmValue =
+            rtm::vector_normalize3(rtm::vector_set(3.0f, -2.0f, 7.0f, 0.0f));
+        require_vector("RTM normalization",
+            {rtm::vector_get_x(rtmValue), rtm::vector_get_y(rtmValue),
+                rtm::vector_get_z(rtmValue)},
+            expected);
+    }
+
+    void verify_particle_integration()
+    {
+        constexpr double deltaTime = 1.0 / 60.0;
+        const vector3_value expected{12.0 + 2.0 * deltaTime,
+            8.0 + (5.0 - 9.81 * deltaTime) * deltaTime, -4.0 - deltaTime};
+
+        const DirectX::SimpleMath::Vector3 smPosition(12.0f, 8.0f, -4.0f);
+        const DirectX::SimpleMath::Vector3 smVelocity(2.0f, 5.0f, -1.0f);
+        const DirectX::SimpleMath::Vector3 smAcceleration(0.0f, -9.81f, 0.0f);
+        const auto smIntegrated =
+            smPosition +
+            (smVelocity + smAcceleration * float(deltaTime)) * float(deltaTime);
+        require_vector("SimpleMath particle integration",
+            {smIntegrated.x, smIntegrated.y, smIntegrated.z}, expected);
+
+        const glm::vec3 glmPosition(12.0f, 8.0f, -4.0f);
+        const glm::vec3 glmVelocity(2.0f, 5.0f, -1.0f);
+        const glm::vec3 glmAcceleration(0.0f, -9.81f, 0.0f);
+        const auto glmIntegrated =
+            glmPosition + (glmVelocity + glmAcceleration * float(deltaTime)) *
+                              float(deltaTime);
+        require_vector("GLM particle integration",
+            {glmIntegrated.x, glmIntegrated.y, glmIntegrated.z}, expected);
+
+        const auto dxPosition = DirectX::XMVectorSet(12.0f, 8.0f, -4.0f, 0.0f);
+        const auto dxVelocity = DirectX::XMVectorSet(2.0f, 5.0f, -1.0f, 0.0f);
+        const auto dxAcceleration =
+            DirectX::XMVectorSet(0.0f, -9.81f, 0.0f, 0.0f);
+        const auto dxTime = DirectX::XMVectorReplicate(float(deltaTime));
+        const auto dxIntegrated = DirectX::XMVectorMultiplyAdd(
+            DirectX::XMVectorMultiplyAdd(dxAcceleration, dxTime, dxVelocity),
+            dxTime, dxPosition);
+        require_vector("DirectXMath particle integration",
+            {DirectX::XMVectorGetX(dxIntegrated),
+                DirectX::XMVectorGetY(dxIntegrated),
+                DirectX::XMVectorGetZ(dxIntegrated)},
+            expected);
+
+        const Vectormath::Vector3 sonyPosition(12.0f, 8.0f, -4.0f);
+        const Vectormath::Vector3 sonyVelocity(2.0f, 5.0f, -1.0f);
+        const Vectormath::Vector3 sonyAcceleration(0.0f, -9.81f, 0.0f);
+        const auto sonyIntegrated =
+            sonyPosition +
+            (sonyVelocity + sonyAcceleration * float(deltaTime)) *
+                float(deltaTime);
+        require_vector("Sony Vectormath particle integration",
+            {float(sonyIntegrated.getX()), float(sonyIntegrated.getY()),
+                float(sonyIntegrated.getZ())},
+            expected);
+
+        const move::math::float3 movePosition(12.0f, 8.0f, -4.0f);
+        const move::math::float3 moveVelocity(2.0f, 5.0f, -1.0f);
+        const move::math::float3 moveAcceleration(0.0f, -9.81f, 0.0f);
+        const auto moveIntegrated =
+            movePosition +
+            (moveVelocity + moveAcceleration * float(deltaTime)) *
+                float(deltaTime);
+        require_vector("move::math particle integration",
+            {moveIntegrated.get_x(), moveIntegrated.get_y(),
+                moveIntegrated.get_z()},
+            expected);
+
+        const auto rtmPosition = rtm::vector_set(12.0f, 8.0f, -4.0f, 0.0f);
+        const auto rtmVelocity = rtm::vector_set(2.0f, 5.0f, -1.0f, 0.0f);
+        const auto rtmAcceleration = rtm::vector_set(0.0f, -9.81f, 0.0f, 0.0f);
+        const auto rtmIntegrated = rtm::vector_add(rtmPosition,
+            rtm::vector_mul(
+                rtm::vector_add(rtmVelocity,
+                    rtm::vector_mul(rtmAcceleration, float(deltaTime))),
+                float(deltaTime)));
+        require_vector("RTM particle integration",
+            {rtm::vector_get_x(rtmIntegrated), rtm::vector_get_y(rtmIntegrated),
+                rtm::vector_get_z(rtmIntegrated)},
+            expected);
+    }
+
+    void verify_camera_basis()
+    {
+        const glm::vec3 glmEye(4.0f, 2.0f, -8.0f);
+        const glm::vec3 glmTarget(1.0f, 3.0f, 2.0f);
+        const glm::vec3 glmUp(0.0f, 1.0f, 0.0f);
+        const auto glmForward = glm::normalize(glmTarget - glmEye);
+        const auto glmRight = glm::normalize(glm::cross(glmUp, glmForward));
+        const auto glmResult = glmRight + glm::cross(glmForward, glmRight);
+        const vector3_value expected{glmResult.x, glmResult.y, glmResult.z};
+
+        const DirectX::SimpleMath::Vector3 smEye(4.0f, 2.0f, -8.0f);
+        const DirectX::SimpleMath::Vector3 smTarget(1.0f, 3.0f, 2.0f);
+        const DirectX::SimpleMath::Vector3 smUp(0.0f, 1.0f, 0.0f);
+        auto smForward = smTarget - smEye;
+        smForward.Normalize();
+        auto smRight = smUp.Cross(smForward);
+        smRight.Normalize();
+        const auto smResult = smRight + smForward.Cross(smRight);
+        require_vector("SimpleMath camera basis",
+            {smResult.x, smResult.y, smResult.z}, expected);
+
+        const auto dxEye = DirectX::XMVectorSet(4.0f, 2.0f, -8.0f, 0.0f);
+        const auto dxTarget = DirectX::XMVectorSet(1.0f, 3.0f, 2.0f, 0.0f);
+        const auto dxUp = DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+        const auto dxForward = DirectX::XMVector3Normalize(
+            DirectX::XMVectorSubtract(dxTarget, dxEye));
+        const auto dxRight = DirectX::XMVector3Normalize(
+            DirectX::XMVector3Cross(dxUp, dxForward));
+        const auto dxResult = DirectX::XMVectorAdd(
+            dxRight, DirectX::XMVector3Cross(dxForward, dxRight));
+        require_vector("DirectXMath camera basis",
+            {DirectX::XMVectorGetX(dxResult), DirectX::XMVectorGetY(dxResult),
+                DirectX::XMVectorGetZ(dxResult)},
+            expected);
+
+        const Vectormath::Vector3 sonyEye(4.0f, 2.0f, -8.0f);
+        const Vectormath::Vector3 sonyTarget(1.0f, 3.0f, 2.0f);
+        const Vectormath::Vector3 sonyUp(0.0f, 1.0f, 0.0f);
+        const auto sonyForward = normalize(sonyTarget - sonyEye);
+        const auto sonyRight = normalize(cross(sonyUp, sonyForward));
+        const auto sonyResult = sonyRight + cross(sonyForward, sonyRight);
+        require_vector("Sony Vectormath camera basis",
+            {float(sonyResult.getX()), float(sonyResult.getY()),
+                float(sonyResult.getZ())},
+            expected);
+
+        const move::math::float3 moveEye(4.0f, 2.0f, -8.0f);
+        const move::math::float3 moveTarget(1.0f, 3.0f, 2.0f);
+        const move::math::float3 moveUp(0.0f, 1.0f, 0.0f);
+        const auto moveForward = (moveTarget - moveEye).normalized();
+        const auto moveRight =
+            move::math::float3::cross(moveUp, moveForward).normalized();
+        const auto moveResult =
+            moveRight + move::math::float3::cross(moveForward, moveRight);
+        require_vector("move::math camera basis",
+            {moveResult.get_x(), moveResult.get_y(), moveResult.get_z()},
+            expected);
+
+        const auto rtmEye = rtm::vector_set(4.0f, 2.0f, -8.0f, 0.0f);
+        const auto rtmTarget = rtm::vector_set(1.0f, 3.0f, 2.0f, 0.0f);
+        const auto rtmUp = rtm::vector_set(0.0f, 1.0f, 0.0f, 0.0f);
+        const auto rtmForward =
+            rtm::vector_normalize3(rtm::vector_sub(rtmTarget, rtmEye));
+        const auto rtmRight =
+            rtm::vector_normalize3(rtm::vector_cross3(rtmUp, rtmForward));
+        const auto rtmResult =
+            rtm::vector_add(rtmRight, rtm::vector_cross3(rtmForward, rtmRight));
+        require_vector("RTM camera basis",
+            {rtm::vector_get_x(rtmResult), rtm::vector_get_y(rtmResult),
+                rtm::vector_get_z(rtmResult)},
+            expected);
+    }
+
+    void verify_quaternion_rotation()
+    {
+        const glm::vec3 glmDirection(0.25f, 0.5f, 1.0f);
+        const auto glmRotation =
+            glm::angleAxis(0.35f, glm::vec3(0.0f, 1.0f, 0.0f));
+        const auto glmResult = glmRotation * glmDirection;
+        const vector3_value expected{glmResult.x, glmResult.y, glmResult.z};
+
+        const auto smRotation =
+            DirectX::SimpleMath::Quaternion::CreateFromAxisAngle(
+                DirectX::SimpleMath::Vector3(0.0f, 1.0f, 0.0f), 0.35f);
+        const auto smResult = DirectX::SimpleMath::Vector3::Transform(
+            DirectX::SimpleMath::Vector3(0.25f, 0.5f, 1.0f), smRotation);
+        require_vector("SimpleMath quaternion rotation",
+            {smResult.x, smResult.y, smResult.z}, expected);
+
+        const auto dxRotation = DirectX::XMQuaternionRotationAxis(
+            DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f), 0.35f);
+        const auto dxResult = DirectX::XMVector3Rotate(
+            DirectX::XMVectorSet(0.25f, 0.5f, 1.0f, 0.0f), dxRotation);
+        require_vector("DirectXMath quaternion rotation",
+            {DirectX::XMVectorGetX(dxResult), DirectX::XMVectorGetY(dxResult),
+                DirectX::XMVectorGetZ(dxResult)},
+            expected);
+
+        const auto sonyRotation =
+            Vectormath::Quat::rotation(0.35f, Vectormath::Vector3::yAxis());
+        const auto sonyResult = Vectormath::SSE::rotate(
+            sonyRotation, Vectormath::Vector3(0.25f, 0.5f, 1.0f));
+        require_vector("Sony Vectormath quaternion rotation",
+            {float(sonyResult.getX()), float(sonyResult.getY()),
+                float(sonyResult.getZ())},
+            expected);
+
+        const auto moveResult = move::math::float3(0.25f, 0.5f, 1.0f) *
+                                move::math::quatf::rotation_y(0.35f);
+        require_vector("move::math quaternion rotation",
+            {moveResult.get_x(), moveResult.get_y(), moveResult.get_z()},
+            expected);
+
+        const auto rtmRotation = rtm::quat_from_axis_angle(
+            rtm::vector_set(0.0f, 1.0f, 0.0f, 0.0f), 0.35f);
+        const auto rtmResult = rtm::quat_mul_vector3(
+            rtm::vector_set(0.25f, 0.5f, 1.0f, 0.0f), rtmRotation);
+        require_vector("RTM quaternion rotation",
+            {rtm::vector_get_x(rtmResult), rtm::vector_get_y(rtmResult),
+                rtm::vector_get_z(rtmResult)},
+            expected);
+    }
+
+    void run_all()
+    {
+        verify_normalization();
+        verify_particle_integration();
+        verify_camera_basis();
+        verify_quaternion_rotation();
+        verify_intersections<geometry::simplemath_ops>("SimpleMath");
+        verify_intersections<geometry::glm_ops>("GLM");
+        verify_intersections<geometry::directxmath_ops>("DirectXMath");
+        verify_intersections<geometry::vectormath_ops>("Sony Vectormath");
+        verify_intersections<geometry::move_ops<float>>("move::math float");
+        verify_intersections<geometry::move_ops<double>>("move::math double");
+        verify_intersections<geometry::rtm_ops<float>>("RTM float");
+        verify_intersections<geometry::rtm_ops<double>>("RTM double");
+    }
+}  // namespace mathbench::verification
+
 inline void test_camera_matrix_funcs()
 {
     auto smMat = DirectX::SimpleMath::Matrix::CreateOrthographic(
@@ -2786,6 +3288,7 @@ namespace mathbench::report
     };
 
     std::vector<ranked_result> rankings;
+    std::vector<ankerl::nanobench::Result> allResults;
 
     std::string library_name(std::string_view benchmarkName)
     {
@@ -2866,7 +3369,8 @@ namespace mathbench::report
             }
 
             const auto scenario = scenario_name(capability, benchmarkName);
-            const double nanoseconds = result.median(measure::elapsed) * 1.0e9;
+            const double nanoseconds = result.median(measure::elapsed) * 1.0e9 /
+                                       result.config().mBatch;
             auto [entry, inserted] =
                 groupedResults[scenario].try_emplace(library, nanoseconds);
             if (!inserted)
@@ -2913,6 +3417,8 @@ namespace mathbench::report
             .warmup(1000)
             .minEpochTime(std::chrono::milliseconds(5));
         function(bench);
+        allResults.insert(
+            allResults.end(), bench.results().begin(), bench.results().end());
         if (summarize)
         {
             collect_rankings(title, bench);
@@ -2947,12 +3453,91 @@ namespace mathbench::report
                       << " | " << gap << "% |\n";
         }
     }
+
+    void write_results(const std::optional<std::string>& jsonPath,
+        const std::optional<std::string>& csvPath)
+    {
+        const auto render = [](std::string_view path, const char* format)
+        {
+            std::ofstream output{std::string(path)};
+            if (!output)
+            {
+                throw std::runtime_error(
+                    "Unable to open benchmark output file: " +
+                    std::string(path));
+            }
+            ankerl::nanobench::render(format, allResults, output);
+        };
+
+        if (jsonPath)
+        {
+            render(*jsonPath, ankerl::nanobench::templates::json());
+        }
+        if (csvPath)
+        {
+            render(*csvPath, ankerl::nanobench::templates::csv());
+        }
+    }
 }  // namespace mathbench::report
 
-int main()
+namespace
+{
+    struct command_line_options
+    {
+        bool verifyOnly{};
+        std::optional<std::string> jsonPath;
+        std::optional<std::string> csvPath;
+    };
+
+    command_line_options parse_options(int argc, char** argv)
+    {
+        command_line_options options;
+        for (int index = 1; index < argc; ++index)
+        {
+            const std::string_view argument(argv[index]);
+            if (argument == "--verify-only")
+            {
+                options.verifyOnly = true;
+            }
+            else if (argument == "--json" || argument == "--csv")
+            {
+                if (++index >= argc)
+                {
+                    throw std::runtime_error(
+                        std::string(argument) + " requires an output path");
+                }
+                auto& path =
+                    argument == "--json" ? options.jsonPath : options.csvPath;
+                path = argv[index];
+            }
+            else if (argument == "--help")
+            {
+                std::cout << "Usage: vectormathbench [--verify-only] "
+                             "[--json PATH] [--csv PATH]\n";
+                std::exit(EXIT_SUCCESS);
+            }
+            else
+            {
+                throw std::runtime_error(
+                    "Unknown command-line option: " + std::string(argument));
+            }
+        }
+        return options;
+    }
+}  // namespace
+
+int main(int argc, char** argv)
 {
     try
     {
+        const auto options = parse_options(argc, argv);
+        mathbench::verification::run_all();
+        std::cerr << "Semantic parity checks passed\n";
+        if (options.verifyOnly)
+        {
+            return EXIT_SUCCESS;
+        }
+
         using mathbench::report::run_capability;
 
         run_capability("Game loop / Normalize direction", true,
@@ -2963,10 +3548,14 @@ int main()
             mathbench::workloads::camera_basis);
         run_capability("Graphics / Quaternion direction rotation", true,
             mathbench::workloads::rotate_direction);
-        run_capability("Geometry / Ray-AABB intersection", true,
+        run_capability("Geometry / Ray-AABB intersection latency", true,
             mathbench::workloads::ray_aabb_intersection);
-        run_capability("Geometry / Ray-triangle intersection", true,
+        run_capability("Geometry / Ray-AABB intersection throughput", true,
+            mathbench::workloads::ray_aabb_batch);
+        run_capability("Geometry / Ray-triangle intersection latency", true,
             mathbench::workloads::ray_triangle_intersection);
+        run_capability("Geometry / Ray-triangle intersection throughput", true,
+            mathbench::workloads::ray_triangle_batch);
 
         run_capability("Transforms / Model-matrix construction", false,
             mathbench::matrices::construct_model_matrix);
@@ -2986,6 +3575,7 @@ int main()
             mathbench::matrices::qvv_multiply);
 
         mathbench::report::print_rankings();
+        mathbench::report::write_results(options.jsonPath, options.csvPath);
         printf("Benchmark complete\n");
     }
     catch (const std::exception& e)

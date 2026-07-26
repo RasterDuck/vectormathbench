@@ -21,6 +21,21 @@ cmake -S . -B build
 cmake --build build --config Release
 ```
 
+Verify that all compared implementations have matching semantics without
+running the benchmarks:
+
+```sh
+ctest --test-dir build --output-on-failure -C Release
+```
+
+Run a benchmark variant and optionally save machine-readable results:
+
+```sh
+./build/vectormathbench_sse42 \
+  --json benchmark-results/sse42.json \
+  --csv benchmark-results/sse42.csv
+```
+
 ### Building with MSVC
 
 Note that MSVC by default is not standards compliant and you need to pass some
