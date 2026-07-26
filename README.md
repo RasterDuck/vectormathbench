@@ -95,10 +95,36 @@ machine-readable form:
 ```
 
 Push and pull-request CI builds every ISA variant on Linux and Windows and runs
-the semantic checks. Timings run separately on the weekly schedule or through
-the manual workflow trigger because shared hosted runners are too noisy for
-performance gating. Those runs upload Markdown, JSON, and CSV results without
-enforcing unstable regression thresholds.
+the semantic checks. Push and manual runs also collect timings after the
+verification job. Shared hosted runners are too noisy for performance gating,
+so these are diagnostic reports rather than pass/fail regression thresholds.
+Those runs upload Markdown, JSON, and CSV results.
+
+## API-v2 Phase A representation proof
+
+The `vectormathbench_phase_a_sse42`, `_avx`, and `_avx2` executables measure
+the architectural choices that are intentionally absent from the
+cross-library capability ranking:
+
+- public native-backed versus fixed-array and raw-native `Vec3f`;
+- 8-byte versus 16-byte `Vec2f`;
+- persistent 16-byte compute versus 12-byte packed particle storage;
+- fused packed-to-16-byte-GPU transforms;
+- fused transforms over interleaved strided fields.
+
+Each storage workload runs at 256, 4,096, 65,536, and 1,048,576 elements to
+show cache and bandwidth crossovers. These tables answer representation and
+data-flow questions; they do not rank libraries implementing different public
+APIs.
+
+By default CMake fetches the exact Move Phase A commit. During library
+development, configure against a local checkout instead:
+
+```sh
+cmake -S . -B build/phase-a \
+  -DMOVE_VECTORMATH_SOURCE_DIR=/path/to/move-vectormath \
+  -DBUILD_TESTING=OFF
+```
 
 # Results
 

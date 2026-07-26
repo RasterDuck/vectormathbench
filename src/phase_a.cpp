@@ -1,0 +1,280 @@
+#define ANKERL_NANOBENCH_IMPLEMENT
+#include "nanobench.h"
+
+#include <array>
+#include <chrono>
+#include <cstddef>
+#include <cstdint>
+#include <cstdlib>
+#include <iostream>
+#include <span>
+#include <string>
+#include <vector>
+
+#include <mv/math/PhaseA.hpp>
+#include <mv/math/experimental/RepresentationProof.hpp>
+
+namespace
+{
+    constexpr std::array<std::size_t, 4> WorkingSetSizes = {
+        256U, 4U * 1024U, 64U * 1024U, 1024U * 1024U};
+
+    template <typename T>
+    void Observe(const std::vector<T>& values)
+    {
+        ankerl::nanobench::doNotOptimizeAway(values.data());
+        ankerl::nanobench::doNotOptimizeAway(values.size());
+    }
+
+    [[nodiscard]] float Seed(std::size_t index, std::size_t lane)
+    {
+        const std::size_t value =
+            (index * 1664525U + lane * 1013904223U) & 0xFFFFU;
+        return static_cast<float>(value) / 65535.0F;
+    }
+
+    std::vector<mv::math::PackedVec3f> MakePackedVec3(
+        std::size_t count, std::size_t seedOffset)
+    {
+        std::vector<mv::math::PackedVec3f> result(count);
+        for (std::size_t index = 0; index < count; ++index)
+        {
+            result[index] = {Seed(index + seedOffset, 0U),
+                Seed(index + seedOffset, 1U), Seed(index + seedOffset, 2U)};
+        }
+        return result;
+    }
+
+    void BenchmarkVec3Representations(
+        ankerl::nanobench::Bench& bench, std::size_t count)
+    {
+        using mv::math::experimental::FixedStorageVec3f;
+        using mv::math::experimental::NativeVec3f;
+
+        const auto left = MakePackedVec3(count, 11U);
+        const auto right = MakePackedVec3(count, 37U);
+        std::vector<mv::math::PackedVec3f> output(count);
+        const std::string suffix = "/" + std::to_string(count);
+
+        bench.batch(count).run("phase-a/vec3/public-native-storage" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0; index < count; ++index)
+                {
+                    const mv::math::Vec3f value =
+                        (mv::math::Load(left[index]) +
+                            mv::math::Load(right[index])) *
+                        1.0001F;
+                    mv::math::Store(output[index], value);
+                }
+                Observe(output);
+            });
+
+        bench.batch(count).run("phase-a/vec3/fixed-scalar-storage" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0; index < count; ++index)
+                {
+                    const FixedStorageVec3f leftValue(
+                        left[index].X, left[index].Y, left[index].Z);
+                    const FixedStorageVec3f rightValue(
+                        right[index].X, right[index].Y, right[index].Z);
+                    const FixedStorageVec3f value =
+                        (leftValue + rightValue) * 1.0001F;
+                    value.Store(&output[index].X);
+                }
+                Observe(output);
+            });
+
+        bench.batch(count).run("phase-a/vec3/raw-native-proof" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0; index < count; ++index)
+                {
+                    const NativeVec3f leftValue(
+                        left[index].X, left[index].Y, left[index].Z);
+                    const NativeVec3f rightValue(
+                        right[index].X, right[index].Y, right[index].Z);
+                    const NativeVec3f value =
+                        (leftValue + rightValue) * 1.0001F;
+                    value.Store(&output[index].X);
+                }
+                Observe(output);
+            });
+    }
+
+    void BenchmarkVec2Storage(
+        ankerl::nanobench::Bench& bench, std::size_t count)
+    {
+        using mv::math::experimental::AlignedVec2f16;
+
+        std::vector<mv::math::Vec2f> compact(count);
+        std::vector<AlignedVec2f16> aligned(count);
+        for (std::size_t index = 0; index < count; ++index)
+        {
+            compact[index] = mv::math::Vec2f(Seed(index, 0U), Seed(index, 1U));
+            aligned[index] = AlignedVec2f16(Seed(index, 0U), Seed(index, 1U));
+        }
+
+        const mv::math::Vec2f compactIncrement(0.001F, -0.002F);
+        const AlignedVec2f16 alignedIncrement(0.001F, -0.002F);
+        const std::string suffix = "/" + std::to_string(count);
+
+        bench.batch(count).run("phase-a/vec2/compact-8-byte" + suffix,
+            [&]
+            {
+                for (auto& value : compact)
+                {
+                    value = (value + compactIncrement) * 1.00001F;
+                }
+                Observe(compact);
+            });
+
+        bench.batch(count).run("phase-a/vec2/aligned-16-byte" + suffix,
+            [&]
+            {
+                for (auto& value : aligned)
+                {
+                    value = (value + alignedIncrement) * 1.00001F;
+                }
+                Observe(aligned);
+            });
+    }
+
+    void BenchmarkParticleStorage(
+        ankerl::nanobench::Bench& bench, std::size_t count)
+    {
+        std::vector<mv::math::Vec3f> computePositions(count);
+        std::vector<mv::math::Vec3f> computeVelocities(count);
+        auto packedPositions = MakePackedVec3(count, 19U);
+        const auto packedVelocities = MakePackedVec3(count, 43U);
+
+        for (std::size_t index = 0; index < count; ++index)
+        {
+            computePositions[index] = mv::math::Load(packedPositions[index]);
+            computeVelocities[index] = mv::math::Load(packedVelocities[index]);
+        }
+
+        constexpr float DeltaTime = 1.0F / 60.0F;
+        const std::string suffix = "/" + std::to_string(count);
+
+        bench.batch(count).run("phase-a/particles/compute-16-byte" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0; index < count; ++index)
+                {
+                    computePositions[index] +=
+                        computeVelocities[index] * DeltaTime;
+                }
+                Observe(computePositions);
+            });
+
+        bench.batch(count).run("phase-a/particles/packed-12-byte" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0; index < count; ++index)
+                {
+                    mv::math::Vec3f position =
+                        mv::math::Load(packedPositions[index]);
+                    position +=
+                        mv::math::Load(packedVelocities[index]) * DeltaTime;
+                    mv::math::Store(packedPositions[index], position);
+                }
+                Observe(packedPositions);
+            });
+    }
+
+    void BenchmarkPackedToGpu(
+        ankerl::nanobench::Bench& bench, std::size_t count)
+    {
+        const auto input = MakePackedVec3(count, 71U);
+        std::vector<mv::math::gpu::Float3Slot16> output(count);
+        const mv::math::AffineTransform3f transform(
+            mv::math::Vec3f(1.1F, 0.1F, 0.0F),
+            mv::math::Vec3f(0.0F, 0.9F, 0.2F),
+            mv::math::Vec3f(0.05F, 0.0F, 1.2F),
+            mv::math::Vec3f(100.0F, -20.0F, 3.0F));
+        const std::string suffix = "/" + std::to_string(count);
+
+        bench.batch(count).run(
+            "phase-a/transfer/packed-transform-gpu16" + suffix,
+            [&]
+            {
+                mv::math::TransformPoints(
+                    std::span<const mv::math::PackedVec3f>(input), transform,
+                    std::span<mv::math::gpu::Float3Slot16>(output));
+                Observe(output);
+            });
+    }
+
+    struct InterleavedVertex
+    {
+        mv::math::PackedVec3f Position{};
+        mv::math::PackedVec3f Normal{};
+        mv::math::PackedVec2f Uv{};
+    };
+
+    struct InterleavedOutput
+    {
+        std::uint32_t Instance{};
+        mv::math::PackedVec3f Position{};
+        mv::math::PackedVec3f PreviousPosition{};
+        float SortKey{};
+    };
+
+    void BenchmarkStridedTransform(
+        ankerl::nanobench::Bench& bench, std::size_t count)
+    {
+        std::vector<InterleavedVertex> input(count);
+        std::vector<InterleavedOutput> output(count);
+        for (std::size_t index = 0; index < count; ++index)
+        {
+            input[index].Position = {
+                Seed(index, 0U), Seed(index, 1U), Seed(index, 2U)};
+        }
+
+        const auto inputView =
+            mv::math::MakeFieldView(std::span<const InterleavedVertex>(input),
+                &InterleavedVertex::Position);
+        auto outputView = mv::math::MakeFieldView(
+            std::span<InterleavedOutput>(output), &InterleavedOutput::Position);
+
+        const mv::math::AffineTransform3f transform(
+            mv::math::Vec3f(1.1F, 0.1F, 0.0F),
+            mv::math::Vec3f(0.0F, 0.9F, 0.2F),
+            mv::math::Vec3f(0.05F, 0.0F, 1.2F),
+            mv::math::Vec3f(100.0F, -20.0F, 3.0F));
+        const std::string suffix = "/" + std::to_string(count);
+
+        bench.batch(count).run(
+            "phase-a/transfer/strided-transform-packed" + suffix,
+            [&]
+            {
+                mv::math::TransformPoints(inputView, transform, outputView);
+                Observe(output);
+            });
+    }
+}  // namespace
+
+int main()
+{
+    ankerl::nanobench::Bench bench;
+    bench.title("Move math API-v2 Phase A representation proof")
+        .epochs(15)
+        .warmup(2)
+        .minEpochIterations(4)
+        .minEpochTime(std::chrono::milliseconds(50))
+        .relative(false)
+        .performanceCounters(true);
+
+    for (const std::size_t count : WorkingSetSizes)
+    {
+        BenchmarkVec3Representations(bench, count);
+        BenchmarkVec2Storage(bench, count);
+        BenchmarkParticleStorage(bench, count);
+        BenchmarkPackedToGpu(bench, count);
+        BenchmarkStridedTransform(bench, count);
+    }
+
+    return EXIT_SUCCESS;
+}

@@ -64,6 +64,14 @@ jobs:
               cat "benchmark-results/${isa}.md"
             } >> "$GITHUB_STEP_SUMMARY"
           done
+          for isa in sse42 avx avx2; do
+            "./build/vectormathbench_phase_a_${isa}" \
+              > "benchmark-results/phase-a-${isa}.md"
+            {
+              echo "## Phase A representation proof / ${isa}"
+              cat "benchmark-results/phase-a-${isa}.md"
+            } >> "$GITHUB_STEP_SUMMARY"
+          done
 
       - name: Upload benchmark data
         uses: actions/upload-artifact@v6

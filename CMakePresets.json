@@ -12,6 +12,7 @@
       "warnings": {},
       "errors": {},
       "cacheVariables": {
+        "CMAKE_POLICY_VERSION_MINIMUM": "3.5",
         "CPM_USE_LOCAL_PACKAGES": false
       }
     },

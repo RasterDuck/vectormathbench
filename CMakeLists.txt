@@ -33,11 +33,22 @@ include(cmake/cpm.cmake)
 
 CPMAddPackage("gh:g-truc/glm#0.9.9.8@0.9.9.8")
 CPMAddPackage("gh:microsoft/DirectXMath#dec2022")
-CPMAddPackage(
-  NAME move-vectormath
-  GITHUB_REPOSITORY move-engine/move-vectormath
-  GIT_TAG d68818dd806bb5cbb5d23dbd5c4d0ef0a8570597
-)
+set(MOVE_VECTORMATH_SOURCE_DIR "" CACHE PATH
+    "Optional local move-vectormath checkout for architecture benchmarks")
+
+if(MOVE_VECTORMATH_SOURCE_DIR)
+  add_subdirectory(
+    "${MOVE_VECTORMATH_SOURCE_DIR}"
+    "${CMAKE_BINARY_DIR}/move-vectormath-local"
+    EXCLUDE_FROM_ALL
+  )
+else()
+  CPMAddPackage(
+    NAME move-vectormath
+    GITHUB_REPOSITORY move-engine/move-vectormath
+    GIT_TAG f28ff981d0757394c822da2843360da7dc315dbf
+  )
+endif()
 
 # CPMAddPackage(
 #   NAME rtm
@@ -102,6 +113,38 @@ elseif (UNIX)
   target_compile_options(vectormathbench_sse42 PRIVATE -msse4.2 -mno-avx)
   target_compile_options(vectormathbench_avx PRIVATE -mavx)
   target_compile_options(vectormathbench_avx2 PRIVATE -mfma -mavx2)
+endif()
+
+function(add_phase_a_benchmark target)
+  add_executable(${target} src/phase_a.cpp)
+  target_link_libraries(${target} PRIVATE move::vectormath)
+  target_include_directories(${target} PRIVATE src)
+
+  if (UNIX)
+    target_compile_options(${target} PRIVATE
+      -O3
+      -march=x86-64
+      ${ARGN}
+    )
+  elseif (MSVC)
+    target_compile_options(${target} PRIVATE /O2 ${ARGN})
+  endif()
+endfunction()
+
+if (WIN32)
+  add_phase_a_benchmark(vectormathbench_phase_a_sse42 /arch:SSE42)
+  add_phase_a_benchmark(vectormathbench_phase_a_avx /arch:AVX)
+  add_phase_a_benchmark(vectormathbench_phase_a_avx2 /arch:AVX2)
+elseif (UNIX)
+  add_phase_a_benchmark(
+    vectormathbench_phase_a_sse42
+    -msse4.2
+    -mno-avx
+  )
+  add_phase_a_benchmark(vectormathbench_phase_a_avx -mavx)
+  add_phase_a_benchmark(vectormathbench_phase_a_avx2 -mfma -mavx2)
+else()
+  add_phase_a_benchmark(vectormathbench_phase_a_sse42)
 endif()
 
 if(BUILD_TESTING)
