@@ -25,6 +25,41 @@ compared across all supported libraries, with double-precision variants for
 through library-specific adapters, keeping branches and acceptance rules
 equivalent while exercising each library's native vector operations.
 
+# Output organization
+
+Each benchmark table represents one capability, such as direction
+normalization, ray/triangle intersection, or matrix multiplication. Variants
+such as hit and miss paths remain visible as separate rows. This makes the
+nanobench output useful as a detailed view without mixing unrelated operations
+into one large table.
+
+At the end of a run, the executable prints a compact single-precision ranking
+summary. For every directly comparable capability it reports the fastest
+library, the `move::math` rank, and its gap from the winner. Double-precision
+rows remain in the detailed tables but are not combined with single-precision
+rankings. QVV operations also have separate tables from conventional matrix
+operations because they represent a different transform representation.
+
+Construction helpers are shown in capability tables but are not included in
+the ranking summary where the libraries use materially different conventions,
+such as handedness or projection variants.
+
+# Methodology
+
+The suite lets nanobench determine the iteration count adaptively. Each
+capability uses 15 epochs, a warm-up phase, and a minimum epoch duration of
+5 ms. Inputs are made opaque immediately before measured work, and outputs use
+read-only optimization barriers so aggregate values are not copied or written
+back as an artifact of the harness.
+
+Matrix throughput benchmarks use independent, non-constant input pairs instead
+of feeding each result into the next iteration. This measures throughput rather
+than a dependency-chain latency unless a benchmark explicitly says otherwise.
+Constant-expression synthetic micro-operations are not run because they are
+especially vulnerable to constant folding and do not resemble frame-loop work.
+GLM is built with its normal configuration rather than being forced into its
+pure scalar implementation.
+
 # Results
 
 TL;DR: Based on the current benchmarks (reflected in intermediate-benchmarks.md), it seems that the generally highest performing configuration across both AMD and Intel is Realtime Math, though it lacks many features compared to the other libraries.  `move::vectormath` seems to have generally similar performance to RTM (which makes sense given that it's built on top of RTM), though similarly suffers from a lack of features at the moment (though it does have more features than RTM, as well as including more game-centric extensions for RTM based on DXM/GLM, depending on the operation in question).  DXM with SSE4.2 seems to be the fastest non-RTM library, though it trades blows with Vectormath for matrix operations and GLM for vector operations.

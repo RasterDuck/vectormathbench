@@ -102,10 +102,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install static analyzers
-      if: matrix.os == 'ubuntu-latest'
-      run: sudo apt-get install clang-tidy cppcheck -y -q
-
     - name: Configure
       shell: pwsh
       run: cmake "--preset=ci-$("${{ matrix.os }}".split("-")[0])"

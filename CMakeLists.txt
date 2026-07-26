@@ -68,8 +68,6 @@ if (UNIX)
   # Ensure we're targeting x86-64
   target_compile_options(vmb_common INTERFACE -march=x86-64)
   
-  target_compile_definitions(vmb_common INTERFACE -DGLM_FORCE_PURE=1)
-
   # If we're not in debug config
   if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_options(vmb_common INTERFACE -O3)

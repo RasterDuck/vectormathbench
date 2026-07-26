@@ -5,17 +5,20 @@
 #define ANKERL_NANOBENCH_IMPLEMENT
 #include "nanobench.h"
 
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <cstdlib>
+#include <iomanip>
+#include <iostream>
+#include <map>
+#include <string>
+#include <string_view>
 #include <type_traits>
-
-// Sony vectormath
-#include <vectormath.hpp>
+#include <utility>
+#include <vector>
 
 #include "sse/internal.hpp"
-#define ANKERL_NANOBENCH_IMPLEMENT
-#include "nanobench.h"
 
 #include <DirectXMath.h>
 
@@ -45,7 +48,6 @@
 
 #include "intersections.hpp"
 
-// Sony vectormath
 #include <vectormath.hpp>
 
 namespace Vectormath
@@ -345,7 +347,8 @@ namespace mathbench
                 [&]
                 {
                     results.intnum = 0;
-                    ankerl::nanobench::doNotOptimizeAway(results.intnum);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.intnum));
                 });
 
             bench.run("SimpleMath::Vector2 addition",
@@ -353,7 +356,8 @@ namespace mathbench
                 {
                     results.smVec2 = DirectX::SimpleMath::Vector2(1.0f, 2.0f) +
                                      DirectX::SimpleMath::Vector2(3.0f, 4.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.smVec2);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.smVec2));
                 });
 
             bench.run("SimpleMath::Vector3 addition",
@@ -362,7 +366,8 @@ namespace mathbench
                     results.smVec3 =
                         DirectX::SimpleMath::Vector3(1.0f, 2.0f, 3.0f) +
                         DirectX::SimpleMath::Vector3(3.0f, 4.0f, 5.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.smVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.smVec3));
                 });
 
             bench.run("SimpleMath::Vector4 addition",
@@ -371,7 +376,8 @@ namespace mathbench
                     results.smVec4 =
                         DirectX::SimpleMath::Vector4(1.0f, 2.0f, 3.0f, 4.0f) +
                         DirectX::SimpleMath::Vector4(3.0f, 4.0f, 5.0f, 6.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.smVec4);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.smVec4));
                 });
 
             bench.run("glm::vec2 addition",
@@ -379,7 +385,8 @@ namespace mathbench
                 {
                     results.glmVec2 =
                         glm::vec2(1.0f, 2.0f) + glm::vec2(3.0f, 4.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.glmVec2);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.glmVec2));
                 });
 
             bench.run("glm::vec3 addition",
@@ -387,7 +394,8 @@ namespace mathbench
                 {
                     results.glmVec3 = glm::vec3(1.0f, 2.0f, 3.0f) +
                                       glm::vec3(3.0f, 4.0f, 5.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.glmVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.glmVec3));
                 });
 
             bench.run("glm::vec4 addition",
@@ -395,7 +403,8 @@ namespace mathbench
                 {
                     results.glmVec4 = glm::vec4(1.0f, 2.0f, 3.0f, 4.0f) +
                                       glm::vec4(3.0f, 4.0f, 5.0f, 6.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.glmVec4);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.glmVec4));
                 });
 
             bench.run("DirectX::XMFLOAT2 addition",
@@ -409,7 +418,8 @@ namespace mathbench
                         DirectX::XMVectorAdd(lhsVec, rhsVec);
 
                     DirectX::XMStoreFloat2(&results.dxVec2, result);
-                    ankerl::nanobench::doNotOptimizeAway(results.dxVec2);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.dxVec2));
                 });
 
             bench.run("DirectX::XMFLOAT3 addition",
@@ -423,7 +433,8 @@ namespace mathbench
                         DirectX::XMVectorAdd(lhsVec, rhsVec);
 
                     DirectX::XMStoreFloat3(&results.dxVec3, result);
-                    ankerl::nanobench::doNotOptimizeAway(results.dxVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.dxVec3));
                 });
 
             bench.run("DirectX::XMFLOAT4 addition without Loads",
@@ -431,7 +442,8 @@ namespace mathbench
                 {
                     results.dxVecC = DirectX::XMVectorAdd(
                         DirectX::XMVECTOR{}, DirectX::XMVECTOR{});
-                    ankerl::nanobench::doNotOptimizeAway(results.dxVecC);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.dxVecC));
                 });
 
             bench.run("Vectormath::Vector2 addition",
@@ -439,7 +451,8 @@ namespace mathbench
                 {
                     results.sonyVec2 = Vectormath::Vector2(1.0f, 2.0f) +
                                        Vectormath::Vector2(3.0f, 4.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.sonyVec2);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.sonyVec2));
                 });
 
             bench.run("Vectormath::Vector3 addition",
@@ -447,7 +460,8 @@ namespace mathbench
                 {
                     results.sonyVec3 = Vectormath::Vector3(1.0f, 2.0f, 3.0f) +
                                        Vectormath::Vector3(3.0f, 4.0f, 5.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.sonyVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.sonyVec3));
                 });
 
             bench.run("Vectormath::Vector4 addition",
@@ -456,7 +470,8 @@ namespace mathbench
                     results.sonyVec4 =
                         Vectormath::Vector4(1.0f, 2.0f, 3.0f, 4.0f) +
                         Vectormath::Vector4(3.0f, 4.0f, 5.0f, 6.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.sonyVec4);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.sonyVec4));
                 });
 
             bench.run("move::vec2f addition (float)",
@@ -464,7 +479,8 @@ namespace mathbench
                 {
                     using namespace move::math;
                     results.mvVec2f = vec2f(1.0f, 2.0f) + vec2f(3.0f, 4.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec2f);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec2f));
                 });
 
             bench.run("move::vec3f addition (float)",
@@ -473,7 +489,8 @@ namespace mathbench
                     using namespace move::math;
                     results.mvVec3f =
                         vec3f(1.0f, 2.0f, 3.0f) + vec3f(3.0f, 4.0f, 5.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3f);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec3f));
                 });
             bench.run("move::vec4f addition (float)",
                 [&]
@@ -481,7 +498,8 @@ namespace mathbench
                     using namespace move::math;
                     results.mvVec4f = vec4f(1.0f, 2.0f, 3.0f, 4.0f) +
                                       vec4f(3.0f, 4.0f, 5.0f, 6.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec4f);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec4f));
                 });
 
             bench.run("move::vec2d addition (double)",
@@ -489,7 +507,8 @@ namespace mathbench
                 {
                     using namespace move::math;
                     results.mvVec2d = vec2d(1.0f, 2.0f) + vec2d(3.0f, 4.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec2d);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec2d));
                 });
 
             bench.run("move::vec3d addition (double)",
@@ -498,7 +517,8 @@ namespace mathbench
                     using namespace move::math;
                     results.mvVec3d =
                         vec3d(1.0f, 2.0f, 3.0f) + vec3d(3.0f, 4.0f, 5.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3d);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec3d));
                 });
             bench.run("move::vec4d addition (double)",
                 [&]
@@ -506,7 +526,8 @@ namespace mathbench
                     using namespace move::math;
                     results.mvVec4d = vec4d(1.0f, 2.0f, 3.0f, 4.0f) +
                                       vec4d(3.0f, 4.0f, 5.0f, 6.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec4d);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec4d));
                 });
 
             bench.run("rtm::vector4f addition",
@@ -517,7 +538,8 @@ namespace mathbench
                         rtm::vector_add(vector_set(1.0f, 2.0f, 3.0f, 4.0f),
                             vector_set(3.0f, 4.0f, 5.0f, 6.0f));
 
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4f);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmVec4f));
                 });
 
             bench.run("rtm::vector4d addition",
@@ -528,7 +550,8 @@ namespace mathbench
                         rtm::vector_add(vector_set(1.0, 2.0, 3.0, 4.0),
                             vector_set(3.0, 4.0, 5.0, 6.0));
 
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4d);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmVec4d));
                 });
         }
 
@@ -550,7 +573,8 @@ namespace mathbench
                     auto w = (vec4a + vec4b).Dot(vec4b);
 
                     results.smVec4 = DirectX::SimpleMath::Vector4(x, y, z, w);
-                    ankerl::nanobench::doNotOptimizeAway(results.smVec4);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.smVec4));
                 });
 
             bench.run("Complex operation 1 with glm::vec*",
@@ -569,7 +593,8 @@ namespace mathbench
                     auto w = glm::dot(vec4a + vec4b, vec4b);
 
                     results.glmVec4 = glm::vec4(x, y, z, w);
-                    ankerl::nanobench::doNotOptimizeAway(results.glmVec4);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.glmVec4));
                 });
 
             bench.run("Complex operation 1 with DXM",
@@ -598,7 +623,8 @@ namespace mathbench
                         XMVectorAdd(vec4aVec, vec4bVec), vec4bVec));
 
                     XMStoreFloat4(&results.dxVec4, XMVectorSet(x, y, z, w));
-                    ankerl::nanobench::doNotOptimizeAway(results.dxVec4);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.dxVec4));
                 });
 
             {
@@ -627,7 +653,8 @@ namespace mathbench
                             XMVectorAdd(vec4aVec, vec4bVec), vec4bVec));
 
                         XMStoreFloat4(&results.dxVec4, XMVectorSet(x, y, z, w));
-                        ankerl::nanobench::doNotOptimizeAway(results.dxVec4);
+                        ankerl::nanobench::doNotOptimizeAway(
+                            std::as_const(results.dxVec4));
                     });
             }
 
@@ -648,7 +675,8 @@ namespace mathbench
                     auto w = dot(vec4a + vec4b, vec4b);
 
                     results.sonyVec4 = Vector4(x, y, z, w);
-                    ankerl::nanobench::doNotOptimizeAway(results.sonyVec4);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.sonyVec4));
                 });
 
             bench.run("Complex operation 1 with move::math::* (float)",
@@ -668,7 +696,8 @@ namespace mathbench
                     auto w = vec4f::dot((vec4a + vec4b), vec4b);
 
                     results.mvVec4f = move::math::vec4f(x, y, z, w);
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec4f);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec4f));
                 });
 
             bench.run("Complex operation 1 with move::math::* (double)",
@@ -688,7 +717,8 @@ namespace mathbench
                     auto w = vec4d::dot((vec4a + vec4b), vec4b);
 
                     results.mvVec4d = move::math::vec4d(x, y, z, w);
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec4d);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec4d));
                 });
         }
 
@@ -704,7 +734,8 @@ namespace mathbench
 
                     results.smVec3 =
                         ((vec3a + vec3b) * vec3c - vec3d).Cross(vec3a);
-                    ankerl::nanobench::doNotOptimizeAway(results.smVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.smVec3));
                 });
 
             bench.run("Complex operation 2 with glm::vec3",
@@ -717,7 +748,8 @@ namespace mathbench
 
                     results.glmVec3 =
                         glm::cross((vec3a + vec3b) * vec3c - vec3d, vec3a);
-                    ankerl::nanobench::doNotOptimizeAway(results.glmVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.glmVec3));
                 });
 
             bench.run("Complex operation 2 with DXM",
@@ -742,7 +774,8 @@ namespace mathbench
                         vec3aVec);
 
                     XMStoreFloat3(&results.dxVec3, vec3);
-                    ankerl::nanobench::doNotOptimizeAway(results.dxVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.dxVec3));
                 });
 
             {
@@ -767,7 +800,8 @@ namespace mathbench
                             vec3aVec);
 
                         XMStoreFloat3(&results.dxVec3, vec3);
-                        ankerl::nanobench::doNotOptimizeAway(results.dxVec3);
+                        ankerl::nanobench::doNotOptimizeAway(
+                            std::as_const(results.dxVec3));
                     });
             }
 
@@ -790,7 +824,8 @@ namespace mathbench
                                   stepOne.getZ() * stepTwo.getZ()),
                             vec3a);
 
-                    ankerl::nanobench::doNotOptimizeAway(results.sonyVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.sonyVec3));
                 });
 
             bench.run("Complex operation 2 with move::math (float)",
@@ -806,7 +841,8 @@ namespace mathbench
                     auto stepTwo = vec3c - vec3d;
 
                     results.mvVec3f = vec3f::cross((stepOne * stepTwo), vec3a);
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3f);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec3f));
                 });
 
             bench.run("Complex operation 2 with move::math (double)",
@@ -822,7 +858,8 @@ namespace mathbench
                     auto stepTwo = vec3c - vec3d;
 
                     results.mvVec3d = vec3d::cross((stepOne * stepTwo), vec3a);
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3d);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec3d));
                 });
         }
 
@@ -837,7 +874,8 @@ namespace mathbench
                     DirectX::SimpleMath::Vector4 vec3d(7.0f, 8.0f, 9.0f, 10.0f);
 
                     results.smVec4 = ((vec3a + vec3b) * vec3c - vec3d);
-                    ankerl::nanobench::doNotOptimizeAway(results.smVec4);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.smVec4));
                 });
 
             bench.run("Complex operation 3 with glm::vec4",
@@ -849,7 +887,8 @@ namespace mathbench
                     glm::vec4 vec3d(7.0f, 8.0f, 9.0f, 10.0f);
 
                     results.glmVec4 = (vec3a + vec3b) * vec3c - vec3d;
-                    ankerl::nanobench::doNotOptimizeAway(results.glmVec4);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.glmVec4));
                 });
 
             bench.run("Complex operation 3 with DXM",
@@ -872,7 +911,8 @@ namespace mathbench
                         vec3dVec);
 
                     XMStoreFloat4(&results.dxVec4, vec3);
-                    ankerl::nanobench::doNotOptimizeAway(results.dxVec4);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.dxVec4));
                 });
 
             {
@@ -895,7 +935,8 @@ namespace mathbench
                             vec3dVec);
 
                         XMStoreFloat4(&results.dxVec4, vec3);
-                        ankerl::nanobench::doNotOptimizeAway(results.dxVec4);
+                        ankerl::nanobench::doNotOptimizeAway(
+                            std::as_const(results.dxVec4));
                     });
             }
 
@@ -915,7 +956,8 @@ namespace mathbench
                         stepOne.getW() * vec4c.getW());
 
                     results.sonyVec4 = stepTwo - vec4d;
-                    ankerl::nanobench::doNotOptimizeAway(results.sonyVec4);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.sonyVec4));
                 });
 
             bench.run("Complex operation 3 with move::math (float)",
@@ -928,7 +970,8 @@ namespace mathbench
                     vec4f vec4dd(7.0f, 8.0f, 9.0f, 10.0f);
 
                     results.mvVec4f = (vec4a + vec4b) * vec4c - vec4dd;
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec4f);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec4f));
                 });
 
             bench.run("Complex operation 3 with move::math (double)",
@@ -941,7 +984,8 @@ namespace mathbench
                     vec4d vec4dd(7.0f, 8.0f, 9.0f, 10.0f);
 
                     results.mvVec4d = (vec4a + vec4b) * vec4c - vec4dd;
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec4d);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec4d));
                 });
 
             bench.run("Complex operation 3 with rtm::vector4f",
@@ -958,7 +1002,8 @@ namespace mathbench
                     vector4f stepTwo = vector_sub(stepOne, vec4d);
 
                     results.rtmVec4f = stepTwo;
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4f);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmVec4f));
                 });
 
             bench.run("Complex operation 3 with rtm::vector4d",
@@ -975,7 +1020,8 @@ namespace mathbench
                     vector4d stepTwo = vector_sub(stepOne, vec4d);
 
                     results.rtmVec4d = stepTwo;
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4d);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmVec4d));
                 });
         }
     }  // namespace vectors
@@ -1217,7 +1263,8 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(smDirection);
                     results.smVec3 = smDirection;
                     results.smVec3.Normalize();
-                    ankerl::nanobench::doNotOptimizeAway(results.smVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.smVec3));
                 });
 
             glm::vec3 glmDirection(3.0f, -2.0f, 7.0f);
@@ -1226,7 +1273,8 @@ namespace mathbench
                 {
                     ankerl::nanobench::doNotOptimizeAway(glmDirection);
                     results.glmVec3 = glm::normalize(glmDirection);
-                    ankerl::nanobench::doNotOptimizeAway(results.glmVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.glmVec3));
                 });
 
             DirectX::XMVECTOR dxDirection =
@@ -1236,7 +1284,8 @@ namespace mathbench
                 {
                     ankerl::nanobench::doNotOptimizeAway(dxDirection);
                     results.dxVecA = DirectX::XMVector3Normalize(dxDirection);
-                    ankerl::nanobench::doNotOptimizeAway(results.dxVecA);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.dxVecA));
                 });
 
             Vectormath::Vector3 sonyDirection(3.0f, -2.0f, 7.0f);
@@ -1245,7 +1294,8 @@ namespace mathbench
                 {
                     ankerl::nanobench::doNotOptimizeAway(sonyDirection);
                     results.sonyVec3 = normalize(sonyDirection);
-                    ankerl::nanobench::doNotOptimizeAway(results.sonyVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.sonyVec3));
                 });
 
             move::math::float3 mvDirection(3.0f, -2.0f, 7.0f);
@@ -1254,7 +1304,8 @@ namespace mathbench
                 {
                     ankerl::nanobench::doNotOptimizeAway(mvDirection);
                     results.mvVec3f = mvDirection.normalized();
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3f);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec3f));
                 });
 
             move::math::double3 mvDirectionD(3.0, -2.0, 7.0);
@@ -1263,7 +1314,8 @@ namespace mathbench
                 {
                     ankerl::nanobench::doNotOptimizeAway(mvDirectionD);
                     results.mvVec3d = mvDirectionD.normalized();
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3d);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec3d));
                 });
 
             rtm::vector4f rtmDirection =
@@ -1273,7 +1325,8 @@ namespace mathbench
                 {
                     ankerl::nanobench::doNotOptimizeAway(rtmDirection);
                     results.rtmVec4f = rtm::vector_normalize3(rtmDirection);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4f);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmVec4f));
                 });
 
             rtm::vector4d rtmDirectionD = rtm::vector_set(3.0, -2.0, 7.0, 0.0);
@@ -1282,7 +1335,8 @@ namespace mathbench
                 {
                     ankerl::nanobench::doNotOptimizeAway(rtmDirectionD);
                     results.rtmVec4d = rtm::vector_normalize3(rtmDirectionD);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4d);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmVec4d));
                 });
         }
 
@@ -1303,7 +1357,8 @@ namespace mathbench
                     const auto velocity =
                         smVelocity + smAcceleration * deltaTime;
                     results.smVec3 = smPosition + velocity * deltaTime;
-                    ankerl::nanobench::doNotOptimizeAway(results.smVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.smVec3));
                 });
 
             glm::vec3 glmPosition(12.0f, 8.0f, -4.0f);
@@ -1318,7 +1373,8 @@ namespace mathbench
                     const auto velocity =
                         glmVelocity + glmAcceleration * deltaTime;
                     results.glmVec3 = glmPosition + velocity * deltaTime;
-                    ankerl::nanobench::doNotOptimizeAway(results.glmVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.glmVec3));
                 });
 
             DirectX::XMVECTOR dxPosition =
@@ -1339,7 +1395,8 @@ namespace mathbench
                         dxAcceleration, dxDeltaTime, dxVelocity);
                     results.dxVecA = DirectX::XMVectorMultiplyAdd(
                         velocity, dxDeltaTime, dxPosition);
-                    ankerl::nanobench::doNotOptimizeAway(results.dxVecA);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.dxVecA));
                 });
 
             Vectormath::Vector3 sonyPosition(12.0f, 8.0f, -4.0f);
@@ -1354,7 +1411,8 @@ namespace mathbench
                     const auto velocity =
                         sonyVelocity + sonyAcceleration * deltaTime;
                     results.sonyVec3 = sonyPosition + velocity * deltaTime;
-                    ankerl::nanobench::doNotOptimizeAway(results.sonyVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.sonyVec3));
                 });
 
             move::math::float3 mvPosition(12.0f, 8.0f, -4.0f);
@@ -1369,7 +1427,8 @@ namespace mathbench
                     const auto velocity =
                         mvVelocity + mvAcceleration * deltaTime;
                     results.mvVec3f = mvPosition + velocity * deltaTime;
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3f);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec3f));
                 });
 
             move::math::double3 mvPositionD(12.0, 8.0, -4.0);
@@ -1384,7 +1443,8 @@ namespace mathbench
                     const auto velocity =
                         mvVelocityD + mvAccelerationD * deltaTimeD;
                     results.mvVec3d = mvPositionD + velocity * deltaTimeD;
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3d);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec3d));
                 });
 
             rtm::vector4f rtmPosition =
@@ -1403,7 +1463,8 @@ namespace mathbench
                         rtm::vector_mul(rtmAcceleration, deltaTime));
                     results.rtmVec4f = rtm::vector_add(
                         rtmPosition, rtm::vector_mul(velocity, deltaTime));
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4f);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmVec4f));
                 });
 
             rtm::vector4d rtmPositionD = rtm::vector_set(12.0, 8.0, -4.0, 0.0);
@@ -1420,7 +1481,8 @@ namespace mathbench
                         rtm::vector_mul(rtmAccelerationD, deltaTimeD));
                     results.rtmVec4d = rtm::vector_add(
                         rtmPositionD, rtm::vector_mul(velocity, deltaTimeD));
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4d);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmVec4d));
                 });
         }
 
@@ -1441,7 +1503,8 @@ namespace mathbench
                     right.Normalize();
                     const auto correctedUp = forward.Cross(right);
                     results.smVec3 = right + correctedUp;
-                    ankerl::nanobench::doNotOptimizeAway(results.smVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.smVec3));
                 });
 
             glm::vec3 glmEye(4.0f, 2.0f, -8.0f);
@@ -1458,7 +1521,8 @@ namespace mathbench
                         glm::normalize(glm::cross(glmUp, forward));
                     const auto correctedUp = glm::cross(forward, right);
                     results.glmVec3 = right + correctedUp;
-                    ankerl::nanobench::doNotOptimizeAway(results.glmVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.glmVec3));
                 });
 
             DirectX::XMVECTOR dxEye =
@@ -1480,7 +1544,8 @@ namespace mathbench
                     const auto correctedUp =
                         DirectX::XMVector3Cross(forward, right);
                     results.dxVecA = DirectX::XMVectorAdd(right, correctedUp);
-                    ankerl::nanobench::doNotOptimizeAway(results.dxVecA);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.dxVecA));
                 });
 
             Vectormath::Vector3 sonyEye(4.0f, 2.0f, -8.0f);
@@ -1496,7 +1561,8 @@ namespace mathbench
                     const auto right = normalize(cross(sonyUp, forward));
                     const auto correctedUp = cross(forward, right);
                     results.sonyVec3 = right + correctedUp;
-                    ankerl::nanobench::doNotOptimizeAway(results.sonyVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.sonyVec3));
                 });
 
             move::math::float3 mvEye(4.0f, 2.0f, -8.0f);
@@ -1514,7 +1580,8 @@ namespace mathbench
                     const auto correctedUp =
                         move::math::float3::cross(forward, right);
                     results.mvVec3f = right + correctedUp;
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3f);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec3f));
                 });
 
             move::math::double3 mvEyeD(4.0, 2.0, -8.0);
@@ -1532,7 +1599,8 @@ namespace mathbench
                     const auto correctedUp =
                         move::math::double3::cross(forward, right);
                     results.mvVec3d = right + correctedUp;
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3d);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec3d));
                 });
 
             rtm::vector4f rtmEye = rtm::vector_set(4.0f, 2.0f, -8.0f, 0.0f);
@@ -1550,7 +1618,8 @@ namespace mathbench
                         rtm::vector_cross3(rtmUp, forward));
                     const auto correctedUp = rtm::vector_cross3(forward, right);
                     results.rtmVec4f = rtm::vector_add(right, correctedUp);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4f);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmVec4f));
                 });
 
             rtm::vector4d rtmEyeD = rtm::vector_set(4.0, 2.0, -8.0, 0.0);
@@ -1568,7 +1637,8 @@ namespace mathbench
                         rtm::vector_cross3(rtmUpD, forward));
                     const auto correctedUp = rtm::vector_cross3(forward, right);
                     results.rtmVec4d = rtm::vector_add(right, correctedUp);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4d);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmVec4d));
                 });
         }
 
@@ -1585,7 +1655,8 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(smRotation);
                     results.smVec3 = DirectX::SimpleMath::Vector3::Transform(
                         smDirection, smRotation);
-                    ankerl::nanobench::doNotOptimizeAway(results.smVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.smVec3));
                 });
 
             glm::vec3 glmDirection(0.25f, 0.5f, 1.0f);
@@ -1597,7 +1668,8 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(glmDirection);
                     ankerl::nanobench::doNotOptimizeAway(glmRotation);
                     results.glmVec3 = glmRotation * glmDirection;
-                    ankerl::nanobench::doNotOptimizeAway(results.glmVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.glmVec3));
                 });
 
             DirectX::XMVECTOR dxDirection =
@@ -1611,7 +1683,8 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(dxRotation);
                     results.dxVecA =
                         DirectX::XMVector3Rotate(dxDirection, dxRotation);
-                    ankerl::nanobench::doNotOptimizeAway(results.dxVecA);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.dxVecA));
                 });
 
             Vectormath::Vector3 sonyDirection(0.25f, 0.5f, 1.0f);
@@ -1624,7 +1697,8 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(sonyRotation);
                     results.sonyVec3 =
                         Vectormath::SSE::rotate(sonyRotation, sonyDirection);
-                    ankerl::nanobench::doNotOptimizeAway(results.sonyVec3);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.sonyVec3));
                 });
 
             move::math::float3 mvDirection(0.25f, 0.5f, 1.0f);
@@ -1635,7 +1709,8 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(mvDirection);
                     ankerl::nanobench::doNotOptimizeAway(mvRotation);
                     results.mvVec3f = mvDirection * mvRotation;
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3f);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec3f));
                 });
 
             move::math::double3 mvDirectionD(0.25, 0.5, 1.0);
@@ -1646,7 +1721,8 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(mvDirectionD);
                     ankerl::nanobench::doNotOptimizeAway(mvRotationD);
                     results.mvVec3d = mvDirectionD * mvRotationD;
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec3d);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec3d));
                 });
 
             rtm::vector4f rtmDirection =
@@ -1660,7 +1736,8 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(rtmRotation);
                     results.rtmVec4f =
                         rtm::quat_mul_vector3(rtmDirection, rtmRotation);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4f);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmVec4f));
                 });
 
             rtm::vector4d rtmDirectionD = rtm::vector_set(0.25, 0.5, 1.0, 0.0);
@@ -1673,7 +1750,8 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(rtmRotationD);
                     results.rtmVec4d =
                         rtm::quat_mul_vector3(rtmDirectionD, rtmRotationD);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4d);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmVec4d));
                 });
         }
     }  // namespace workloads
@@ -1682,623 +1760,971 @@ namespace mathbench
     {
         void construct_model_matrix(ankerl::nanobench::Bench& bench)
         {
+            float tx = 1.0f;
+            float ty = 2.0f;
+            float tz = 3.0f;
+            float angle = 0.5f;
+            float sx = 1.0f;
+            float sy = 2.0f;
+            float sz = 3.0f;
+            double txD = 1.0;
+            double tyD = 2.0;
+            double tzD = 3.0;
+            double angleD = 0.5;
+            double sxD = 1.0;
+            double syD = 2.0;
+            double szD = 3.0;
+
+            const auto makeFloatInputsOpaque = [&]
+            {
+                ankerl::nanobench::doNotOptimizeAway(tx);
+                ankerl::nanobench::doNotOptimizeAway(ty);
+                ankerl::nanobench::doNotOptimizeAway(tz);
+                ankerl::nanobench::doNotOptimizeAway(angle);
+                ankerl::nanobench::doNotOptimizeAway(sx);
+                ankerl::nanobench::doNotOptimizeAway(sy);
+                ankerl::nanobench::doNotOptimizeAway(sz);
+            };
+            const auto makeDoubleInputsOpaque = [&]
+            {
+                ankerl::nanobench::doNotOptimizeAway(txD);
+                ankerl::nanobench::doNotOptimizeAway(tyD);
+                ankerl::nanobench::doNotOptimizeAway(tzD);
+                ankerl::nanobench::doNotOptimizeAway(angleD);
+                ankerl::nanobench::doNotOptimizeAway(sxD);
+                ankerl::nanobench::doNotOptimizeAway(syD);
+                ankerl::nanobench::doNotOptimizeAway(szD);
+            };
+
             bench.run("Construct model matrix SimpleMath",
                 [&]
                 {
+                    makeFloatInputsOpaque();
                     results.smMat4a =
                         DirectX::SimpleMath::Matrix::CreateTranslation(
-                            1.0f, 2.0f, 3.0f) *
-                        DirectX::SimpleMath::Matrix::CreateRotationX(0.5f) *
-                        DirectX::SimpleMath::Matrix::CreateRotationY(0.5f) *
-                        DirectX::SimpleMath::Matrix::CreateRotationZ(0.5f) *
-                        DirectX::SimpleMath::Matrix::CreateScale(
-                            1.0f, 2.0f, 3.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.smMat4a);
+                            tx, ty, tz) *
+                        DirectX::SimpleMath::Matrix::CreateRotationX(angle) *
+                        DirectX::SimpleMath::Matrix::CreateRotationY(angle) *
+                        DirectX::SimpleMath::Matrix::CreateRotationZ(angle) *
+                        DirectX::SimpleMath::Matrix::CreateScale(sx, sy, sz);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.smMat4a));
                 });
 
             bench.run("Construct model matrix glm",
                 [&]
                 {
-                    results.glmMat4a = glm::translate(glm::mat4(1.0f),
-                                           glm::vec3(1.0f, 2.0f, 3.0f)) *
-                                       glm::rotate(glm::mat4(1.0f), 0.5f,
-                                           glm::vec3(1.0f, 0.0f, 0.0f)) *
-                                       glm::rotate(glm::mat4(1.0f), 0.5f,
-                                           glm::vec3(0.0f, 1.0f, 0.0f)) *
-                                       glm::rotate(glm::mat4(1.0f), 0.5f,
-                                           glm::vec3(0.0f, 0.0f, 1.0f)) *
-                                       glm::scale(glm::mat4(1.0f),
-                                           glm::vec3(1.0f, 2.0f, 3.0f));
-                    ankerl::nanobench::doNotOptimizeAway(results.glmMat4a);
+                    makeFloatInputsOpaque();
+                    results.glmMat4a =
+                        glm::translate(glm::mat4(1.0f), glm::vec3(tx, ty, tz)) *
+                        glm::rotate(glm::mat4(1.0f), angle,
+                            glm::vec3(1.0f, 0.0f, 0.0f)) *
+                        glm::rotate(glm::mat4(1.0f), angle,
+                            glm::vec3(0.0f, 1.0f, 0.0f)) *
+                        glm::rotate(glm::mat4(1.0f), angle,
+                            glm::vec3(0.0f, 0.0f, 1.0f)) *
+                        glm::scale(glm::mat4(1.0f), glm::vec3(sx, sy, sz));
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.glmMat4a));
                 });
 
             bench.run("Construct model matrix DXM (manual)",
                 [&]
                 {
                     using namespace DirectX;
-                    // Use XMMatrixMultiply
+                    makeFloatInputsOpaque();
 
                     results.dxMatA = XMMatrixMultiply(
                         XMMatrixMultiply(
                             XMMatrixMultiply(
                                 XMMatrixMultiply(
-                                    XMMatrixTranslation(1.0f, 2.0f, 3.0f),
-                                    XMMatrixRotationX(0.5f)),
-                                XMMatrixRotationY(0.5f)),
-                            XMMatrixRotationZ(0.5f)),
-                        XMMatrixScaling(1.0f, 2.0f, 3.0f));
-                    ankerl::nanobench::doNotOptimizeAway(results.dxMatA);
+                                    XMMatrixTranslation(tx, ty, tz),
+                                    XMMatrixRotationX(angle)),
+                                XMMatrixRotationY(angle)),
+                            XMMatrixRotationZ(angle)),
+                        XMMatrixScaling(sx, sy, sz));
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.dxMatA));
                 });
 
             bench.run("Construct model matrix DXM (builtin)",
                 [&]
                 {
                     using namespace DirectX;
+                    makeFloatInputsOpaque();
 
                     XMVECTOR ScalingOrigin = XMVectorZero();
                     XMVECTOR ScalingOrientationQuaternion =
                         XMQuaternionIdentity();
-                    XMVECTOR Scaling = XMVectorSet(1.0f, 2.0f, 3.0f, 0.0f);
+                    XMVECTOR Scaling = XMVectorSet(sx, sy, sz, 0.0f);
                     XMVECTOR RotationOrigin = XMVectorZero();
                     XMVECTOR RotationQuaternion =
-                        XMQuaternionRotationRollPitchYaw(0.5f, 0.5f, 0.5f);
-                    XMVECTOR Translation = XMVectorSet(1.0f, 2.0f, 3.0f, 0.0f);
-                    XMVECTOR Scale = XMVectorSet(1.0f, 2.0f, 3.0f, 0.0f);
-                    XMVECTOR Rotation =
-                        XMQuaternionRotationRollPitchYaw(0.5f, 0.5f, 0.5f);
+                        XMQuaternionRotationRollPitchYaw(angle, angle, angle);
+                    XMVECTOR Translation = XMVectorSet(tx, ty, tz, 0.0f);
 
                     results.dxMatA = XMMatrixTransformation(ScalingOrigin,
                         ScalingOrientationQuaternion, Scaling, RotationOrigin,
                         RotationQuaternion, Translation);
-                    ankerl::nanobench::doNotOptimizeAway(results.dxMatA);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.dxMatA));
                 });
 
             bench.run("Construct model matrix Vectormath",
                 [&]
                 {
                     using namespace Vectormath;
+                    makeFloatInputsOpaque();
                     results.sonyMat4a =
-                        Matrix4::translation(Vector3(1.0f, 2.0f, 3.0f)) *
-                        Matrix4::rotationX(0.5f) * Matrix4::rotationY(0.5f) *
-                        Matrix4::rotationZ(0.5f) *
-                        Matrix4::scale(Vector3(1.0f, 2.0f, 3.0f));
-                    ankerl::nanobench::doNotOptimizeAway(results.sonyMat4a);
+                        Matrix4::translation(Vector3(tx, ty, tz)) *
+                        Matrix4::rotationX(angle) * Matrix4::rotationY(angle) *
+                        Matrix4::rotationZ(angle) *
+                        Matrix4::scale(Vector3(sx, sy, sz));
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.sonyMat4a));
                 });
 
             bench.run("Construct model matrix move::math (manual, float)",
                 [&]
                 {
                     using namespace move::math;
-                    results.mvMat4x4fa =
-                        mat4x4f::translation({1, 2, 3}) *
-                        mat4x4f::rotation_x(0.5f) * mat4x4f::rotation_y(0.5f) *
-                        mat4x4f::rotation_z(0.5f) * mat4x4f::scale(1, 2, 3);
+                    makeFloatInputsOpaque();
+                    results.mvMat4x4fa = mat4x4f::translation({tx, ty, tz}) *
+                                         mat4x4f::rotation_x(angle) *
+                                         mat4x4f::rotation_y(angle) *
+                                         mat4x4f::rotation_z(angle) *
+                                         mat4x4f::scale(sx, sy, sz);
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4fa);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvMat4x4fa));
                 });
 
             bench.run("Construct model matrix move::math (builtin, float)",
                 [&]
                 {
                     using namespace move::math;
-                    results.mvMat4x4fa = mat4x4f::trs(
-                        {1, 2, 3}, quatf::euler(0.5f, 0.5f, 0.5f), {1, 2, 3});
+                    makeFloatInputsOpaque();
+                    results.mvMat4x4fa = mat4x4f::trs({tx, ty, tz},
+                        quatf::euler(angle, angle, angle), {sx, sy, sz});
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4fa);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvMat4x4fa));
                 });
 
             bench.run("Construct model matrix move::math (manual, double)",
                 [&]
                 {
                     using namespace move::math;
-                    results.mvMat4x4da =
-                        mat4x4d::translation({1, 2, 3}) *
-                        mat4x4d::rotation(quatd::euler(0.5, 0.5, 0.5)) *
-                        mat4x4d::scale(1, 2, 3);
+                    makeDoubleInputsOpaque();
+                    results.mvMat4x4da = mat4x4d::translation({txD, tyD, tzD}) *
+                                         mat4x4d::rotation(quatd::euler(
+                                             angleD, angleD, angleD)) *
+                                         mat4x4d::scale(sxD, syD, szD);
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4da);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvMat4x4da));
                 });
 
             bench.run("Construct model matrix move::math (builtin, double)",
                 [&]
                 {
                     using namespace move::math;
-                    // results.mvMat4x4da =
-                    //     mat4x4d::trs(vec3d(1, 2, 3),
-                    //         quatd::euler(0.5f, 0.5f, 0.5f),
-                    //         vec3d(1, 2, 3));
+                    makeDoubleInputsOpaque();
+                    results.mvMat4x4da = mat4x4d::trs(vec3d(txD, tyD, tzD),
+                        quatd::euler(angleD, angleD, angleD),
+                        vec3d(sxD, syD, szD));
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4da);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvMat4x4da));
                 });
 
             bench.run("Construct rtm::qvvf (~transformation matrix)",
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmQvvf = qvv_set(quat_set(0.5f, 0.5f, 0.5f, 1.0f),
-                        vector_set(1.0f, 2.0f, 3.0f, 0.0f),
-                        vector_set(1.0f, 2.0f, 3.0f, 0.0f));
+                    makeFloatInputsOpaque();
+                    results.rtmQvvf =
+                        qvv_set(quat_set(angle, angle, angle, 1.0f),
+                            vector_set(tx, ty, tz, 0.0f),
+                            vector_set(sx, sy, sz, 0.0f));
 
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmQvvf);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmQvvf));
                 });
 
             bench.run("Construct rtm::qvvd (~transformation matrix)",
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmQvvd = qvv_set(quat_set(0.5, 0.5, 0.5, 1.0),
-                        vector_set(1.0, 2.0, 3.0, 0.0),
-                        vector_set(1.0, 2.0, 3.0, 0.0));
+                    makeDoubleInputsOpaque();
+                    results.rtmQvvd =
+                        qvv_set(quat_set(angleD, angleD, angleD, 1.0),
+                            vector_set(txD, tyD, tzD, 0.0),
+                            vector_set(sxD, syD, szD, 0.0));
 
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmQvvf);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmQvvd));
                 });
 
             bench.run("Construct model matrix rtm::matrix3x4f",
                 [&]
                 {
                     using namespace rtm;
-                    auto qvv = qvv_set(quat_set(0.5f, 0.5f, 0.5f, 1.0f),
-                        vector_set(1.0f, 2.0f, 3.0f, 0.0f),
-                        vector_set(1.0f, 2.0f, 3.0f, 0.0f));
+                    makeFloatInputsOpaque();
+                    auto qvv = qvv_set(quat_set(angle, angle, angle, 1.0f),
+                        vector_set(tx, ty, tz, 0.0f),
+                        vector_set(sx, sy, sz, 0.0f));
 
                     results.rtmMat3x4fa = matrix_from_qvv(qvv);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat3x4fa);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmMat3x4fa));
                 });
 
             bench.run("Construct model matrix rtm::matrix3x4d",
                 [&]
                 {
                     using namespace rtm;
-                    auto qvv = qvv_set(quat_set(0.5, 0.5, 0.5, 1.0),
-                        vector_set(1.0, 2.0, 3.0, 0.0),
-                        vector_set(1.0, 2.0, 3.0, 0.0));
+                    makeDoubleInputsOpaque();
+                    auto qvv = qvv_set(quat_set(angleD, angleD, angleD, 1.0),
+                        vector_set(txD, tyD, tzD, 0.0),
+                        vector_set(sxD, syD, szD, 0.0));
 
                     results.rtmMat3x4da = matrix_from_qvv(qvv);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat3x4da);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmMat3x4da));
                 });
 
             bench.run("Construct model matrix rtm::matrix4x4f",
                 [&]
                 {
                     using namespace rtm;
-                    auto qvv = qvv_set(quat_set(0.5f, 0.5f, 0.5f, 1.0f),
-                        vector_set(1.0f, 2.0f, 3.0f, 0.0f),
-                        vector_set(1.0f, 2.0f, 3.0f, 0.0f));
+                    makeFloatInputsOpaque();
+                    auto qvv = qvv_set(quat_set(angle, angle, angle, 1.0f),
+                        vector_set(tx, ty, tz, 0.0f),
+                        vector_set(sx, sy, sz, 0.0f));
 
                     results.rtmMat4x4fa = matrix_cast(matrix_from_qvv(qvv));
                     results.rtmMat4x4fa.z_axis =
                         vector_set_w(results.rtmMat4x4fa.z_axis, 1);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4fa);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmMat4x4fa));
                 });
 
             bench.run("Construct model matrix rtm::matrix4x4d",
                 [&]
                 {
                     using namespace rtm;
-                    auto qvv = qvv_set(quat_set(0.5, 0.5, 0.5, 1.0),
-                        vector_set(1.0, 2.0, 3.0, 0.0),
-                        vector_set(1.0, 2.0, 3.0, 0.0));
+                    makeDoubleInputsOpaque();
+                    auto qvv = qvv_set(quat_set(angleD, angleD, angleD, 1.0),
+                        vector_set(txD, tyD, tzD, 0.0),
+                        vector_set(sxD, syD, szD, 0.0));
 
                     results.rtmMat4x4da = matrix_cast(matrix_from_qvv(qvv));
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4da);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmMat4x4da));
                 });
         }
 
         void construct_view_matrix(ankerl::nanobench::Bench& bench)
         {
+            const DirectX::SimpleMath::Vector3 smEye(1.0f, 2.0f, 3.0f);
+            const DirectX::SimpleMath::Vector3 smTarget(4.0f, 5.0f, 6.0f);
+            const DirectX::SimpleMath::Vector3 smUp(7.0f, 8.0f, 9.0f);
+            const glm::vec3 glmEye(1.0f, 2.0f, 3.0f);
+            const glm::vec3 glmTarget(4.0f, 5.0f, 6.0f);
+            const glm::vec3 glmUp(7.0f, 8.0f, 9.0f);
+            const DirectX::XMVECTOR dxEye =
+                DirectX::XMVectorSet(1.0f, 2.0f, 3.0f, 0.0f);
+            const DirectX::XMVECTOR dxTarget =
+                DirectX::XMVectorSet(4.0f, 5.0f, 6.0f, 0.0f);
+            const DirectX::XMVECTOR dxUp =
+                DirectX::XMVectorSet(7.0f, 8.0f, 9.0f, 0.0f);
+            const Vectormath::SSE::Point3 sonyEye(1.0f, 2.0f, 3.0f);
+            const Vectormath::SSE::Point3 sonyTarget(4.0f, 5.0f, 6.0f);
+            const Vectormath::Vector3 sonyUp(7.0f, 8.0f, 9.0f);
+            const move::math::fast_float3 mvEye(1.0f, 2.0f, 3.0f);
+            const move::math::fast_float3 mvTarget(4.0f, 5.0f, 6.0f);
+            const move::math::fast_float3 mvUp(7.0f, 8.0f, 9.0f);
+            const move::math::fast_double3 mvEyeD(1.0, 2.0, 3.0);
+            const move::math::fast_double3 mvTargetD(4.0, 5.0, 6.0);
+            const move::math::fast_double3 mvUpD(7.0, 8.0, 9.0);
+            const rtm::vector4f rtmEye =
+                rtm::vector_set(1.0f, 2.0f, 3.0f, 0.0f);
+            const rtm::vector4f rtmTarget =
+                rtm::vector_set(4.0f, 5.0f, 6.0f, 0.0f);
+            const rtm::vector4f rtmUp = rtm::vector_set(7.0f, 8.0f, 9.0f, 0.0f);
+            const rtm::vector4d rtmEyeD = rtm::vector_set(1.0, 2.0, 3.0, 0.0);
+            const rtm::vector4d rtmTargetD =
+                rtm::vector_set(4.0, 5.0, 6.0, 0.0);
+            const rtm::vector4d rtmUpD = rtm::vector_set(7.0, 8.0, 9.0, 0.0);
+
             bench.run("Construct view matrix SimpleMath",
                 [&]
                 {
+                    ankerl::nanobench::doNotOptimizeAway(smEye);
+                    ankerl::nanobench::doNotOptimizeAway(smTarget);
+                    ankerl::nanobench::doNotOptimizeAway(smUp);
                     results.smMat4a = DirectX::SimpleMath::Matrix::CreateLookAt(
-                        DirectX::SimpleMath::Vector3(1.0f, 2.0f, 3.0f),
-                        DirectX::SimpleMath::Vector3(4.0f, 5.0f, 6.0f),
-                        DirectX::SimpleMath::Vector3(7.0f, 8.0f, 9.0f));
-                    ankerl::nanobench::doNotOptimizeAway(results.smMat4a);
+                        smEye, smTarget, smUp);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.smMat4a));
                 });
 
             bench.run("Construct view matrix glm",
                 [&]
                 {
-                    results.glmMat4a = glm::lookAt(glm::vec3(1.0f, 2.0f, 3.0f),
-                        glm::vec3(4.0f, 5.0f, 6.0f),
-                        glm::vec3(7.0f, 8.0f, 9.0f));
-                    ankerl::nanobench::doNotOptimizeAway(results.glmMat4a);
+                    ankerl::nanobench::doNotOptimizeAway(glmEye);
+                    ankerl::nanobench::doNotOptimizeAway(glmTarget);
+                    ankerl::nanobench::doNotOptimizeAway(glmUp);
+                    results.glmMat4a = glm::lookAt(glmEye, glmTarget, glmUp);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.glmMat4a));
                 });
 
             bench.run("Construct view matrix DXM",
                 [&]
                 {
                     using namespace DirectX;
-                    results.dxMatA =
-                        XMMatrixLookAtLH(XMVectorSet(1.0f, 2.0f, 3.0f, 0.0f),
-                            XMVectorSet(4.0f, 5.0f, 6.0f, 0.0f),
-                            XMVectorSet(7.0f, 8.0f, 9.0f, 0.0f));
-                    ankerl::nanobench::doNotOptimizeAway(results.dxMatA);
+                    ankerl::nanobench::doNotOptimizeAway(dxEye);
+                    ankerl::nanobench::doNotOptimizeAway(dxTarget);
+                    ankerl::nanobench::doNotOptimizeAway(dxUp);
+                    results.dxMatA = XMMatrixLookAtLH(dxEye, dxTarget, dxUp);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.dxMatA));
                 });
 
             bench.run("Construct view matrix Vectormath",
                 [&]
                 {
                     using namespace Vectormath;
-                    results.sonyMat4a = Matrix4::lookAt(
-                        Point3(1.0f, 2.0f, 3.0f), Point3(4.0f, 5.0f, 6.0f),
-                        Vector3(7.0f, 8.0f, 9.0f));
-                    ankerl::nanobench::doNotOptimizeAway(results.sonyMat4a);
+                    ankerl::nanobench::doNotOptimizeAway(sonyEye);
+                    ankerl::nanobench::doNotOptimizeAway(sonyTarget);
+                    ankerl::nanobench::doNotOptimizeAway(sonyUp);
+                    results.sonyMat4a =
+                        Matrix4::lookAt(sonyEye, sonyTarget, sonyUp);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.sonyMat4a));
                 });
 
             bench.run("Construct view matrix move::math (float)",
                 [&]
                 {
                     using namespace move::math;
-                    results.mvMat4x4fa = mat4x4f::look_at(
-                        vec3f(1, 2, 3), vec3f(4, 5, 6), vec3f(7, 8, 9));
+                    ankerl::nanobench::doNotOptimizeAway(mvEye);
+                    ankerl::nanobench::doNotOptimizeAway(mvTarget);
+                    ankerl::nanobench::doNotOptimizeAway(mvUp);
+                    results.mvMat4x4fa =
+                        mat4x4f::look_at(mvEye, mvTarget, mvUp);
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4fa);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvMat4x4fa));
                 });
 
             bench.run("Construct view matrix move::math (double)",
                 [&]
                 {
                     using namespace move::math;
+                    ankerl::nanobench::doNotOptimizeAway(mvEyeD);
+                    ankerl::nanobench::doNotOptimizeAway(mvTargetD);
+                    ankerl::nanobench::doNotOptimizeAway(mvUpD);
                     results.mvMat4x4da =
-                        mat4x4d::look_at({1, 2, 3}, {4, 5, 6}, {7, 8, 9});
+                        mat4x4d::look_at(mvEyeD, mvTargetD, mvUpD);
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4da);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvMat4x4da));
                 });
 
             bench.run("Construct view matrix rtm::matrix4x4f",
                 [&]
                 {
                     using namespace rtm;
+                    ankerl::nanobench::doNotOptimizeAway(rtmEye);
+                    ankerl::nanobench::doNotOptimizeAway(rtmTarget);
+                    ankerl::nanobench::doNotOptimizeAway(rtmUp);
                     results.rtmMat4x4fa =
                         rtm::camera::look_at_rh<matrix4x4f, vector4f>(
-                            vector_set(1.0f, 2.0f, 3.0f, 0.0f),
-                            vector_set(4.0f, 5.0f, 6.0f, 0.0f),
-                            vector_set(7.0f, 8.0f, 9.0f, 0.0f));
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4fa);
+                            rtmEye, rtmTarget, rtmUp);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmMat4x4fa));
                 });
 
             bench.run("Construct view matrix rtm::matrix4x4d",
                 [&]
                 {
                     using namespace rtm;
+                    ankerl::nanobench::doNotOptimizeAway(rtmEyeD);
+                    ankerl::nanobench::doNotOptimizeAway(rtmTargetD);
+                    ankerl::nanobench::doNotOptimizeAway(rtmUpD);
                     results.rtmMat4x4da =
                         rtm::camera::look_at_rh<matrix4x4d, vector4d>(
-                            vector_set(1.0, 2.0, 3.0, 0.0),
-                            vector_set(4.0, 5.0, 6.0, 0.0),
-                            vector_set(7.0, 8.0, 9.0, 0.0));
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4da);
+                            rtmEyeD, rtmTargetD, rtmUpD);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmMat4x4da));
                 });
         }
 
         void construct_perspective_projection_matrix(
             ankerl::nanobench::Bench& bench)
         {
+            float fov = 0.5f;
+            float aspect = 1.0f;
+            float nearPlane = 0.1f;
+            float farPlane = 100.0f;
+            double fovD = 0.5;
+            double aspectD = 1.0;
+            double nearPlaneD = 0.1;
+            double farPlaneD = 100.0;
+
             bench.run("Construct perspective matrix SimpleMath",
                 [&]
                 {
+                    ankerl::nanobench::doNotOptimizeAway(fov);
+                    ankerl::nanobench::doNotOptimizeAway(aspect);
+                    ankerl::nanobench::doNotOptimizeAway(nearPlane);
+                    ankerl::nanobench::doNotOptimizeAway(farPlane);
                     results.smMat4a = DirectX::SimpleMath::Matrix::
-                        CreatePerspectiveFieldOfView(0.5f, 1.0f, 0.1f, 100.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.smMat4a);
+                        CreatePerspectiveFieldOfView(
+                            fov, aspect, nearPlane, farPlane);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.smMat4a));
                 });
 
             bench.run("Construct perspective matrix glm",
                 [&]
                 {
+                    ankerl::nanobench::doNotOptimizeAway(fov);
+                    ankerl::nanobench::doNotOptimizeAway(aspect);
+                    ankerl::nanobench::doNotOptimizeAway(nearPlane);
+                    ankerl::nanobench::doNotOptimizeAway(farPlane);
                     results.glmMat4a =
-                        glm::perspective(0.5f, 1.0f, 0.1f, 100.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.glmMat4a);
+                        glm::perspective(fov, aspect, nearPlane, farPlane);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.glmMat4a));
                 });
 
             bench.run("Construct perspective matrix DXM",
                 [&]
                 {
                     using namespace DirectX;
-                    results.dxMatA =
-                        XMMatrixPerspectiveFovLH(0.5f, 1.0f, 0.1f, 100.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.dxMatA);
+                    ankerl::nanobench::doNotOptimizeAway(fov);
+                    ankerl::nanobench::doNotOptimizeAway(aspect);
+                    ankerl::nanobench::doNotOptimizeAway(nearPlane);
+                    ankerl::nanobench::doNotOptimizeAway(farPlane);
+                    results.dxMatA = XMMatrixPerspectiveFovLH(
+                        fov, aspect, nearPlane, farPlane);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.dxMatA));
                 });
 
             bench.run("Construct perspective matrix Vectormath",
                 [&]
                 {
                     using namespace Vectormath;
+                    ankerl::nanobench::doNotOptimizeAway(fov);
+                    ankerl::nanobench::doNotOptimizeAway(aspect);
+                    ankerl::nanobench::doNotOptimizeAway(nearPlane);
+                    ankerl::nanobench::doNotOptimizeAway(farPlane);
                     results.sonyMat4a =
-                        Matrix4::perspective(0.5f, 1.0f, 0.1f, 100.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.sonyMat4a);
+                        Matrix4::perspective(fov, aspect, nearPlane, farPlane);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.sonyMat4a));
                 });
 
             bench.run("Construct perspective matrix move::math (float)",
                 [&]
                 {
                     using namespace move::math;
+                    ankerl::nanobench::doNotOptimizeAway(fov);
+                    ankerl::nanobench::doNotOptimizeAway(aspect);
+                    ankerl::nanobench::doNotOptimizeAway(nearPlane);
+                    ankerl::nanobench::doNotOptimizeAway(farPlane);
                     results.mvMat4x4fa =
-                        mat4x4f::perspective(0.5f, 1.0f, 0.1f, 100.0f);
+                        mat4x4f::perspective(fov, aspect, nearPlane, farPlane);
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4fa);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvMat4x4fa));
                 });
 
             bench.run("Construct perspective matrix move::math (double)",
                 [&]
                 {
                     using namespace move::math;
-                    results.mvMat4x4da =
-                        mat4x4d::perspective(0.5f, 1.0f, 0.1f, 100.0f);
+                    ankerl::nanobench::doNotOptimizeAway(fovD);
+                    ankerl::nanobench::doNotOptimizeAway(aspectD);
+                    ankerl::nanobench::doNotOptimizeAway(nearPlaneD);
+                    ankerl::nanobench::doNotOptimizeAway(farPlaneD);
+                    results.mvMat4x4da = mat4x4d::perspective(
+                        fovD, aspectD, nearPlaneD, farPlaneD);
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4da);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvMat4x4da));
                 });
 
             bench.run("Construct perspective matrix rtm::matrix4x4f",
                 [&]
                 {
                     using namespace rtm;
+                    ankerl::nanobench::doNotOptimizeAway(fov);
+                    ankerl::nanobench::doNotOptimizeAway(aspect);
+                    ankerl::nanobench::doNotOptimizeAway(nearPlane);
+                    ankerl::nanobench::doNotOptimizeAway(farPlane);
                     results.rtmMat4x4fa = rtm::camera::perspective_fov_rh(
-                        0.5f, 1.0f, 0.1f, 100.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4fa);
+                        fov, aspect, nearPlane, farPlane);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmMat4x4fa));
                 });
 
             bench.run("Construct perspective matrix rtm::matrix4x4d",
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmMat4x4da =
-                        rtm::camera::perspective_fov_rh(0.5, 1.0, 0.1, 100.0);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4da);
+                    ankerl::nanobench::doNotOptimizeAway(fovD);
+                    ankerl::nanobench::doNotOptimizeAway(aspectD);
+                    ankerl::nanobench::doNotOptimizeAway(nearPlaneD);
+                    ankerl::nanobench::doNotOptimizeAway(farPlaneD);
+                    results.rtmMat4x4da = rtm::camera::perspective_fov_rh(
+                        fovD, aspectD, nearPlaneD, farPlaneD);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmMat4x4da));
                 });
         }
 
         void ortho_projection_matrix(ankerl::nanobench::Bench& bench)
         {
+            float width = 1280.0f;
+            float height = 720.0f;
+            float nearPlane = 0.1f;
+            float farPlane = 100.0f;
+            double widthD = 1280.0;
+            double heightD = 720.0;
+            double nearPlaneD = 0.1;
+            double farPlaneD = 100.0;
+
             bench.run("Construct ortho matrix SimpleMath",
                 [&]
                 {
+                    ankerl::nanobench::doNotOptimizeAway(width);
+                    ankerl::nanobench::doNotOptimizeAway(height);
+                    ankerl::nanobench::doNotOptimizeAway(nearPlane);
+                    ankerl::nanobench::doNotOptimizeAway(farPlane);
                     results.smMat4a =
                         DirectX::SimpleMath::Matrix::CreateOrthographic(
-                            1280, 720, 0.1f, 100.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.smMat4a);
+                            width, height, nearPlane, farPlane);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.smMat4a));
                 });
 
             bench.run("Construct ortho matrix glm",
                 [&]
                 {
-                    results.glmMat4a =
-                        glm::ortho<float>(0, 1280, 0, 720, 0.1f, 100.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.glmMat4a);
+                    ankerl::nanobench::doNotOptimizeAway(width);
+                    ankerl::nanobench::doNotOptimizeAway(height);
+                    ankerl::nanobench::doNotOptimizeAway(nearPlane);
+                    ankerl::nanobench::doNotOptimizeAway(farPlane);
+                    results.glmMat4a = glm::ortho<float>(
+                        0, width, 0, height, nearPlane, farPlane);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.glmMat4a));
                 });
 
             bench.run("Construct ortho matrix DXM",
                 [&]
                 {
                     using namespace DirectX;
-                    results.dxMatA =
-                        XMMatrixOrthographicLH(1280, 720, 0.1f, 100.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.dxMatA);
+                    ankerl::nanobench::doNotOptimizeAway(width);
+                    ankerl::nanobench::doNotOptimizeAway(height);
+                    ankerl::nanobench::doNotOptimizeAway(nearPlane);
+                    ankerl::nanobench::doNotOptimizeAway(farPlane);
+                    results.dxMatA = XMMatrixOrthographicLH(
+                        width, height, nearPlane, farPlane);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.dxMatA));
                 });
 
             bench.run("Construct ortho matrix Vectormath",
                 [&]
                 {
                     using namespace Vectormath;
-                    results.sonyMat4a =
-                        Matrix4::orthographic(0, 1280, 0, 720, 0.1f, 100.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.sonyMat4a);
+                    ankerl::nanobench::doNotOptimizeAway(width);
+                    ankerl::nanobench::doNotOptimizeAway(height);
+                    ankerl::nanobench::doNotOptimizeAway(nearPlane);
+                    ankerl::nanobench::doNotOptimizeAway(farPlane);
+                    results.sonyMat4a = Matrix4::orthographic(
+                        0, width, 0, height, nearPlane, farPlane);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.sonyMat4a));
                 });
 
             bench.run("Construct ortho matrix move::math (float)",
                 [&]
                 {
                     using namespace move::math;
-                    results.mvMat4x4fa =
-                        mat4x4f::orthographic(1280, 720, 0.1f, 100.0f);
+                    ankerl::nanobench::doNotOptimizeAway(width);
+                    ankerl::nanobench::doNotOptimizeAway(height);
+                    ankerl::nanobench::doNotOptimizeAway(nearPlane);
+                    ankerl::nanobench::doNotOptimizeAway(farPlane);
+                    results.mvMat4x4fa = mat4x4f::orthographic(
+                        width, height, nearPlane, farPlane);
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4fa);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvMat4x4fa));
                 });
 
             bench.run("Construct ortho matrix move::math (double)",
                 [&]
                 {
                     using namespace move::math;
-                    results.mvMat4x4da =
-                        mat4x4d::orthographic(1280, 720, 0.1f, 100.0f);
+                    ankerl::nanobench::doNotOptimizeAway(widthD);
+                    ankerl::nanobench::doNotOptimizeAway(heightD);
+                    ankerl::nanobench::doNotOptimizeAway(nearPlaneD);
+                    ankerl::nanobench::doNotOptimizeAway(farPlaneD);
+                    results.mvMat4x4da = mat4x4d::orthographic(
+                        widthD, heightD, nearPlaneD, farPlaneD);
 
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4da);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvMat4x4da));
                 });
 
             bench.run("Construct ortho matrix rtm::matrix4x4f",
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmMat4x4fa =
-                        rtm::camera::ortho_rh(1280.0f, 720.f, 0.1f, 100.0f);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4fa);
+                    ankerl::nanobench::doNotOptimizeAway(width);
+                    ankerl::nanobench::doNotOptimizeAway(height);
+                    ankerl::nanobench::doNotOptimizeAway(nearPlane);
+                    ankerl::nanobench::doNotOptimizeAway(farPlane);
+                    results.rtmMat4x4fa = rtm::camera::ortho_rh(
+                        width, height, nearPlane, farPlane);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmMat4x4fa));
                 });
 
             bench.run("Construct ortho matrix rtm::matrix4x4d",
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmMat4x4da =
-                        rtm::camera::ortho_rh(1280., 720., 0.1, 100.0);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4da);
+                    ankerl::nanobench::doNotOptimizeAway(widthD);
+                    ankerl::nanobench::doNotOptimizeAway(heightD);
+                    ankerl::nanobench::doNotOptimizeAway(nearPlaneD);
+                    ankerl::nanobench::doNotOptimizeAway(farPlaneD);
+                    results.rtmMat4x4da = rtm::camera::ortho_rh(
+                        widthD, heightD, nearPlaneD, farPlaneD);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmMat4x4da));
                 });
         }
 
         void vector_matrix_multiply(ankerl::nanobench::Bench& bench)
         {
+            const DirectX::SimpleMath::Vector4 smInput(1.0f, 2.0f, 3.0f, 1.0f);
+            const DirectX::SimpleMath::Matrix smMatrix =
+                DirectX::SimpleMath::Matrix::CreateRotationX(0.35f);
+            const glm::vec4 glmInput(1.0f, 2.0f, 3.0f, 1.0f);
+            const glm::mat4 glmMatrix =
+                glm::rotate(glm::mat4(1.0f), 0.35f, glm::vec3(1, 0, 0));
+            const DirectX::XMVECTOR dxInput =
+                DirectX::XMVectorSet(1.0f, 2.0f, 3.0f, 1.0f);
+            const DirectX::XMMATRIX dxMatrix =
+                DirectX::XMMatrixRotationX(0.35f);
+            const Vectormath::Vector4 sonyInput(1.0f, 2.0f, 3.0f, 1.0f);
+            const Vectormath::Matrix4 sonyMatrix =
+                Vectormath::Matrix4::rotationX(0.35f);
+            const move::math::fast_float4 mvInput(1.0f, 2.0f, 3.0f, 1.0f);
+            const move::math::float4x4 mvMatrix =
+                move::math::float4x4::rotation_x(0.35f);
+            const move::math::fast_double4 mvInputD(1.0, 2.0, 3.0, 1.0);
+            const move::math::double4x4 mvMatrixD =
+                move::math::double4x4::rotation_x(0.35);
+            const rtm::vector4f rtmInput =
+                rtm::vector_set(1.0f, 2.0f, 3.0f, 1.0f);
+            const rtm::matrix4x4f rtmMatrix = mvMatrix.to_rtm();
+            const rtm::vector4d rtmInputD = rtm::vector_set(1.0, 2.0, 3.0, 1.0);
+            const rtm::matrix4x4d rtmMatrixD = mvMatrixD.to_rtm();
+
             bench.run("Vector matrix multiply SimpleMath",
                 [&]
                 {
+                    ankerl::nanobench::doNotOptimizeAway(smInput);
+                    ankerl::nanobench::doNotOptimizeAway(smMatrix);
                     results.smVec4 = DirectX::SimpleMath::Vector4::Transform(
-                        results.smVec4, results.smMat4a);
-                    ankerl::nanobench::doNotOptimizeAway(results.smVec4);
+                        smInput, smMatrix);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.smVec4));
                 });
 
             bench.run("Vector matrix multiply glm",
                 [&]
                 {
-                    results.glmVec4 = results.glmMat4a * results.glmVec4;
-                    ankerl::nanobench::doNotOptimizeAway(results.glmVec4);
+                    ankerl::nanobench::doNotOptimizeAway(glmInput);
+                    ankerl::nanobench::doNotOptimizeAway(glmMatrix);
+                    results.glmVec4 = glmMatrix * glmInput;
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.glmVec4));
                 });
 
             bench.run("Vector matrix multiply DXM",
                 [&]
                 {
                     using namespace DirectX;
-                    results.dxVecA =
-                        XMVector4Transform(results.dxVecA, results.dxMatA);
+                    ankerl::nanobench::doNotOptimizeAway(dxInput);
+                    ankerl::nanobench::doNotOptimizeAway(dxMatrix);
+                    results.dxVecA = XMVector4Transform(dxInput, dxMatrix);
                     XMStoreFloat4(&results.dxVec4, results.dxVecA);
-                    ankerl::nanobench::doNotOptimizeAway(results.dxVec4);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.dxVec4));
                 });
 
             bench.run("Vector matrix multiply Vectormath",
                 [&]
                 {
                     using namespace Vectormath;
-                    results.sonyVec4 = results.sonyMat4a * results.sonyVec4;
-                    ankerl::nanobench::doNotOptimizeAway(results.sonyVec4);
+                    ankerl::nanobench::doNotOptimizeAway(sonyInput);
+                    ankerl::nanobench::doNotOptimizeAway(sonyMatrix);
+                    results.sonyVec4 = sonyMatrix * sonyInput;
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.sonyVec4));
                 });
 
             bench.run("Vector matrix multiply move::math (float)",
                 [&]
                 {
                     using namespace move::math;
-                    results.mvVec4f = results.mvVec4f * results.mvMat4x4fa;
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec4f);
+                    ankerl::nanobench::doNotOptimizeAway(mvInput);
+                    ankerl::nanobench::doNotOptimizeAway(mvMatrix);
+                    results.mvVec4f = mvInput * mvMatrix;
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec4f));
                 });
 
             bench.run("Vector matrix multiply move::math (double)",
                 [&]
                 {
                     using namespace move::math;
-                    results.mvVec4d = results.mvVec4d * results.mvMat4x4da;
-                    ankerl::nanobench::doNotOptimizeAway(results.mvVec4d);
+                    ankerl::nanobench::doNotOptimizeAway(mvInputD);
+                    ankerl::nanobench::doNotOptimizeAway(mvMatrixD);
+                    results.mvVec4d = mvInputD * mvMatrixD;
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvVec4d));
                 });
 
             bench.run("Vector matrix multiply rtm::matrix4x4f",
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmVec4f = matrix_mul_vector(
-                        results.rtmVec4fa, results.rtmMat4x4fa);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4f);
+                    ankerl::nanobench::doNotOptimizeAway(rtmInput);
+                    ankerl::nanobench::doNotOptimizeAway(rtmMatrix);
+                    results.rtmVec4f = matrix_mul_vector(rtmInput, rtmMatrix);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmVec4f));
                 });
 
             bench.run("Vector matrix multiply rtm::matrix4x4d",
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmVec4d = matrix_mul_vector(
-                        results.rtmVec4da, results.rtmMat4x4da);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4d);
+                    ankerl::nanobench::doNotOptimizeAway(rtmInputD);
+                    ankerl::nanobench::doNotOptimizeAway(rtmMatrixD);
+                    results.rtmVec4d = matrix_mul_vector(rtmInputD, rtmMatrixD);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmVec4d));
                 });
+        }
+
+        void qvv_point_multiply(ankerl::nanobench::Bench& bench)
+        {
+            const rtm::vector4f point = rtm::vector_set(1.0f, 2.0f, 3.0f, 1.0f);
+            const rtm::qvvf transform =
+                rtm::qvv_set(rtm::quat_set(0.0f, 0.0f, 0.174108f, 0.984727f),
+                    rtm::vector_set(4.0f, 5.0f, 6.0f, 0.0f),
+                    rtm::vector_set(1.5f, 0.75f, 2.0f, 0.0f));
+            const rtm::vector4d pointD = rtm::vector_set(1.0, 2.0, 3.0, 1.0);
+            const rtm::qvvd transformD =
+                rtm::qvv_set(rtm::quat_set(0.0, 0.0, 0.174108, 0.984727),
+                    rtm::vector_set(4.0, 5.0, 6.0, 0.0),
+                    rtm::vector_set(1.5, 0.75, 2.0, 0.0));
 
             bench.run("Point QVV multiply rtm::qvvf",
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmVec4f =
-                        qvv_mul_point3(results.rtmVec4fa, results.rtmQvvf);
+                    ankerl::nanobench::doNotOptimizeAway(point);
+                    ankerl::nanobench::doNotOptimizeAway(transform);
+                    results.rtmVec4f = qvv_mul_point3(point, transform);
 
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4f);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmVec4f));
                 });
 
             bench.run("Point QVV multiply rtm::qvvd",
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmVec4d =
-                        qvv_mul_point3(results.rtmVec4da, results.rtmQvvd);
+                    ankerl::nanobench::doNotOptimizeAway(pointD);
+                    ankerl::nanobench::doNotOptimizeAway(transformD);
+                    results.rtmVec4d = qvv_mul_point3(pointD, transformD);
 
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmVec4d);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmVec4d));
                 });
         }
 
         void matrix_matrix_multiply(ankerl::nanobench::Bench& bench)
         {
+            const DirectX::SimpleMath::Matrix smLeft =
+                DirectX::SimpleMath::Matrix::CreateRotationX(0.35f);
+            const DirectX::SimpleMath::Matrix smRight =
+                DirectX::SimpleMath::Matrix::CreateTranslation(
+                    1.0f, 2.0f, 3.0f);
+            const glm::mat4 glmLeft =
+                glm::rotate(glm::mat4(1.0f), 0.35f, glm::vec3(1, 0, 0));
+            const glm::mat4 glmRight =
+                glm::translate(glm::mat4(1.0f), glm::vec3(1, 2, 3));
+            const DirectX::XMMATRIX dxLeft = DirectX::XMMatrixRotationX(0.35f);
+            const DirectX::XMMATRIX dxRight =
+                DirectX::XMMatrixTranslation(1.0f, 2.0f, 3.0f);
+            const Vectormath::Matrix4 sonyLeft =
+                Vectormath::Matrix4::rotationX(0.35f);
+            const Vectormath::Matrix4 sonyRight =
+                Vectormath::Matrix4::translation(
+                    Vectormath::Vector3(1.0f, 2.0f, 3.0f));
+            const move::math::float4x4 mvLeft =
+                move::math::float4x4::rotation_x(0.35f);
+            const move::math::float4x4 mvRight =
+                move::math::float4x4::translation({1.0f, 2.0f, 3.0f});
+            const move::math::double4x4 mvLeftD =
+                move::math::double4x4::rotation_x(0.35);
+            const move::math::double4x4 mvRightD =
+                move::math::double4x4::translation({1.0, 2.0, 3.0});
+            const rtm::matrix4x4f rtmLeft = mvLeft.to_rtm();
+            const rtm::matrix4x4f rtmRight = mvRight.to_rtm();
+            const rtm::matrix4x4d rtmLeftD = mvLeftD.to_rtm();
+            const rtm::matrix4x4d rtmRightD = mvRightD.to_rtm();
+
             bench.run("Matrix matrix multiply SimpleMath",
                 [&]
                 {
-                    results.smMat4a = results.smMat4b * results.smMat4c;
-                    ankerl::nanobench::doNotOptimizeAway(results.smMat4a);
+                    ankerl::nanobench::doNotOptimizeAway(smLeft);
+                    ankerl::nanobench::doNotOptimizeAway(smRight);
+                    results.smMat4a = smLeft * smRight;
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.smMat4a));
                 });
 
             bench.run("Matrix matrix multiply glm",
                 [&]
                 {
-                    results.glmMat4a = results.glmMat4b * results.glmMat4c;
-                    ankerl::nanobench::doNotOptimizeAway(results.glmMat4a);
+                    ankerl::nanobench::doNotOptimizeAway(glmLeft);
+                    ankerl::nanobench::doNotOptimizeAway(glmRight);
+                    results.glmMat4a = glmLeft * glmRight;
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.glmMat4a));
                 });
 
             bench.run("Matrix matrix multiply DXM",
                 [&]
                 {
                     using namespace DirectX;
-
-                    results.dxMatA =
-                        XMMatrixMultiply(results.dxMatB, results.dxMatC);
-                    ankerl::nanobench::doNotOptimizeAway(results.dxMatA);
+                    ankerl::nanobench::doNotOptimizeAway(dxLeft);
+                    ankerl::nanobench::doNotOptimizeAway(dxRight);
+                    results.dxMatA = XMMatrixMultiply(dxLeft, dxRight);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.dxMatA));
                 });
 
             bench.run("Matrix matrix multiply Vectormath",
                 [&]
                 {
                     using namespace Vectormath;
-                    results.sonyMat4a = results.sonyMat4b * results.sonyMat4c;
-                    ankerl::nanobench::doNotOptimizeAway(results.sonyMat4a);
+                    ankerl::nanobench::doNotOptimizeAway(sonyLeft);
+                    ankerl::nanobench::doNotOptimizeAway(sonyRight);
+                    results.sonyMat4a = sonyLeft * sonyRight;
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.sonyMat4a));
                 });
 
             bench.run("Matrix matrix multiply move::math (float)",
                 [&]
                 {
                     using namespace move::math;
-                    results.mvMat4x4fa =
-                        results.mvMat4x4fb * results.mvMat4x4fc;
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4fa);
+                    ankerl::nanobench::doNotOptimizeAway(mvLeft);
+                    ankerl::nanobench::doNotOptimizeAway(mvRight);
+                    results.mvMat4x4fa = mvLeft * mvRight;
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvMat4x4fa));
                 });
 
             bench.run("Matrix matrix multiply move::math (double)",
                 [&]
                 {
                     using namespace move::math;
-                    results.mvMat4x4da =
-                        results.mvMat4x4db * results.mvMat4x4dc;
-                    ankerl::nanobench::doNotOptimizeAway(results.mvMat4x4da);
-                });
-
-            bench.run("QVV QVV multiply rtm::qvvf",
-                [&]
-                {
-                    using namespace rtm;
-                    results.rtmQvvfa =
-                        qvv_mul(results.rtmQvvfb, results.rtmQvvfc);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmQvvf);
-                });
-
-            bench.run("QVV QVV multiply rtm::qvvd",
-                [&]
-                {
-                    using namespace rtm;
-                    results.rtmQvvda =
-                        qvv_mul(results.rtmQvvdb, results.rtmQvvdc);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmQvvda);
+                    ankerl::nanobench::doNotOptimizeAway(mvLeftD);
+                    ankerl::nanobench::doNotOptimizeAway(mvRightD);
+                    results.mvMat4x4da = mvLeftD * mvRightD;
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.mvMat4x4da));
                 });
 
             bench.run("Matrix matrix multiply rtm::matrix4x4f",
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmMat4x4fa =
-                        matrix_mul(results.rtmMat4x4fb, results.rtmMat4x4fc);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4fa);
+                    ankerl::nanobench::doNotOptimizeAway(rtmLeft);
+                    ankerl::nanobench::doNotOptimizeAway(rtmRight);
+                    results.rtmMat4x4fa = matrix_mul(rtmLeft, rtmRight);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmMat4x4fa));
                 });
 
             bench.run("Matrix matrix multiply rtm::matrix4x4d",
                 [&]
                 {
                     using namespace rtm;
-                    results.rtmMat4x4da =
-                        matrix_mul(results.rtmMat4x4db, results.rtmMat4x4dc);
-                    ankerl::nanobench::doNotOptimizeAway(results.rtmMat4x4da);
+                    ankerl::nanobench::doNotOptimizeAway(rtmLeftD);
+                    ankerl::nanobench::doNotOptimizeAway(rtmRightD);
+                    results.rtmMat4x4da = matrix_mul(rtmLeftD, rtmRightD);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmMat4x4da));
+                });
+        }
+
+        void qvv_multiply(ankerl::nanobench::Bench& bench)
+        {
+            const rtm::qvvf left =
+                rtm::qvv_set(rtm::quat_set(0.0f, 0.0f, 0.174108f, 0.984727f),
+                    rtm::vector_set(1.0f, 2.0f, 3.0f, 0.0f),
+                    rtm::vector_set(1.5f, 0.75f, 2.0f, 0.0f));
+            const rtm::qvvf right =
+                rtm::qvv_set(rtm::quat_set(0.0f, 0.247404f, 0.0f, 0.968912f),
+                    rtm::vector_set(4.0f, 5.0f, 6.0f, 0.0f),
+                    rtm::vector_set(0.5f, 1.25f, 1.0f, 0.0f));
+            const rtm::qvvd leftD =
+                rtm::qvv_set(rtm::quat_set(0.0, 0.0, 0.174108, 0.984727),
+                    rtm::vector_set(1.0, 2.0, 3.0, 0.0),
+                    rtm::vector_set(1.5, 0.75, 2.0, 0.0));
+            const rtm::qvvd rightD =
+                rtm::qvv_set(rtm::quat_set(0.0, 0.247404, 0.0, 0.968912),
+                    rtm::vector_set(4.0, 5.0, 6.0, 0.0),
+                    rtm::vector_set(0.5, 1.25, 1.0, 0.0));
+
+            bench.run("QVV QVV multiply rtm::qvvf",
+                [&]
+                {
+                    using namespace rtm;
+                    ankerl::nanobench::doNotOptimizeAway(left);
+                    ankerl::nanobench::doNotOptimizeAway(right);
+                    results.rtmQvvfa = qvv_mul(left, right);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmQvvfa));
+                });
+
+            bench.run("QVV QVV multiply rtm::qvvd",
+                [&]
+                {
+                    using namespace rtm;
+                    ankerl::nanobench::doNotOptimizeAway(leftD);
+                    ankerl::nanobench::doNotOptimizeAway(rightD);
+                    results.rtmQvvda = qvv_mul(leftD, rightD);
+                    ankerl::nanobench::doNotOptimizeAway(
+                        std::as_const(results.rtmQvvda));
                 });
         }
     }  // namespace matrices
@@ -2348,54 +2774,224 @@ inline void test_camera_matrix_funcs()
         float(rtm::vector_get_w(rtmMat.w_axis)));
 }
 
-int main(int argc, char** argv)
+namespace mathbench::report
 {
-    constexpr int iterations = 10000000;
-    // test_camera_matrix_funcs();
-    // if (true) return 0;
+    struct ranked_result
+    {
+        std::string capability;
+        std::string winner;
+        double winnerNanoseconds{};
+        double moveNanoseconds{};
+        std::size_t moveRank{};
+    };
 
+    std::vector<ranked_result> rankings;
+
+    std::string library_name(std::string_view benchmarkName)
+    {
+        if (benchmarkName.find("move::") != std::string_view::npos)
+        {
+            return "move::math";
+        }
+        if (benchmarkName.find("SimpleMath") != std::string_view::npos)
+        {
+            return "SimpleMath";
+        }
+        if (benchmarkName.find("glm") != std::string_view::npos)
+        {
+            return "GLM";
+        }
+        if (benchmarkName.find("DXM") != std::string_view::npos ||
+            benchmarkName.find("DirectX") != std::string_view::npos)
+        {
+            return "DirectXMath";
+        }
+        if (benchmarkName.find("Vectormath") != std::string_view::npos)
+        {
+            return "Sony Vectormath";
+        }
+        if (benchmarkName.find("rtm::") != std::string_view::npos)
+        {
+            return "RTM";
+        }
+        return {};
+    }
+
+    bool is_double_precision(std::string_view benchmarkName)
+    {
+        return benchmarkName.find("double") != std::string_view::npos ||
+               benchmarkName.find("vec2d") != std::string_view::npos ||
+               benchmarkName.find("vec3d") != std::string_view::npos ||
+               benchmarkName.find("vec4d") != std::string_view::npos ||
+               benchmarkName.find("vector4d") != std::string_view::npos ||
+               benchmarkName.find("quatd") != std::string_view::npos ||
+               benchmarkName.find("qvvd") != std::string_view::npos ||
+               benchmarkName.find("matrix3x4d") != std::string_view::npos ||
+               benchmarkName.find("matrix4x4d") != std::string_view::npos ||
+               benchmarkName.find("Mat4x4d") != std::string_view::npos;
+    }
+
+    std::string scenario_name(
+        std::string_view capability, std::string_view benchmarkName)
+    {
+        if (benchmarkName.find(" hit ") != std::string_view::npos)
+        {
+            return std::string(capability) + " — hit";
+        }
+        if (benchmarkName.find(" miss ") != std::string_view::npos)
+        {
+            return std::string(capability) + " — miss";
+        }
+        return std::string(capability);
+    }
+
+    void collect_rankings(
+        std::string_view capability, const ankerl::nanobench::Bench& bench)
+    {
+        using measure = ankerl::nanobench::Result::Measure;
+        std::map<std::string, std::map<std::string, double>> groupedResults;
+
+        for (const auto& result : bench.results())
+        {
+            const auto& benchmarkName = result.config().mBenchmarkName;
+            if (is_double_precision(benchmarkName))
+            {
+                continue;
+            }
+
+            const auto library = library_name(benchmarkName);
+            if (library.empty())
+            {
+                continue;
+            }
+
+            const auto scenario = scenario_name(capability, benchmarkName);
+            const double nanoseconds = result.median(measure::elapsed) * 1.0e9;
+            auto [entry, inserted] =
+                groupedResults[scenario].try_emplace(library, nanoseconds);
+            if (!inserted)
+            {
+                entry->second = std::min(entry->second, nanoseconds);
+            }
+        }
+
+        for (const auto& [scenario, libraries] : groupedResults)
+        {
+            std::vector<std::pair<std::string, double>> ordered(
+                libraries.begin(), libraries.end());
+            std::sort(ordered.begin(), ordered.end(),
+                [](const auto& lhs, const auto& rhs)
+                {
+                    return lhs.second < rhs.second;
+                });
+
+            const auto move = std::find_if(ordered.begin(), ordered.end(),
+                [](const auto& entry)
+                {
+                    return entry.first == "move::math";
+                });
+            if (ordered.empty() || move == ordered.end())
+            {
+                continue;
+            }
+
+            rankings.push_back({scenario, ordered.front().first,
+                ordered.front().second, move->second,
+                static_cast<std::size_t>(
+                    std::distance(ordered.begin(), move) + 1)});
+        }
+    }
+
+    template <typename Function>
+    void run_capability(
+        std::string_view title, bool summarize, Function&& function)
+    {
+        ankerl::nanobench::Bench bench;
+        bench.title(std::string(title))
+            .unit("op")
+            .epochs(15)
+            .warmup(1000)
+            .minEpochTime(std::chrono::milliseconds(5));
+        function(bench);
+        if (summarize)
+        {
+            collect_rankings(title, bench);
+        }
+    }
+
+    void print_rankings()
+    {
+        std::cout
+            << "\n## Capability winners (single-precision implementations)\n\n"
+            << "| Capability | Fastest library | Fastest ns/op | "
+               "move::math ns/op | Move rank | Move gap |\n"
+            << "|:--|:--|--:|--:|--:|--:|\n";
+
+        std::sort(rankings.begin(), rankings.end(),
+            [](const auto& lhs, const auto& rhs)
+            {
+                return lhs.capability < rhs.capability;
+            });
+        for (const auto& result : rankings)
+        {
+            const double gap =
+                result.winnerNanoseconds == 0.0
+                    ? 0.0
+                    : (result.moveNanoseconds / result.winnerNanoseconds -
+                          1.0) *
+                          100.0;
+            std::cout << "| " << result.capability << " | " << result.winner
+                      << " | " << std::fixed << std::setprecision(2)
+                      << result.winnerNanoseconds << " | "
+                      << result.moveNanoseconds << " | " << result.moveRank
+                      << " | " << gap << "% |\n";
+        }
+    }
+}  // namespace mathbench::report
+
+int main()
+{
     try
     {
-        {
-            ankerl::nanobench::Bench vectorBench;
-            vectorBench.name("Vectors");
-            vectorBench.minEpochIterations(iterations);
-            mathbench::vectors::addition(vectorBench);
-            mathbench::vectors::complex1(vectorBench);
-            mathbench::vectors::complex2vec3(vectorBench);
-            mathbench::vectors::complex3vec4(vectorBench);
-        }
+        using mathbench::report::run_capability;
 
-        {
-            ankerl::nanobench::Bench workloadBench;
-            workloadBench.name("Game-loop and graphics workloads");
-            workloadBench.minEpochIterations(iterations);
-            mathbench::workloads::normalize_direction(workloadBench);
-            mathbench::workloads::particle_integration(workloadBench);
-            mathbench::workloads::camera_basis(workloadBench);
-            mathbench::workloads::rotate_direction(workloadBench);
-            mathbench::workloads::ray_aabb_intersection(workloadBench);
-            mathbench::workloads::ray_triangle_intersection(workloadBench);
-        }
+        run_capability("Game loop / Normalize direction", true,
+            mathbench::workloads::normalize_direction);
+        run_capability("Game loop / Particle integration", true,
+            mathbench::workloads::particle_integration);
+        run_capability("Graphics / Camera basis", true,
+            mathbench::workloads::camera_basis);
+        run_capability("Graphics / Quaternion direction rotation", true,
+            mathbench::workloads::rotate_direction);
+        run_capability("Geometry / Ray-AABB intersection", true,
+            mathbench::workloads::ray_aabb_intersection);
+        run_capability("Geometry / Ray-triangle intersection", true,
+            mathbench::workloads::ray_triangle_intersection);
 
-        {
-            ankerl::nanobench::Bench matrixBench;
-            matrixBench.minEpochIterations(iterations);
-            matrixBench.name("Matrices");
-            mathbench::matrices::construct_model_matrix(matrixBench);
-            mathbench::matrices::construct_view_matrix(matrixBench);
-            mathbench::matrices::construct_perspective_projection_matrix(
-                matrixBench);
-            mathbench::matrices::ortho_projection_matrix(matrixBench);
-            mathbench::matrices::vector_matrix_multiply(matrixBench);
-            mathbench::matrices::matrix_matrix_multiply(matrixBench);
-        }
+        run_capability("Transforms / Model-matrix construction", false,
+            mathbench::matrices::construct_model_matrix);
+        run_capability("Camera / View-matrix construction", false,
+            mathbench::matrices::construct_view_matrix);
+        run_capability("Camera / Perspective-matrix construction", false,
+            mathbench::matrices::construct_perspective_projection_matrix);
+        run_capability("Camera / Orthographic-matrix construction", false,
+            mathbench::matrices::ortho_projection_matrix);
+        run_capability("Transforms / Vector-matrix multiply throughput", true,
+            mathbench::matrices::vector_matrix_multiply);
+        run_capability("Transforms / QVV point transform", false,
+            mathbench::matrices::qvv_point_multiply);
+        run_capability("Transforms / Matrix-matrix multiply throughput", true,
+            mathbench::matrices::matrix_matrix_multiply);
+        run_capability("Transforms / QVV composition", false,
+            mathbench::matrices::qvv_multiply);
 
+        mathbench::report::print_rankings();
         printf("Benchmark complete\n");
     }
     catch (const std::exception& e)
     {
         std::cerr << e.what() << std::endl;
+        return EXIT_FAILURE;
     }
-    return 0;
+    return EXIT_SUCCESS;
 }
