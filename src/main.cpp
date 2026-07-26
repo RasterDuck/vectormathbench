@@ -48,7 +48,7 @@
 
 #include "intersections.hpp"
 
-#include <vectormath.hpp>
+#include "vectormath_compat.hpp"
 
 namespace Vectormath
 {

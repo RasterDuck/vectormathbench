@@ -12,9 +12,9 @@
 #include <move/math/vec3.hpp>
 
 #include <DirectXMath.h>
-#include <vectormath.hpp>
 
 #include "simplemath.hpp"
+#include "vectormath_compat.hpp"
 
 namespace mathbench::geometry
 {
