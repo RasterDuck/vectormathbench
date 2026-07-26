@@ -36,7 +36,7 @@ CPMAddPackage("gh:microsoft/DirectXMath#dec2022")
 CPMAddPackage(
   NAME move-vectormath
   GITHUB_REPOSITORY move-engine/move-vectormath
-  GIT_TAG 38820c2846c689c3967dcd196076aacbda59c0e2
+  GIT_TAG 0c939fe3fdcb17cb9b781359f016635d3be44203
 )
 
 # CPMAddPackage(
