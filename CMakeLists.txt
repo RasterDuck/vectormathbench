@@ -31,7 +31,11 @@ include(cmake/cpm.cmake)
 
 CPMAddPackage("gh:g-truc/glm#0.9.9.8@0.9.9.8")
 CPMAddPackage("gh:microsoft/DirectXMath#dec2022")
-CPMAddPackage("gh:move-engine/move-vectormath#33673bec3f7910cd6d23fb20f516f9cd6cad8421")
+CPMAddPackage(
+  NAME move-vectormath
+  GITHUB_REPOSITORY move-engine/move-vectormath
+  GIT_TAG ba96600d68eaa5eb57a12632f9bfd8375138cf86
+)
 
 # CPMAddPackage(
 #   NAME rtm

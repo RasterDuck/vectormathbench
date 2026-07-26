@@ -10,26 +10,6 @@
 #include <cstdlib>
 #include <type_traits>
 
-#if __unix
-namespace std
-{
-    inline float fabsf(float x)
-    {
-        return ::abs(x);
-    }
-
-    inline float sqrtf(float x)
-    {
-        return ::sqrtf(x);
-    }
-
-    inline float tanf(float x)
-    {
-        return ::tanf(x);
-    }
-}  // namespace std
-#endif
-
 // Sony vectormath
 #include <vectormath.hpp>
 
