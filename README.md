@@ -108,6 +108,8 @@ cross-library capability ranking:
 
 - public native-backed versus fixed-array and raw-native `Vec3f`;
 - 8-byte versus 16-byte `Vec2f`;
+- sprite integration and UI affine-transform workloads comparing the two
+  `Vec2f` representations;
 - persistent 16-byte compute versus 12-byte packed particle storage;
 - fused packed-to-16-byte-GPU transforms;
 - fused transforms over interleaved strided fields.
@@ -117,8 +119,13 @@ show cache and bandwidth crossovers. These tables answer representation and
 data-flow questions; they do not rank libraries implementing different public
 APIs.
 
-By default CMake fetches the exact Move Phase A commit. During library
-development, configure against a local checkout instead:
+The matching Phase B executables compare semantic `Point3f` and
+`Direction3f` transforms with their raw-`Vec3f` equivalents. They also compare
+validating direction input once at a trust boundary with normalizing it during
+every game-loop use.
+
+By default CMake fetches the exact Move revision recorded in `CMakeLists.txt`.
+During library development, configure against a local checkout instead:
 
 ```sh
 cmake -S . -B build/phase-a \

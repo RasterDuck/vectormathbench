@@ -46,7 +46,7 @@ else()
   CPMAddPackage(
     NAME move-vectormath
     GITHUB_REPOSITORY move-engine/move-vectormath
-    GIT_TAG 552a145742f9ef48ee2033083a37795d55ac0924
+    GIT_TAG d068ead6d9e6645b5de42521ef8526b6e86a2fde
   )
 endif()
 
@@ -131,10 +131,29 @@ function(add_phase_a_benchmark target)
   endif()
 endfunction()
 
+function(add_phase_b_benchmark target)
+  add_executable(${target} src/phase_b.cpp)
+  target_link_libraries(${target} PRIVATE move::vectormath)
+  target_include_directories(${target} PRIVATE src)
+
+  if (UNIX)
+    target_compile_options(${target} PRIVATE
+      -O3
+      -march=x86-64
+      ${ARGN}
+    )
+  elseif (MSVC)
+    target_compile_options(${target} PRIVATE /O2 ${ARGN})
+  endif()
+endfunction()
+
 if (WIN32)
   add_phase_a_benchmark(vectormathbench_phase_a_sse42 /arch:SSE42)
   add_phase_a_benchmark(vectormathbench_phase_a_avx /arch:AVX)
   add_phase_a_benchmark(vectormathbench_phase_a_avx2 /arch:AVX2)
+  add_phase_b_benchmark(vectormathbench_phase_b_sse42 /arch:SSE42)
+  add_phase_b_benchmark(vectormathbench_phase_b_avx /arch:AVX)
+  add_phase_b_benchmark(vectormathbench_phase_b_avx2 /arch:AVX2)
 elseif (UNIX)
   add_phase_a_benchmark(
     vectormathbench_phase_a_sse42
@@ -143,8 +162,16 @@ elseif (UNIX)
   )
   add_phase_a_benchmark(vectormathbench_phase_a_avx -mavx)
   add_phase_a_benchmark(vectormathbench_phase_a_avx2 -mfma -mavx2)
+  add_phase_b_benchmark(
+    vectormathbench_phase_b_sse42
+    -msse4.2
+    -mno-avx
+  )
+  add_phase_b_benchmark(vectormathbench_phase_b_avx -mavx)
+  add_phase_b_benchmark(vectormathbench_phase_b_avx2 -mfma -mavx2)
 else()
   add_phase_a_benchmark(vectormathbench_phase_a_sse42)
+  add_phase_b_benchmark(vectormathbench_phase_b_sse42)
 endif()
 
 if(BUILD_TESTING)

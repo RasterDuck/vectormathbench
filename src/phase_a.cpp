@@ -141,6 +141,112 @@ namespace
             });
     }
 
+    void BenchmarkSpriteIntegration(
+        ankerl::nanobench::Bench& bench, std::size_t count)
+    {
+        using mv::math::experimental::AlignedVec2f16;
+
+        std::vector<mv::math::Vec2f> compactPositions(count);
+        std::vector<mv::math::Vec2f> compactVelocities(count);
+        std::vector<AlignedVec2f16> alignedPositions(count);
+        std::vector<AlignedVec2f16> alignedVelocities(count);
+        for (std::size_t index = 0; index < count; ++index)
+        {
+            const float positionX = Seed(index, 0U) * 1920.0F;
+            const float positionY = Seed(index, 1U) * 1080.0F;
+            const float velocityX = Seed(index, 2U) * 200.0F - 100.0F;
+            const float velocityY = Seed(index, 3U) * 200.0F - 100.0F;
+            compactPositions[index] = mv::math::Vec2f(positionX, positionY);
+            compactVelocities[index] = mv::math::Vec2f(velocityX, velocityY);
+            alignedPositions[index] = AlignedVec2f16(positionX, positionY);
+            alignedVelocities[index] = AlignedVec2f16(velocityX, velocityY);
+        }
+
+        constexpr float DeltaTime = 1.0F / 60.0F;
+        const std::string suffix = "/" + std::to_string(count);
+
+        bench.batch(count).run(
+            "phase-a/vec2-sprite-integration/compact-8-byte" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0; index < count; ++index)
+                {
+                    compactPositions[index] +=
+                        compactVelocities[index] * DeltaTime;
+                }
+                Observe(compactPositions);
+            });
+
+        bench.batch(count).run(
+            "phase-a/vec2-sprite-integration/aligned-16-byte" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0; index < count; ++index)
+                {
+                    alignedPositions[index] =
+                        alignedPositions[index] +
+                        alignedVelocities[index] * DeltaTime;
+                }
+                Observe(alignedPositions);
+            });
+    }
+
+    void BenchmarkUiTransform(
+        ankerl::nanobench::Bench& bench, std::size_t count)
+    {
+        using mv::math::experimental::AlignedVec2f16;
+
+        std::vector<mv::math::Vec2f> compactInput(count);
+        std::vector<mv::math::Vec2f> compactOutput(count);
+        std::vector<AlignedVec2f16> alignedInput(count);
+        std::vector<AlignedVec2f16> alignedOutput(count);
+        for (std::size_t index = 0; index < count; ++index)
+        {
+            const float x = Seed(index, 0U) * 640.0F;
+            const float y = Seed(index, 1U) * 360.0F;
+            compactInput[index] = mv::math::Vec2f(x, y);
+            alignedInput[index] = AlignedVec2f16(x, y);
+        }
+
+        constexpr float M00 = 1.0392305F;
+        constexpr float M01 = -0.4F;
+        constexpr float M10 = 0.6F;
+        constexpr float M11 = 0.6928203F;
+        constexpr float TranslationX = 128.0F;
+        constexpr float TranslationY = 72.0F;
+        const std::string suffix = "/" + std::to_string(count);
+
+        bench.batch(count).run(
+            "phase-a/vec2-ui-transform/compact-8-byte" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0; index < count; ++index)
+                {
+                    const float x = compactInput[index].X();
+                    const float y = compactInput[index].Y();
+                    compactOutput[index] =
+                        mv::math::Vec2f(x * M00 + y * M01 + TranslationX,
+                            x * M10 + y * M11 + TranslationY);
+                }
+                Observe(compactOutput);
+            });
+
+        bench.batch(count).run(
+            "phase-a/vec2-ui-transform/aligned-16-byte" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0; index < count; ++index)
+                {
+                    const float x = alignedInput[index].X();
+                    const float y = alignedInput[index].Y();
+                    alignedOutput[index] =
+                        AlignedVec2f16(x * M00 + y * M01 + TranslationX,
+                            x * M10 + y * M11 + TranslationY);
+                }
+                Observe(alignedOutput);
+            });
+    }
+
     void BenchmarkParticleStorage(
         ankerl::nanobench::Bench& bench, std::size_t count)
     {
@@ -271,6 +377,8 @@ int main()
     {
         BenchmarkVec3Representations(bench, count);
         BenchmarkVec2Storage(bench, count);
+        BenchmarkSpriteIntegration(bench, count);
+        BenchmarkUiTransform(bench, count);
         BenchmarkParticleStorage(bench, count);
         BenchmarkPackedToGpu(bench, count);
         BenchmarkStridedTransform(bench, count);
