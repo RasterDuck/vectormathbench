@@ -124,6 +124,13 @@ The matching Phase B executables compare semantic `Point3f` and
 validating direction input once at a trust boundary with normalizing it during
 every game-loop use.
 
+The Phase C executables compare the new typed CPU geometry API with equivalent
+raw-`Vec3f` kernels. They cover prepared one-ray/many-AABB traversal,
+per-query ray/AABB tests, and predicate versus detailed ray/triangle queries
+over cache- and working-set-sized batches. Each executable verifies semantic
+parity before collecting timings, and CI runs the parity-only mode on every
+ISA build.
+
 By default CMake fetches the exact Move revision recorded in `CMakeLists.txt`.
 During library development, configure against a local checkout instead:
 

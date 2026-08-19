@@ -46,7 +46,7 @@ else()
   CPMAddPackage(
     NAME move-vectormath
     GITHUB_REPOSITORY move-engine/move-vectormath
-    GIT_TAG d068ead6d9e6645b5de42521ef8526b6e86a2fde
+    GIT_TAG 486c51efeab7dc417e5f1f8b8529f6a71fc26249
   )
 endif()
 
@@ -147,6 +147,22 @@ function(add_phase_b_benchmark target)
   endif()
 endfunction()
 
+function(add_phase_c_benchmark target)
+  add_executable(${target} src/phase_c.cpp)
+  target_link_libraries(${target} PRIVATE move::vectormath)
+  target_include_directories(${target} PRIVATE src)
+
+  if (UNIX)
+    target_compile_options(${target} PRIVATE
+      -O3
+      -march=x86-64
+      ${ARGN}
+    )
+  elseif (MSVC)
+    target_compile_options(${target} PRIVATE /O2 ${ARGN})
+  endif()
+endfunction()
+
 if (WIN32)
   add_phase_a_benchmark(vectormathbench_phase_a_sse42 /arch:SSE42)
   add_phase_a_benchmark(vectormathbench_phase_a_avx /arch:AVX)
@@ -154,6 +170,9 @@ if (WIN32)
   add_phase_b_benchmark(vectormathbench_phase_b_sse42 /arch:SSE42)
   add_phase_b_benchmark(vectormathbench_phase_b_avx /arch:AVX)
   add_phase_b_benchmark(vectormathbench_phase_b_avx2 /arch:AVX2)
+  add_phase_c_benchmark(vectormathbench_phase_c_sse42 /arch:SSE42)
+  add_phase_c_benchmark(vectormathbench_phase_c_avx /arch:AVX)
+  add_phase_c_benchmark(vectormathbench_phase_c_avx2 /arch:AVX2)
 elseif (UNIX)
   add_phase_a_benchmark(
     vectormathbench_phase_a_sse42
@@ -169,9 +188,17 @@ elseif (UNIX)
   )
   add_phase_b_benchmark(vectormathbench_phase_b_avx -mavx)
   add_phase_b_benchmark(vectormathbench_phase_b_avx2 -mfma -mavx2)
+  add_phase_c_benchmark(
+    vectormathbench_phase_c_sse42
+    -msse4.2
+    -mno-avx
+  )
+  add_phase_c_benchmark(vectormathbench_phase_c_avx -mavx)
+  add_phase_c_benchmark(vectormathbench_phase_c_avx2 -mfma -mavx2)
 else()
   add_phase_a_benchmark(vectormathbench_phase_a_sse42)
   add_phase_b_benchmark(vectormathbench_phase_b_sse42)
+  add_phase_c_benchmark(vectormathbench_phase_c_sse42)
 endif()
 
 if(BUILD_TESTING)
@@ -186,6 +213,18 @@ if(BUILD_TESTING)
   add_test(
     NAME vectormathbench_semantic_parity_avx2
     COMMAND vectormathbench_avx2 --verify-only
+  )
+  add_test(
+    NAME vectormathbench_phase_c_parity_sse42
+    COMMAND vectormathbench_phase_c_sse42 --verify-only
+  )
+  add_test(
+    NAME vectormathbench_phase_c_parity_avx
+    COMMAND vectormathbench_phase_c_avx --verify-only
+  )
+  add_test(
+    NAME vectormathbench_phase_c_parity_avx2
+    COMMAND vectormathbench_phase_c_avx2 --verify-only
   )
 endif()
 

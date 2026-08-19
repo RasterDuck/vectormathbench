@@ -80,6 +80,14 @@ jobs:
               cat "benchmark-results/phase-b-${isa}.md"
             } >> "$GITHUB_STEP_SUMMARY"
           done
+          for isa in sse42 avx avx2; do
+            "./build/vectormathbench_phase_c_${isa}" \
+              > "benchmark-results/phase-c-${isa}.md"
+            {
+              echo "## Phase C CPU geometry proof / ${isa}"
+              cat "benchmark-results/phase-c-${isa}.md"
+            } >> "$GITHUB_STEP_SUMMARY"
+          done
 
       - name: Upload benchmark data
         uses: actions/upload-artifact@v6
