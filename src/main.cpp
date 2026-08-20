@@ -2698,10 +2698,6 @@ namespace mathbench::report
         {
             return "Move current";
         }
-        if (benchmarkName.find("move::") != std::string_view::npos)
-        {
-            return "Move legacy";
-        }
         if (benchmarkName.find("SimpleMath") != std::string_view::npos)
         {
             return "SimpleMath";
@@ -2802,8 +2798,7 @@ namespace mathbench::report
                 std::find_if(ordered.begin(), ordered.end(),
                     [](const auto& entry)
                     {
-                        return entry.first == "Move current" ||
-                               entry.first == "Move legacy";
+                        return entry.first == "Move current";
                     });
             if (ordered.empty() || moveImplementation == ordered.end())
             {

@@ -88,23 +88,6 @@ jobs:
               cat "benchmark-results/geometry-queries-${isa}.md"
             } >> "$GITHUB_STEP_SUMMARY"
           done
-          for isa in sse42 avx avx2; do
-            "./build/vectormathbench_core_operations_${isa}" \
-              > "benchmark-results/core-operations-${isa}.md"
-            {
-              echo "## Move core old/new migration / ${isa}"
-              cat "benchmark-results/core-operations-${isa}.md"
-            } >> "$GITHUB_STEP_SUMMARY"
-          done
-          for isa in sse42 avx avx2; do
-            "./build/vectormathbench_matrix_operations_${isa}" \
-              > "benchmark-results/matrix-operations-${isa}.md"
-            {
-              echo "## Move matrix old/new migration / ${isa}"
-              cat "benchmark-results/matrix-operations-${isa}.md"
-            } >> "$GITHUB_STEP_SUMMARY"
-          done
-
       - name: Upload benchmark data
         uses: actions/upload-artifact@v6
         with:

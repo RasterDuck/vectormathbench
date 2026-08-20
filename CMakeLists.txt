@@ -46,7 +46,7 @@ else()
   CPMAddPackage(
     NAME move-vectormath
     GITHUB_REPOSITORY move-engine/move-vectormath
-    GIT_TAG fe3b6f736a99000f6dcb344e8a7b81f52265af6f
+    GIT_TAG 64fd475df6bc11d0b25c7f7ef0f0d4a5c735df34
   )
 endif()
 
@@ -71,7 +71,7 @@ add_library(sony_vectormath INTERFACE)
 target_include_directories(sony_vectormath INTERFACE ${sony_vectormath_SOURCE_DIR})
 
 add_library(vmb_common INTERFACE)
-target_link_libraries(vmb_common INTERFACE glm DirectXMath sony_vectormath move::vectormath rtm)
+target_link_libraries(vmb_common INTERFACE glm DirectXMath sony_vectormath mv::math rtm)
 target_sources(vmb_common INTERFACE src/main.cpp)
 
 if (UNIX)
@@ -120,7 +120,7 @@ endif()
 
 function(add_representation_benchmark target)
   add_executable(${target} src/representation.cpp)
-  target_link_libraries(${target} PRIVATE move::vectormath)
+  target_link_libraries(${target} PRIVATE mv::math)
   target_include_directories(${target} PRIVATE src)
 
   if (UNIX)
@@ -136,7 +136,7 @@ endfunction()
 
 function(add_semantic_transform_benchmark target)
   add_executable(${target} src/semantic_transforms.cpp)
-  target_link_libraries(${target} PRIVATE move::vectormath)
+  target_link_libraries(${target} PRIVATE mv::math)
   target_include_directories(${target} PRIVATE src)
 
   if (UNIX)
@@ -152,7 +152,7 @@ endfunction()
 
 function(add_geometry_query_benchmark target)
   add_executable(${target} src/geometry_queries.cpp)
-  target_link_libraries(${target} PRIVATE move::vectormath glm DirectXMath)
+  target_link_libraries(${target} PRIVATE mv::math glm DirectXMath)
   target_include_directories(${target} PRIVATE src)
 
   if (UNIX)
@@ -161,38 +161,6 @@ function(add_geometry_query_benchmark target)
       -O3
       -march=x86-64
       -fno-strict-aliasing
-      ${ARGN}
-    )
-  elseif (MSVC)
-    target_compile_options(${target} PRIVATE /O2 ${ARGN})
-  endif()
-endfunction()
-
-function(add_core_operations_benchmark target)
-  add_executable(${target} src/core_operations.cpp)
-  target_link_libraries(${target} PRIVATE move::vectormath)
-  target_include_directories(${target} PRIVATE src)
-
-  if (UNIX)
-    target_compile_options(${target} PRIVATE
-      -O3
-      -march=x86-64
-      ${ARGN}
-    )
-  elseif (MSVC)
-    target_compile_options(${target} PRIVATE /O2 ${ARGN})
-  endif()
-endfunction()
-
-function(add_matrix_operations_benchmark target)
-  add_executable(${target} src/matrix_operations.cpp)
-  target_link_libraries(${target} PRIVATE move::vectormath)
-  target_include_directories(${target} PRIVATE src)
-
-  if (UNIX)
-    target_compile_options(${target} PRIVATE
-      -O3
-      -march=x86-64
       ${ARGN}
     )
   elseif (MSVC)
@@ -210,12 +178,6 @@ if (WIN32)
   add_geometry_query_benchmark(vectormathbench_geometry_queries_sse42 /arch:SSE42)
   add_geometry_query_benchmark(vectormathbench_geometry_queries_avx /arch:AVX)
   add_geometry_query_benchmark(vectormathbench_geometry_queries_avx2 /arch:AVX2)
-  add_core_operations_benchmark(vectormathbench_core_operations_sse42 /arch:SSE42)
-  add_core_operations_benchmark(vectormathbench_core_operations_avx /arch:AVX)
-  add_core_operations_benchmark(vectormathbench_core_operations_avx2 /arch:AVX2)
-  add_matrix_operations_benchmark(vectormathbench_matrix_operations_sse42 /arch:SSE42)
-  add_matrix_operations_benchmark(vectormathbench_matrix_operations_avx /arch:AVX)
-  add_matrix_operations_benchmark(vectormathbench_matrix_operations_avx2 /arch:AVX2)
 elseif (UNIX)
   add_representation_benchmark(
     vectormathbench_representation_sse42
@@ -238,26 +200,10 @@ elseif (UNIX)
   )
   add_geometry_query_benchmark(vectormathbench_geometry_queries_avx -mavx)
   add_geometry_query_benchmark(vectormathbench_geometry_queries_avx2 -mfma -mavx2)
-  add_core_operations_benchmark(
-    vectormathbench_core_operations_sse42
-    -msse4.2
-    -mno-avx
-  )
-  add_core_operations_benchmark(vectormathbench_core_operations_avx -mavx)
-  add_core_operations_benchmark(vectormathbench_core_operations_avx2 -mfma -mavx2)
-  add_matrix_operations_benchmark(
-    vectormathbench_matrix_operations_sse42
-    -msse4.2
-    -mno-avx
-  )
-  add_matrix_operations_benchmark(vectormathbench_matrix_operations_avx -mavx)
-  add_matrix_operations_benchmark(vectormathbench_matrix_operations_avx2 -mfma -mavx2)
 else()
   add_representation_benchmark(vectormathbench_representation_sse42)
   add_semantic_transform_benchmark(vectormathbench_semantic_transforms_sse42)
   add_geometry_query_benchmark(vectormathbench_geometry_queries_sse42)
-  add_core_operations_benchmark(vectormathbench_core_operations_sse42)
-  add_matrix_operations_benchmark(vectormathbench_matrix_operations_sse42)
 endif()
 
 if(BUILD_TESTING)
@@ -284,30 +230,6 @@ if(BUILD_TESTING)
   add_test(
     NAME vectormathbench_geometry_query_parity_avx2
     COMMAND vectormathbench_geometry_queries_avx2 --verify-only
-  )
-  add_test(
-    NAME vectormathbench_core_operations_parity_sse42
-    COMMAND vectormathbench_core_operations_sse42 --verify-only
-  )
-  add_test(
-    NAME vectormathbench_core_operations_parity_avx
-    COMMAND vectormathbench_core_operations_avx --verify-only
-  )
-  add_test(
-    NAME vectormathbench_core_operations_parity_avx2
-    COMMAND vectormathbench_core_operations_avx2 --verify-only
-  )
-  add_test(
-    NAME vectormathbench_matrix_operations_parity_sse42
-    COMMAND vectormathbench_matrix_operations_sse42 --verify-only
-  )
-  add_test(
-    NAME vectormathbench_matrix_operations_parity_avx
-    COMMAND vectormathbench_matrix_operations_avx --verify-only
-  )
-  add_test(
-    NAME vectormathbench_matrix_operations_parity_avx2
-    COMMAND vectormathbench_matrix_operations_avx2 --verify-only
   )
 endif()
 

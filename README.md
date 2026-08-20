@@ -7,9 +7,6 @@ The suite is intentionally split by question instead of treating every result as
 - `vectormathbench_capabilities_*` compares equivalent game, graphics, vector,
   matrix, and intersection capabilities across libraries and prints the winner
   for every directly comparable single-precision capability.
-- `vectormathbench_core_operations_*` and
-  `vectormathbench_matrix_operations_*` are temporary `mv::math` versus legacy
-  Move regression gates for the API cutover.
 - `vectormathbench_geometry_queries_*` compares the typed Move geometry API to
   equivalent raw kernels and external APIs where their contracts match.
 - `vectormathbench_representation_*` and
@@ -33,7 +30,7 @@ composite workloads based on common frame-update and rendering tasks:
 The workload inputs pass through optimization barriers so the compiler cannot
 replace the measured math with precomputed constants. Float implementations are
 compared across all supported libraries, with double-precision variants for
-`move::math` and Realtime Math. The intersection kernels share one algorithm
+`mv::math` and Realtime Math. The intersection kernels share one algorithm
 through library-specific adapters, keeping branches and acceptance rules
 equivalent while exercising each library's native vector operations.
 
@@ -141,22 +138,9 @@ The matching `vectormathbench_semantic_transforms_*` executables compare semanti
 validating direction input once at a trust boundary with normalizing it during
 every game-loop use.
 
-The `vectormathbench_core_operations_*` executables are the performance gate
-for migration from `move::math` to `mv::math`. Each current and legacy row uses
-the same generated inputs and equivalent work. The suite currently covers
-chained `Vec3f` arithmetic, dot and cross products, checked normalization, and
-rotation of vectors. It runs at 256, 4,096, and 65,536 elements so regressions
-that only appear after leaving the smallest caches remain visible. Every new
-hot capability must gain a direct legacy/current comparison here before its
-legacy implementation is removed.
-
-The `vectormathbench_matrix_operations_*` executables apply the same migration
-gate to general matrices. They compare `Mat3f` and `Mat4f` vector
-transformation, multiplication, determinant, and inverse using identical
-well-conditioned inputs. Perspective and look-at construction are also
-compared for the legacy left-handed, zero-to-one convention. Checked new API
-rows and unchecked legacy rows are labeled separately, since their validation
-work is not semantically interchangeable.
+The completed direct old/new cutover evidence is archived in
+[`docs/migration/mv-math-v2-cutover.md`](docs/migration/mv-math-v2-cutover.md).
+The live suite intentionally contains no dependency on the removed legacy API.
 
 The `vectormathbench_geometry_queries_*` executables compare the typed CPU geometry API with equivalent
 raw-`Vec3f` kernels. They cover prepared one-ray/many-AABB traversal,
@@ -180,9 +164,15 @@ cmake -S . -B build/local-move \
 
 # Results
 
-TL;DR: Based on the current benchmarks (reflected in intermediate-benchmarks.md), it seems that the generally highest performing configuration across both AMD and Intel is Realtime Math, though it lacks many features compared to the other libraries.  `move::vectormath` seems to have generally similar performance to RTM (which makes sense given that it's built on top of RTM), though similarly suffers from a lack of features at the moment (though it does have more features than RTM, as well as including more game-centric extensions for RTM based on DXM/GLM, depending on the operation in question).  DXM with SSE4.2 seems to be the fastest non-RTM library, though it trades blows with Vectormath for matrix operations and GLM for vector operations.
+Run a capability executable to print the current per-capability winners and
+Move rank. Push runs also publish Markdown, JSON, and CSV artifacts. The checked
+comparison basis printed beside every summary row is part of the result; do not
+compare checked construction boundaries with unchecked peers as if their
+contracts were identical.
 
-See the [BENCHMARKS](BENCHMARKS.md) document for more details.
+See [BENCHMARKS](BENCHMARKS.md) for usage and methodology. The old
+`intermediate-benchmarks.md` file is a historical pre-cutover artifact, not a
+current ranking.
 
 # Building and installing
 
