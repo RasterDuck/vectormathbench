@@ -14,7 +14,13 @@
 #include <string_view>
 #include <vector>
 
+#include <glm/gtx/closest_point.hpp>
 #include <mv/math/PhaseC.hpp>
+
+// Keep DirectXMath's Linux SAL compatibility macros after all headers that can
+// include the C++ standard library; its legacy `__in` macro otherwise collides
+// with libstdc++ implementation identifiers.
+#include <DirectXCollision.h>
 
 namespace
 {
@@ -51,6 +57,12 @@ namespace
     {
         float Distance;
         mv::math::Vec3f Barycentric;
+    };
+
+    struct RawSegment
+    {
+        mv::math::Vec3f Start;
+        mv::math::Vec3f End;
     };
 
     template <typename T>
@@ -181,6 +193,23 @@ namespace
                           secondWeight, thirdWeight)};
     }
 
+    // Projection and endpoint clamp follow Geometric Tools
+    // DistPointSegment.h (BSL-1.0); this raw form isolates facade overhead.
+    [[nodiscard]] mv::math::Vec3f ClosestPoint(
+        const mv::math::Vec3f& point, const RawSegment& segment)
+    {
+        const mv::math::Vec3f displacement = segment.End - segment.Start;
+        const float lengthSquared = mv::math::LengthSquared(displacement);
+        const float fraction =
+            lengthSquared > 0.0F
+                ? std::clamp(
+                      mv::math::Dot(point - segment.Start, displacement) /
+                          lengthSquared,
+                      0.0F, 1.0F)
+                : 0.0F;
+        return segment.Start + displacement * fraction;
+    }
+
     [[nodiscard]] bool Intersects(
         const RawRay& ray, const RawTriangle& triangle)
     {
@@ -259,6 +288,21 @@ namespace
         return mv::math::Triangle3f(mv::math::Point3f(x, y, 0.0F),
             mv::math::Point3f(x + size, y, 0.0F),
             mv::math::Point3f(x, y + size, 0.0F));
+    }
+
+    [[nodiscard]] mv::math::Point3f MakeSemanticPoint(std::size_t index)
+    {
+        return mv::math::Point3f(Seed(index, 17U) * 30.0F - 15.0F,
+            Seed(index, 18U) * 20.0F - 10.0F, Seed(index, 19U) * 20.0F - 10.0F);
+    }
+
+    [[nodiscard]] mv::math::Segment3f MakeSemanticSegment(std::size_t index)
+    {
+        const mv::math::Point3f start(Seed(index, 20U) * 20.0F - 10.0F,
+            Seed(index, 21U) * 20.0F - 10.0F, Seed(index, 22U) * 20.0F - 10.0F);
+        const mv::math::Vec3f displacement(0.25F + Seed(index, 23U) * 4.0F,
+            Seed(index, 24U) * 4.0F - 2.0F, Seed(index, 25U) * 4.0F - 2.0F);
+        return mv::math::Segment3f(start, start + displacement);
     }
 
     void BenchmarkRayAabb(ankerl::nanobench::Bench& bench, std::size_t count)
@@ -406,6 +450,98 @@ namespace
             });
     }
 
+    void BenchmarkPointSegment(
+        ankerl::nanobench::Bench& bench, std::size_t count)
+    {
+        std::vector<mv::math::Point3f> semanticPoints(count);
+        std::vector<mv::math::Segment3f> semanticSegments(count);
+        std::vector<mv::math::Point3f> semanticOutput(count);
+        std::vector<mv::math::Vec3f> rawPoints(count);
+        std::vector<RawSegment> rawSegments(count);
+        std::vector<mv::math::Vec3f> rawOutput(count);
+        std::vector<glm::vec3> glmPoints(count);
+        std::vector<glm::vec3> glmStarts(count);
+        std::vector<glm::vec3> glmEnds(count);
+        std::vector<glm::vec3> glmOutput(count);
+        std::vector<DirectX::XMFLOAT3> dxPoints(count);
+        std::vector<DirectX::XMFLOAT3> dxStarts(count);
+        std::vector<DirectX::XMFLOAT3> dxEnds(count);
+        std::vector<DirectX::XMFLOAT3> dxOutput(count);
+
+        for (std::size_t index = 0U; index < count; ++index)
+        {
+            semanticPoints[index] = MakeSemanticPoint(index);
+            semanticSegments[index] = MakeSemanticSegment(index);
+            rawPoints[index] = semanticPoints[index].Vector();
+            rawSegments[index] = {semanticSegments[index].Start().Vector(),
+                semanticSegments[index].End().Vector()};
+            glmPoints[index] = glm::vec3(rawPoints[index].X(),
+                rawPoints[index].Y(), rawPoints[index].Z());
+            glmStarts[index] = glm::vec3(rawSegments[index].Start.X(),
+                rawSegments[index].Start.Y(), rawSegments[index].Start.Z());
+            glmEnds[index] = glm::vec3(rawSegments[index].End.X(),
+                rawSegments[index].End.Y(), rawSegments[index].End.Z());
+            dxPoints[index] = DirectX::XMFLOAT3(rawPoints[index].X(),
+                rawPoints[index].Y(), rawPoints[index].Z());
+            dxStarts[index] = DirectX::XMFLOAT3(rawSegments[index].Start.X(),
+                rawSegments[index].Start.Y(), rawSegments[index].Start.Z());
+            dxEnds[index] = DirectX::XMFLOAT3(rawSegments[index].End.X(),
+                rawSegments[index].End.Y(), rawSegments[index].End.Z());
+        }
+
+        const std::string suffix = "/" + std::to_string(count);
+        bench.batch(count).run("phase-c/point-segment/move" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0U; index < count; ++index)
+                {
+                    semanticOutput[index] = mv::math::ClosestPoint(
+                        semanticPoints[index], semanticSegments[index]);
+                }
+                Observe(semanticOutput);
+            });
+
+        bench.batch(count).run("phase-c/point-segment/move-raw-vec3" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0U; index < count; ++index)
+                {
+                    rawOutput[index] =
+                        ClosestPoint(rawPoints[index], rawSegments[index]);
+                }
+                Observe(rawOutput);
+            });
+
+        bench.batch(count).run("phase-c/point-segment/glm" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0U; index < count; ++index)
+                {
+                    glmOutput[index] = glm::closestPointOnLine(
+                        glmPoints[index], glmStarts[index], glmEnds[index]);
+                }
+                Observe(glmOutput);
+            });
+
+        bench.batch(count).run("phase-c/point-segment/directxmath" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0U; index < count; ++index)
+                {
+                    const DirectX::XMVECTOR point =
+                        DirectX::XMLoadFloat3(&dxPoints[index]);
+                    const DirectX::XMVECTOR start =
+                        DirectX::XMLoadFloat3(&dxStarts[index]);
+                    const DirectX::XMVECTOR end =
+                        DirectX::XMLoadFloat3(&dxEnds[index]);
+                    DirectX::XMStoreFloat3(&dxOutput[index],
+                        DirectX::Internal::PointOnLineSegmentNearestPoint(
+                            start, end, point));
+                }
+                Observe(dxOutput);
+            });
+    }
+
     void VerifyParity()
     {
         constexpr std::size_t Count = 4096U;
@@ -442,6 +578,52 @@ namespace
             {
                 std::abort();
             }
+
+            const mv::math::Point3f point = MakeSemanticPoint(index);
+            const mv::math::Segment3f segment = MakeSemanticSegment(index);
+            const mv::math::Point3f semanticClosest =
+                mv::math::ClosestPoint(point, segment);
+            const RawSegment rawSegment{
+                segment.Start().Vector(), segment.End().Vector()};
+            const mv::math::Vec3f rawClosest =
+                ClosestPoint(point.Vector(), rawSegment);
+            const glm::vec3 glmClosest = glm::closestPointOnLine(
+                glm::vec3(point.X(), point.Y(), point.Z()),
+                glm::vec3(segment.Start().X(), segment.Start().Y(),
+                    segment.Start().Z()),
+                glm::vec3(
+                    segment.End().X(), segment.End().Y(), segment.End().Z()));
+            const auto differs = [](float left, float right)
+            {
+                return std::abs(left - right) > 1.0e-5F;
+            };
+            if (differs(semanticClosest.X(), rawClosest.X()) ||
+                differs(semanticClosest.Y(), rawClosest.Y()) ||
+                differs(semanticClosest.Z(), rawClosest.Z()) ||
+                differs(semanticClosest.X(), glmClosest.x) ||
+                differs(semanticClosest.Y(), glmClosest.y) ||
+                differs(semanticClosest.Z(), glmClosest.z))
+            {
+                std::abort();
+            }
+
+            const DirectX::XMFLOAT3 dxPoint(point.X(), point.Y(), point.Z());
+            const DirectX::XMFLOAT3 dxStart(
+                segment.Start().X(), segment.Start().Y(), segment.Start().Z());
+            const DirectX::XMFLOAT3 dxEnd(
+                segment.End().X(), segment.End().Y(), segment.End().Z());
+            DirectX::XMFLOAT3 dxClosest;
+            DirectX::XMStoreFloat3(
+                &dxClosest, DirectX::Internal::PointOnLineSegmentNearestPoint(
+                                DirectX::XMLoadFloat3(&dxStart),
+                                DirectX::XMLoadFloat3(&dxEnd),
+                                DirectX::XMLoadFloat3(&dxPoint)));
+            if (differs(semanticClosest.X(), dxClosest.x) ||
+                differs(semanticClosest.Y(), dxClosest.y) ||
+                differs(semanticClosest.Z(), dxClosest.z))
+            {
+                std::abort();
+            }
         }
     }
 }  // namespace
@@ -467,6 +649,7 @@ int main(int argumentCount, char** arguments)
     {
         BenchmarkRayAabb(bench, count);
         BenchmarkRayTriangle(bench, count);
+        BenchmarkPointSegment(bench, count);
     }
 
     return EXIT_SUCCESS;

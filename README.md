@@ -74,11 +74,12 @@ pure scalar implementation.
 
 Before any measurements, the executable checks semantic parity for
 normalization, particle integration, camera-basis construction, quaternion
-rotation, ray-box intersection, and ray-triangle intersection. The checks cover
-all participating single-precision libraries plus Move and RTM double-precision
-intersection adapters. `--verify-only` runs these checks without collecting
-timings. Normal CI runs that mode for every ISA build, which also catches
-compiler- and instruction-set-specific miscompilations.
+rotation, ray-box intersection, ray-triangle intersection, and point-segment
+closest points. The checks cover all participating single-precision libraries
+plus Move and RTM double-precision intersection adapters. `--verify-only` runs
+these checks without collecting timings. Normal CI runs that mode for every ISA
+build, which also catches compiler- and instruction-set-specific
+miscompilations.
 
 GCC targets disable strict-aliasing optimization because the compared
 DirectXMath and Sony Vectormath versions use pointer type-punning internally.
@@ -126,10 +127,11 @@ every game-loop use.
 
 The Phase C executables compare the new typed CPU geometry API with equivalent
 raw-`Vec3f` kernels. They cover prepared one-ray/many-AABB traversal,
-per-query ray/AABB tests, and predicate versus detailed ray/triangle queries
-over cache- and working-set-sized batches. Each executable verifies semantic
-parity before collecting timings, and CI runs the parity-only mode on every
-ISA build.
+per-query ray/AABB tests, predicate versus detailed ray/triangle queries, and
+point/segment closest points over cache- and working-set-sized batches. The
+point/segment capability also compares GLM and DirectXMath because both expose
+matching semantics. Each executable verifies semantic parity before collecting
+timings, and CI runs the parity-only mode on every ISA build.
 
 By default CMake fetches the exact Move revision recorded in `CMakeLists.txt`.
 During library development, configure against a local checkout instead:

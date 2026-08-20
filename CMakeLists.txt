@@ -46,7 +46,7 @@ else()
   CPMAddPackage(
     NAME move-vectormath
     GITHUB_REPOSITORY move-engine/move-vectormath
-    GIT_TAG 486c51efeab7dc417e5f1f8b8529f6a71fc26249
+    GIT_TAG ffdcdd8dcdc51a66c8a4458699ba2798ecb4c8f0
   )
 endif()
 
@@ -149,13 +149,15 @@ endfunction()
 
 function(add_phase_c_benchmark target)
   add_executable(${target} src/phase_c.cpp)
-  target_link_libraries(${target} PRIVATE move::vectormath)
+  target_link_libraries(${target} PRIVATE move::vectormath glm DirectXMath)
   target_include_directories(${target} PRIVATE src)
 
   if (UNIX)
+    target_include_directories(${target} PRIVATE src/shims/linux)
     target_compile_options(${target} PRIVATE
       -O3
       -march=x86-64
+      -fno-strict-aliasing
       ${ARGN}
     )
   elseif (MSVC)
