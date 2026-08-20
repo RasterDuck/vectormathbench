@@ -441,7 +441,8 @@ namespace
                 Observe(currentDirections);
             });
 
-        bench.batch(count).run("core/normalize-checked/legacy" + suffix,
+        bench.batch(count).run(
+            "core/normalize-checked/legacy-unchecked" + suffix,
             [&]
             {
                 for (std::size_t index = 0; index < count; ++index)
