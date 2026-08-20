@@ -298,7 +298,10 @@ namespace mathbench::geometry
 
         static vector reciprocal(const vector& value)
         {
-            return Vectormath::SSE::recipPerElem(value);
+            // Sony Vectormath's MIT-licensed recipPerElem uses _mm_rcp_ps and
+            // is intentionally approximate. divPerElem from the same source
+            // provides the full-precision operation used by the other rows.
+            return Vectormath::SSE::divPerElem(vector(1.0F), value);
         }
 
         static vector minimum(const vector& lhs, const vector& rhs)
