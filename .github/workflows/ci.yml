@@ -65,27 +65,43 @@ jobs:
             } >> "$GITHUB_STEP_SUMMARY"
           done
           for isa in sse42 avx avx2; do
-            "./build/vectormathbench_phase_a_${isa}" \
-              > "benchmark-results/phase-a-${isa}.md"
+            "./build/vectormathbench_representation_${isa}" \
+              > "benchmark-results/representation-${isa}.md"
             {
-              echo "## Phase A representation proof / ${isa}"
-              cat "benchmark-results/phase-a-${isa}.md"
+              echo "## Representation and data flow / ${isa}"
+              cat "benchmark-results/representation-${isa}.md"
             } >> "$GITHUB_STEP_SUMMARY"
           done
           for isa in sse42 avx avx2; do
-            "./build/vectormathbench_phase_b_${isa}" \
-              > "benchmark-results/phase-b-${isa}.md"
+            "./build/vectormathbench_semantic_transforms_${isa}" \
+              > "benchmark-results/semantic-transforms-${isa}.md"
             {
-              echo "## Phase B semantic transform proof / ${isa}"
-              cat "benchmark-results/phase-b-${isa}.md"
+              echo "## Semantic transforms / ${isa}"
+              cat "benchmark-results/semantic-transforms-${isa}.md"
             } >> "$GITHUB_STEP_SUMMARY"
           done
           for isa in sse42 avx avx2; do
-            "./build/vectormathbench_phase_c_${isa}" \
-              > "benchmark-results/phase-c-${isa}.md"
+            "./build/vectormathbench_geometry_queries_${isa}" \
+              > "benchmark-results/geometry-queries-${isa}.md"
             {
-              echo "## Phase C CPU geometry proof / ${isa}"
-              cat "benchmark-results/phase-c-${isa}.md"
+              echo "## Geometry and spatial queries / ${isa}"
+              cat "benchmark-results/geometry-queries-${isa}.md"
+            } >> "$GITHUB_STEP_SUMMARY"
+          done
+          for isa in sse42 avx avx2; do
+            "./build/vectormathbench_core_operations_${isa}" \
+              > "benchmark-results/core-operations-${isa}.md"
+            {
+              echo "## Move core old/new migration / ${isa}"
+              cat "benchmark-results/core-operations-${isa}.md"
+            } >> "$GITHUB_STEP_SUMMARY"
+          done
+          for isa in sse42 avx avx2; do
+            "./build/vectormathbench_matrix_operations_${isa}" \
+              > "benchmark-results/matrix-operations-${isa}.md"
+            {
+              echo "## Move Mat3 old/new migration / ${isa}"
+              cat "benchmark-results/matrix-operations-${isa}.md"
             } >> "$GITHUB_STEP_SUMMARY"
           done
 

@@ -11,8 +11,9 @@
 #include <string>
 #include <vector>
 
-#include <mv/math/PhaseA.hpp>
-#include <mv/math/experimental/RepresentationProof.hpp>
+#include <mv/math/Math.hpp>
+
+#include "support/RepresentationFixtures.hpp"
 
 namespace
 {
@@ -48,15 +49,16 @@ namespace
     void BenchmarkVec3Representations(
         ankerl::nanobench::Bench& bench, std::size_t count)
     {
-        using mv::math::experimental::FixedStorageVec3f;
-        using mv::math::experimental::NativeVec3f;
+        using vmb::support::FixedStorageVec3f;
+        using vmb::support::NativeVec3f;
 
         const auto left = MakePackedVec3(count, 11U);
         const auto right = MakePackedVec3(count, 37U);
         std::vector<mv::math::PackedVec3f> output(count);
         const std::string suffix = "/" + std::to_string(count);
 
-        bench.batch(count).run("phase-a/vec3/public-native-storage" + suffix,
+        bench.batch(count).run(
+            "representation/vec3/public-native-storage" + suffix,
             [&]
             {
                 for (std::size_t index = 0; index < count; ++index)
@@ -70,7 +72,8 @@ namespace
                 Observe(output);
             });
 
-        bench.batch(count).run("phase-a/vec3/fixed-scalar-storage" + suffix,
+        bench.batch(count).run(
+            "representation/vec3/fixed-scalar-storage" + suffix,
             [&]
             {
                 for (std::size_t index = 0; index < count; ++index)
@@ -86,7 +89,7 @@ namespace
                 Observe(output);
             });
 
-        bench.batch(count).run("phase-a/vec3/raw-native-proof" + suffix,
+        bench.batch(count).run("representation/vec3/raw-native-proof" + suffix,
             [&]
             {
                 for (std::size_t index = 0; index < count; ++index)
@@ -106,7 +109,7 @@ namespace
     void BenchmarkVec2Storage(
         ankerl::nanobench::Bench& bench, std::size_t count)
     {
-        using mv::math::experimental::AlignedVec2f16;
+        using vmb::support::AlignedVec2f16;
 
         std::vector<mv::math::Vec2f> compact(count);
         std::vector<AlignedVec2f16> aligned(count);
@@ -120,7 +123,7 @@ namespace
         const AlignedVec2f16 alignedIncrement(0.001F, -0.002F);
         const std::string suffix = "/" + std::to_string(count);
 
-        bench.batch(count).run("phase-a/vec2/compact-8-byte" + suffix,
+        bench.batch(count).run("representation/vec2/compact-8-byte" + suffix,
             [&]
             {
                 for (auto& value : compact)
@@ -130,7 +133,7 @@ namespace
                 Observe(compact);
             });
 
-        bench.batch(count).run("phase-a/vec2/aligned-16-byte" + suffix,
+        bench.batch(count).run("representation/vec2/aligned-16-byte" + suffix,
             [&]
             {
                 for (auto& value : aligned)
@@ -144,7 +147,7 @@ namespace
     void BenchmarkSpriteIntegration(
         ankerl::nanobench::Bench& bench, std::size_t count)
     {
-        using mv::math::experimental::AlignedVec2f16;
+        using vmb::support::AlignedVec2f16;
 
         std::vector<mv::math::Vec2f> compactPositions(count);
         std::vector<mv::math::Vec2f> compactVelocities(count);
@@ -166,7 +169,7 @@ namespace
         const std::string suffix = "/" + std::to_string(count);
 
         bench.batch(count).run(
-            "phase-a/vec2-sprite-integration/compact-8-byte" + suffix,
+            "representation/vec2-sprite-integration/compact-8-byte" + suffix,
             [&]
             {
                 for (std::size_t index = 0; index < count; ++index)
@@ -178,7 +181,7 @@ namespace
             });
 
         bench.batch(count).run(
-            "phase-a/vec2-sprite-integration/aligned-16-byte" + suffix,
+            "representation/vec2-sprite-integration/aligned-16-byte" + suffix,
             [&]
             {
                 for (std::size_t index = 0; index < count; ++index)
@@ -194,7 +197,7 @@ namespace
     void BenchmarkUiTransform(
         ankerl::nanobench::Bench& bench, std::size_t count)
     {
-        using mv::math::experimental::AlignedVec2f16;
+        using vmb::support::AlignedVec2f16;
 
         std::vector<mv::math::Vec2f> compactInput(count);
         std::vector<mv::math::Vec2f> compactOutput(count);
@@ -217,7 +220,7 @@ namespace
         const std::string suffix = "/" + std::to_string(count);
 
         bench.batch(count).run(
-            "phase-a/vec2-ui-transform/compact-8-byte" + suffix,
+            "representation/vec2-ui-transform/compact-8-byte" + suffix,
             [&]
             {
                 for (std::size_t index = 0; index < count; ++index)
@@ -232,7 +235,7 @@ namespace
             });
 
         bench.batch(count).run(
-            "phase-a/vec2-ui-transform/aligned-16-byte" + suffix,
+            "representation/vec2-ui-transform/aligned-16-byte" + suffix,
             [&]
             {
                 for (std::size_t index = 0; index < count; ++index)
@@ -264,7 +267,8 @@ namespace
         constexpr float DeltaTime = 1.0F / 60.0F;
         const std::string suffix = "/" + std::to_string(count);
 
-        bench.batch(count).run("phase-a/particles/compute-16-byte" + suffix,
+        bench.batch(count).run(
+            "representation/particles/compute-16-byte" + suffix,
             [&]
             {
                 for (std::size_t index = 0; index < count; ++index)
@@ -275,7 +279,8 @@ namespace
                 Observe(computePositions);
             });
 
-        bench.batch(count).run("phase-a/particles/packed-12-byte" + suffix,
+        bench.batch(count).run(
+            "representation/particles/packed-12-byte" + suffix,
             [&]
             {
                 for (std::size_t index = 0; index < count; ++index)
@@ -303,7 +308,7 @@ namespace
         const std::string suffix = "/" + std::to_string(count);
 
         bench.batch(count).run(
-            "phase-a/transfer/packed-transform-gpu16" + suffix,
+            "representation/transfer/packed-transform-gpu16" + suffix,
             [&]
             {
                 mv::math::TransformPoints(
@@ -353,7 +358,7 @@ namespace
         const std::string suffix = "/" + std::to_string(count);
 
         bench.batch(count).run(
-            "phase-a/transfer/strided-transform-packed" + suffix,
+            "representation/transfer/strided-transform-packed" + suffix,
             [&]
             {
                 mv::math::TransformPoints(inputView, transform, outputView);
@@ -365,7 +370,7 @@ namespace
 int main()
 {
     ankerl::nanobench::Bench bench;
-    bench.title("Move math API-v2 Phase A representation proof")
+    bench.title("Move math representation and data-flow benchmarks")
         .epochs(15)
         .warmup(2)
         .minEpochIterations(4)

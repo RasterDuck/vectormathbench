@@ -115,8 +115,8 @@ elseif (UNIX)
   target_compile_options(vectormathbench_avx2 PRIVATE -mfma -mavx2)
 endif()
 
-function(add_phase_a_benchmark target)
-  add_executable(${target} src/phase_a.cpp)
+function(add_representation_benchmark target)
+  add_executable(${target} src/representation.cpp)
   target_link_libraries(${target} PRIVATE move::vectormath)
   target_include_directories(${target} PRIVATE src)
 
@@ -131,8 +131,8 @@ function(add_phase_a_benchmark target)
   endif()
 endfunction()
 
-function(add_phase_b_benchmark target)
-  add_executable(${target} src/phase_b.cpp)
+function(add_semantic_transform_benchmark target)
+  add_executable(${target} src/semantic_transforms.cpp)
   target_link_libraries(${target} PRIVATE move::vectormath)
   target_include_directories(${target} PRIVATE src)
 
@@ -147,8 +147,8 @@ function(add_phase_b_benchmark target)
   endif()
 endfunction()
 
-function(add_phase_c_benchmark target)
-  add_executable(${target} src/phase_c.cpp)
+function(add_geometry_query_benchmark target)
+  add_executable(${target} src/geometry_queries.cpp)
   target_link_libraries(${target} PRIVATE move::vectormath glm DirectXMath)
   target_include_directories(${target} PRIVATE src)
 
@@ -165,42 +165,96 @@ function(add_phase_c_benchmark target)
   endif()
 endfunction()
 
+function(add_core_operations_benchmark target)
+  add_executable(${target} src/core_operations.cpp)
+  target_link_libraries(${target} PRIVATE move::vectormath)
+  target_include_directories(${target} PRIVATE src)
+
+  if (UNIX)
+    target_compile_options(${target} PRIVATE
+      -O3
+      -march=x86-64
+      ${ARGN}
+    )
+  elseif (MSVC)
+    target_compile_options(${target} PRIVATE /O2 ${ARGN})
+  endif()
+endfunction()
+
+function(add_matrix_operations_benchmark target)
+  add_executable(${target} src/matrix_operations.cpp)
+  target_link_libraries(${target} PRIVATE move::vectormath)
+  target_include_directories(${target} PRIVATE src)
+
+  if (UNIX)
+    target_compile_options(${target} PRIVATE
+      -O3
+      -march=x86-64
+      ${ARGN}
+    )
+  elseif (MSVC)
+    target_compile_options(${target} PRIVATE /O2 ${ARGN})
+  endif()
+endfunction()
+
 if (WIN32)
-  add_phase_a_benchmark(vectormathbench_phase_a_sse42 /arch:SSE42)
-  add_phase_a_benchmark(vectormathbench_phase_a_avx /arch:AVX)
-  add_phase_a_benchmark(vectormathbench_phase_a_avx2 /arch:AVX2)
-  add_phase_b_benchmark(vectormathbench_phase_b_sse42 /arch:SSE42)
-  add_phase_b_benchmark(vectormathbench_phase_b_avx /arch:AVX)
-  add_phase_b_benchmark(vectormathbench_phase_b_avx2 /arch:AVX2)
-  add_phase_c_benchmark(vectormathbench_phase_c_sse42 /arch:SSE42)
-  add_phase_c_benchmark(vectormathbench_phase_c_avx /arch:AVX)
-  add_phase_c_benchmark(vectormathbench_phase_c_avx2 /arch:AVX2)
+  add_representation_benchmark(vectormathbench_representation_sse42 /arch:SSE42)
+  add_representation_benchmark(vectormathbench_representation_avx /arch:AVX)
+  add_representation_benchmark(vectormathbench_representation_avx2 /arch:AVX2)
+  add_semantic_transform_benchmark(vectormathbench_semantic_transforms_sse42 /arch:SSE42)
+  add_semantic_transform_benchmark(vectormathbench_semantic_transforms_avx /arch:AVX)
+  add_semantic_transform_benchmark(vectormathbench_semantic_transforms_avx2 /arch:AVX2)
+  add_geometry_query_benchmark(vectormathbench_geometry_queries_sse42 /arch:SSE42)
+  add_geometry_query_benchmark(vectormathbench_geometry_queries_avx /arch:AVX)
+  add_geometry_query_benchmark(vectormathbench_geometry_queries_avx2 /arch:AVX2)
+  add_core_operations_benchmark(vectormathbench_core_operations_sse42 /arch:SSE42)
+  add_core_operations_benchmark(vectormathbench_core_operations_avx /arch:AVX)
+  add_core_operations_benchmark(vectormathbench_core_operations_avx2 /arch:AVX2)
+  add_matrix_operations_benchmark(vectormathbench_matrix_operations_sse42 /arch:SSE42)
+  add_matrix_operations_benchmark(vectormathbench_matrix_operations_avx /arch:AVX)
+  add_matrix_operations_benchmark(vectormathbench_matrix_operations_avx2 /arch:AVX2)
 elseif (UNIX)
-  add_phase_a_benchmark(
-    vectormathbench_phase_a_sse42
+  add_representation_benchmark(
+    vectormathbench_representation_sse42
     -msse4.2
     -mno-avx
   )
-  add_phase_a_benchmark(vectormathbench_phase_a_avx -mavx)
-  add_phase_a_benchmark(vectormathbench_phase_a_avx2 -mfma -mavx2)
-  add_phase_b_benchmark(
-    vectormathbench_phase_b_sse42
+  add_representation_benchmark(vectormathbench_representation_avx -mavx)
+  add_representation_benchmark(vectormathbench_representation_avx2 -mfma -mavx2)
+  add_semantic_transform_benchmark(
+    vectormathbench_semantic_transforms_sse42
     -msse4.2
     -mno-avx
   )
-  add_phase_b_benchmark(vectormathbench_phase_b_avx -mavx)
-  add_phase_b_benchmark(vectormathbench_phase_b_avx2 -mfma -mavx2)
-  add_phase_c_benchmark(
-    vectormathbench_phase_c_sse42
+  add_semantic_transform_benchmark(vectormathbench_semantic_transforms_avx -mavx)
+  add_semantic_transform_benchmark(vectormathbench_semantic_transforms_avx2 -mfma -mavx2)
+  add_geometry_query_benchmark(
+    vectormathbench_geometry_queries_sse42
     -msse4.2
     -mno-avx
   )
-  add_phase_c_benchmark(vectormathbench_phase_c_avx -mavx)
-  add_phase_c_benchmark(vectormathbench_phase_c_avx2 -mfma -mavx2)
+  add_geometry_query_benchmark(vectormathbench_geometry_queries_avx -mavx)
+  add_geometry_query_benchmark(vectormathbench_geometry_queries_avx2 -mfma -mavx2)
+  add_core_operations_benchmark(
+    vectormathbench_core_operations_sse42
+    -msse4.2
+    -mno-avx
+  )
+  add_core_operations_benchmark(vectormathbench_core_operations_avx -mavx)
+  add_core_operations_benchmark(vectormathbench_core_operations_avx2 -mfma -mavx2)
+  add_matrix_operations_benchmark(
+    vectormathbench_matrix_operations_sse42
+    -msse4.2
+    -mno-avx
+  )
+  add_matrix_operations_benchmark(vectormathbench_matrix_operations_avx -mavx)
+  add_matrix_operations_benchmark(vectormathbench_matrix_operations_avx2 -mfma -mavx2)
 else()
-  add_phase_a_benchmark(vectormathbench_phase_a_sse42)
-  add_phase_b_benchmark(vectormathbench_phase_b_sse42)
-  add_phase_c_benchmark(vectormathbench_phase_c_sse42)
+  add_representation_benchmark(vectormathbench_representation_sse42)
+  add_semantic_transform_benchmark(vectormathbench_semantic_transforms_sse42)
+  add_geometry_query_benchmark(vectormathbench_geometry_queries_sse42)
+  add_core_operations_benchmark(vectormathbench_core_operations_sse42)
+  add_matrix_operations_benchmark(vectormathbench_matrix_operations_sse42)
 endif()
 
 if(BUILD_TESTING)
@@ -217,16 +271,40 @@ if(BUILD_TESTING)
     COMMAND vectormathbench_avx2 --verify-only
   )
   add_test(
-    NAME vectormathbench_phase_c_parity_sse42
-    COMMAND vectormathbench_phase_c_sse42 --verify-only
+    NAME vectormathbench_geometry_query_parity_sse42
+    COMMAND vectormathbench_geometry_queries_sse42 --verify-only
   )
   add_test(
-    NAME vectormathbench_phase_c_parity_avx
-    COMMAND vectormathbench_phase_c_avx --verify-only
+    NAME vectormathbench_geometry_query_parity_avx
+    COMMAND vectormathbench_geometry_queries_avx --verify-only
   )
   add_test(
-    NAME vectormathbench_phase_c_parity_avx2
-    COMMAND vectormathbench_phase_c_avx2 --verify-only
+    NAME vectormathbench_geometry_query_parity_avx2
+    COMMAND vectormathbench_geometry_queries_avx2 --verify-only
+  )
+  add_test(
+    NAME vectormathbench_core_operations_parity_sse42
+    COMMAND vectormathbench_core_operations_sse42 --verify-only
+  )
+  add_test(
+    NAME vectormathbench_core_operations_parity_avx
+    COMMAND vectormathbench_core_operations_avx --verify-only
+  )
+  add_test(
+    NAME vectormathbench_core_operations_parity_avx2
+    COMMAND vectormathbench_core_operations_avx2 --verify-only
+  )
+  add_test(
+    NAME vectormathbench_matrix_operations_parity_sse42
+    COMMAND vectormathbench_matrix_operations_sse42 --verify-only
+  )
+  add_test(
+    NAME vectormathbench_matrix_operations_parity_avx
+    COMMAND vectormathbench_matrix_operations_avx --verify-only
+  )
+  add_test(
+    NAME vectormathbench_matrix_operations_parity_avx2
+    COMMAND vectormathbench_matrix_operations_avx2 --verify-only
   )
 endif()
 

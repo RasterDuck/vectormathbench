@@ -15,7 +15,7 @@
 #include <vector>
 
 #include <glm/gtx/closest_point.hpp>
-#include <mv/math/PhaseC.hpp>
+#include <mv/math/Math.hpp>
 
 // Keep DirectXMath's Linux SAL compatibility macros after all headers that can
 // include the C++ standard library; its legacy `__in` macro otherwise collides
@@ -259,10 +259,15 @@ namespace
         {
             std::abort();
         }
-        return mv::math::Ray3f(
+        const auto ray = mv::math::Ray3f::TryFromOriginDirection(
             mv::math::Point3f(-20.0F, Seed(index, 0U) * 8.0F - 4.0F,
                 Seed(index, 1U) * 8.0F - 4.0F),
             *direction);
+        if (!ray)
+        {
+            std::abort();
+        }
+        return *ray;
     }
 
     [[nodiscard]] mv::math::Aabb3f MakeSemanticAabb(std::size_t index)
@@ -285,9 +290,14 @@ namespace
         const float x = Seed(index, 12U) * 8.0F - 4.0F;
         const float y = Seed(index, 13U) * 8.0F - 4.0F;
         const float size = 0.25F + Seed(index, 14U) * 2.0F;
-        return mv::math::Triangle3f(mv::math::Point3f(x, y, 0.0F),
-            mv::math::Point3f(x + size, y, 0.0F),
+        const auto triangle = mv::math::Triangle3f::TryFromPoints(
+            mv::math::Point3f(x, y, 0.0F), mv::math::Point3f(x + size, y, 0.0F),
             mv::math::Point3f(x, y + size, 0.0F));
+        if (!triangle)
+        {
+            std::abort();
+        }
+        return *triangle;
     }
 
     [[nodiscard]] mv::math::Point3f MakeSemanticPoint(std::size_t index)
@@ -337,7 +347,7 @@ namespace
         const RawPreparedRay rawPrepared = Prepare(rawRays[0]);
         const std::string suffix = "/" + std::to_string(count);
 
-        bench.batch(count).run("phase-c/ray-aabb/prepared-semantic" + suffix,
+        bench.batch(count).run("geometry/ray-aabb/prepared-semantic" + suffix,
             [&]
             {
                 for (std::size_t index = 0U; index < count; ++index)
@@ -349,7 +359,7 @@ namespace
                 Observe(output);
             });
 
-        bench.batch(count).run("phase-c/ray-aabb/prepared-raw-vec3" + suffix,
+        bench.batch(count).run("geometry/ray-aabb/prepared-raw-vec3" + suffix,
             [&]
             {
                 for (std::size_t index = 0U; index < count; ++index)
@@ -360,7 +370,7 @@ namespace
                 Observe(output);
             });
 
-        bench.batch(count).run("phase-c/ray-aabb/per-query-semantic" + suffix,
+        bench.batch(count).run("geometry/ray-aabb/per-query-semantic" + suffix,
             [&]
             {
                 for (std::size_t index = 0U; index < count; ++index)
@@ -372,7 +382,7 @@ namespace
                 Observe(output);
             });
 
-        bench.batch(count).run("phase-c/ray-aabb/per-query-raw-vec3" + suffix,
+        bench.batch(count).run("geometry/ray-aabb/per-query-raw-vec3" + suffix,
             [&]
             {
                 for (std::size_t index = 0U; index < count; ++index)
@@ -397,9 +407,14 @@ namespace
         {
             const float x = Seed(index, 15U) * 10.0F - 5.0F;
             const float y = Seed(index, 16U) * 10.0F - 5.0F;
-            semanticRays[index] =
-                mv::math::Ray3f(mv::math::Point3f(x, y, 10.0F),
-                    -mv::math::Direction3f::AxisZ());
+            const auto ray = mv::math::Ray3f::TryFromOriginDirection(
+                mv::math::Point3f(x, y, 10.0F),
+                -mv::math::Direction3f::AxisZ());
+            if (!ray)
+            {
+                std::abort();
+            }
+            semanticRays[index] = *ray;
             semanticTriangles[index] = MakeSemanticTriangle(index);
             rawRays[index] = {semanticRays[index].Origin().Vector(),
                 semanticRays[index].Direction().Vector()};
@@ -410,7 +425,7 @@ namespace
 
         const std::string suffix = "/" + std::to_string(count);
         bench.batch(count).run(
-            "phase-c/ray-triangle/predicate-semantic" + suffix,
+            "geometry/ray-triangle/predicate-semantic" + suffix,
             [&]
             {
                 for (std::size_t index = 0U; index < count; ++index)
@@ -423,7 +438,7 @@ namespace
             });
 
         bench.batch(count).run(
-            "phase-c/ray-triangle/predicate-raw-vec3" + suffix,
+            "geometry/ray-triangle/predicate-raw-vec3" + suffix,
             [&]
             {
                 for (std::size_t index = 0U; index < count; ++index)
@@ -435,7 +450,7 @@ namespace
             });
 
         bench.batch(count).run(
-            "phase-c/ray-triangle/detailed-semantic" + suffix,
+            "geometry/ray-triangle/detailed-semantic" + suffix,
             [&]
             {
                 for (std::size_t index = 0U; index < count; ++index)
@@ -448,7 +463,7 @@ namespace
             });
 
         bench.batch(count).run(
-            "phase-c/ray-triangle/detailed-raw-vec3" + suffix,
+            "geometry/ray-triangle/detailed-raw-vec3" + suffix,
             [&]
             {
                 for (std::size_t index = 0U; index < count; ++index)
@@ -501,7 +516,7 @@ namespace
         }
 
         const std::string suffix = "/" + std::to_string(count);
-        bench.batch(count).run("phase-c/point-segment/move" + suffix,
+        bench.batch(count).run("geometry/point-segment/move" + suffix,
             [&]
             {
                 for (std::size_t index = 0U; index < count; ++index)
@@ -512,7 +527,7 @@ namespace
                 Observe(semanticOutput);
             });
 
-        bench.batch(count).run("phase-c/point-segment/move-raw-vec3" + suffix,
+        bench.batch(count).run("geometry/point-segment/move-raw-vec3" + suffix,
             [&]
             {
                 for (std::size_t index = 0U; index < count; ++index)
@@ -523,7 +538,7 @@ namespace
                 Observe(rawOutput);
             });
 
-        bench.batch(count).run("phase-c/point-segment/glm" + suffix,
+        bench.batch(count).run("geometry/point-segment/glm" + suffix,
             [&]
             {
                 for (std::size_t index = 0U; index < count; ++index)
@@ -534,7 +549,7 @@ namespace
                 Observe(glmOutput);
             });
 
-        bench.batch(count).run("phase-c/point-segment/directxmath" + suffix,
+        bench.batch(count).run("geometry/point-segment/directxmath" + suffix,
             [&]
             {
                 for (std::size_t index = 0U; index < count; ++index)
@@ -566,7 +581,7 @@ namespace
         }
 
         const std::string suffix = "/" + std::to_string(count);
-        bench.batch(count).run("phase-c/capsule-capsule/move" + suffix,
+        bench.batch(count).run("geometry/capsule-capsule/move" + suffix,
             [&]
             {
                 for (std::size_t index = 0U; index < count; ++index)
@@ -579,7 +594,7 @@ namespace
 
         // Ericson's sphere-swept-volume reduction (RTCD 2005, section 4.5.1)
         // written at the public primitive level to expose facade-only cost.
-        bench.batch(count).run("phase-c/capsule-capsule/decomposed" + suffix,
+        bench.batch(count).run("geometry/capsule-capsule/decomposed" + suffix,
             [&]
             {
                 for (std::size_t index = 0U; index < count; ++index)
@@ -703,7 +718,7 @@ int main(int argumentCount, char** arguments)
     }
 
     ankerl::nanobench::Bench bench;
-    bench.title("Move math API-v2 Phase C geometry proof")
+    bench.title("Move math geometry and spatial query benchmarks")
         .epochs(15)
         .warmup(2)
         .minEpochIterations(4)

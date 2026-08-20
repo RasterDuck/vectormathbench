@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include <mv/math/PhaseB.hpp>
+#include <mv/math/Transforms.hpp>
 
 namespace
 {
@@ -61,7 +61,8 @@ namespace
         const mv::math::RigidTransform3f transform = MakeTransform();
         const std::string suffix = "/" + std::to_string(count);
 
-        bench.batch(count).run("phase-b/rigid-point/semantic-point3" + suffix,
+        bench.batch(count).run(
+            "semantic-transforms/rigid-point/semantic-point3" + suffix,
             [&]
             {
                 for (std::size_t index = 0; index < count; ++index)
@@ -72,7 +73,8 @@ namespace
                 Observe(semanticOutput);
             });
 
-        bench.batch(count).run("phase-b/rigid-point/raw-vec3" + suffix,
+        bench.batch(count).run(
+            "semantic-transforms/rigid-point/raw-vec3" + suffix,
             [&]
             {
                 for (std::size_t index = 0; index < count; ++index)
@@ -109,7 +111,8 @@ namespace
         const std::string suffix = "/" + std::to_string(count);
 
         bench.batch(count).run(
-            "phase-b/rigid-direction/prevalidated-semantic" + suffix,
+            "semantic-transforms/rigid-direction/prevalidated-semantic" +
+                suffix,
             [&]
             {
                 for (std::size_t index = 0; index < count; ++index)
@@ -121,7 +124,8 @@ namespace
             });
 
         bench.batch(count).run(
-            "phase-b/rigid-direction/prevalidated-raw-vec3" + suffix,
+            "semantic-transforms/rigid-direction/prevalidated-raw-vec3" +
+                suffix,
             [&]
             {
                 for (std::size_t index = 0; index < count; ++index)
@@ -133,7 +137,7 @@ namespace
             });
 
         bench.batch(count).run(
-            "phase-b/rigid-direction/validate-every-use" + suffix,
+            "semantic-transforms/rigid-direction/validate-every-use" + suffix,
             [&]
             {
                 for (std::size_t index = 0; index < count; ++index)
@@ -155,7 +159,7 @@ namespace
 int main()
 {
     ankerl::nanobench::Bench bench;
-    bench.title("Move math API-v2 Phase B semantic transform proof")
+    bench.title("Move math semantic transform benchmarks")
         .epochs(15)
         .warmup(2)
         .minEpochIterations(4)

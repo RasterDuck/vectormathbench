@@ -101,9 +101,9 @@ verification job. Shared hosted runners are too noisy for performance gating,
 so these are diagnostic reports rather than pass/fail regression thresholds.
 Those runs upload Markdown, JSON, and CSV results.
 
-## API-v2 Phase A representation proof
+## Representation and data-flow benchmarks
 
-The `vectormathbench_phase_a_sse42`, `_avx`, and `_avx2` executables measure
+The `vectormathbench_representation_sse42`, `_avx`, and `_avx2` executables measure
 the architectural choices that are intentionally absent from the
 cross-library capability ranking:
 
@@ -120,12 +120,28 @@ show cache and bandwidth crossovers. These tables answer representation and
 data-flow questions; they do not rank libraries implementing different public
 APIs.
 
-The matching Phase B executables compare semantic `Point3f` and
+The matching `vectormathbench_semantic_transforms_*` executables compare semantic `Point3f` and
 `Direction3f` transforms with their raw-`Vec3f` equivalents. They also compare
 validating direction input once at a trust boundary with normalizing it during
 every game-loop use.
 
-The Phase C executables compare the new typed CPU geometry API with equivalent
+The `vectormathbench_core_operations_*` executables are the performance gate
+for migration from `move::math` to `mv::math`. Each current and legacy row uses
+the same generated inputs and equivalent work. The suite currently covers
+chained `Vec3f` arithmetic, dot and cross products, checked normalization, and
+rotation of vectors. It runs at 256, 4,096, and 65,536 elements so regressions
+that only appear after leaving the smallest caches remain visible. Every new
+hot capability must gain a direct legacy/current comparison here before its
+legacy implementation is removed.
+
+The `vectormathbench_matrix_operations_*` executables apply the same migration
+gate to general matrices. They compare `Mat3f` vector transformation,
+multiplication, determinant, and inverse using identical well-conditioned
+inputs. The inverse table labels the new fallible finite-result contract and
+the legacy unchecked contract separately, since their validation work is not
+semantically interchangeable.
+
+The `vectormathbench_geometry_queries_*` executables compare the typed CPU geometry API with equivalent
 raw-`Vec3f` kernels. They cover prepared one-ray/many-AABB traversal,
 per-query ray/AABB tests, predicate versus detailed ray/triangle queries, and
 point/segment closest points over cache- and working-set-sized batches. The
@@ -140,7 +156,7 @@ By default CMake fetches the exact Move revision recorded in `CMakeLists.txt`.
 During library development, configure against a local checkout instead:
 
 ```sh
-cmake -S . -B build/phase-a \
+cmake -S . -B build/local-move \
   -DMOVE_VECTORMATH_SOURCE_DIR=/path/to/move-vectormath \
   -DBUILD_TESTING=OFF
 ```
