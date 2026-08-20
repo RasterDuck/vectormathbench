@@ -46,7 +46,7 @@ else()
   CPMAddPackage(
     NAME move-vectormath
     GITHUB_REPOSITORY move-engine/move-vectormath
-    GIT_TAG f01f9e86e177b8a9ebcf747581008c7e12e60ab0
+    GIT_TAG 2285dda7e85959f46b1833d3a3db47c876d61646
   )
 endif()
 
