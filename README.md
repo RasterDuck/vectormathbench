@@ -52,8 +52,11 @@ amortized cost per ray.
 
 At the end of a capability run, the executable prints a compact
 single-precision ranking summary. For every directly comparable capability it
-reports the fastest library, the current `mv::math` rank, and its gap from the
-winner. Double-precision
+reports the comparison basis, fastest library, current `mv::math` rank, and its
+gap from the winner. The basis explicitly identifies checked-Move versus
+unchecked-peer construction rows and shared raw-vector kernels, so a ranking
+does not hide a stronger contract or imply that a raw kernel measures Move's
+typed geometry facade. Double-precision
 rows remain in the detailed tables but are not combined with single-precision
 rankings. QVV operations also have separate tables from conventional matrix
 operations because they represent a different transform representation.

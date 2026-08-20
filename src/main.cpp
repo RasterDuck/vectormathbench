@@ -2682,6 +2682,7 @@ namespace mathbench::report
     struct ranked_result
     {
         std::string capability;
+        std::string comparisonBasis;
         std::string winner;
         double winnerNanoseconds{};
         double moveNanoseconds{};
@@ -2756,8 +2757,8 @@ namespace mathbench::report
         return std::string(capability);
     }
 
-    void collect_rankings(
-        std::string_view capability, const ankerl::nanobench::Bench& bench)
+    void collect_rankings(std::string_view capability,
+        std::string_view comparisonBasis, const ankerl::nanobench::Bench& bench)
     {
         using measure = ankerl::nanobench::Result::Measure;
         std::map<std::string, std::map<std::string, double>> groupedResults;
@@ -2809,16 +2810,18 @@ namespace mathbench::report
                 continue;
             }
 
-            rankings.push_back({scenario, ordered.front().first,
-                ordered.front().second, moveImplementation->second,
+            rankings.push_back({scenario, std::string(comparisonBasis),
+                ordered.front().first, ordered.front().second,
+                moveImplementation->second,
                 static_cast<std::size_t>(
                     std::distance(ordered.begin(), moveImplementation) + 1)});
         }
     }
 
     template <typename Function>
-    void run_capability(
-        std::string_view title, bool summarize, Function&& function)
+    void run_capability(std::string_view title, bool summarize,
+        Function&& function,
+        std::string_view comparisonBasis = "Matching operation")
     {
         ankerl::nanobench::Bench bench;
         bench.title(std::string(title))
@@ -2831,7 +2834,7 @@ namespace mathbench::report
             allResults.end(), bench.results().begin(), bench.results().end());
         if (summarize)
         {
-            collect_rankings(title, bench);
+            collect_rankings(title, comparisonBasis, bench);
         }
     }
 
@@ -2839,9 +2842,9 @@ namespace mathbench::report
     {
         std::cout
             << "\n## Capability winners (single-precision implementations)\n\n"
-            << "| Capability | Fastest library | Fastest ns/op | "
-               "Move ns/op | Move rank | Move gap |\n"
-            << "|:--|:--|--:|--:|--:|--:|\n";
+            << "| Capability | Comparison basis | Fastest library | "
+               "Fastest ns/op | Move ns/op | Move rank | Move gap |\n"
+            << "|:--|:--|:--|--:|--:|--:|--:|\n";
 
         std::sort(rankings.begin(), rankings.end(),
             [](const auto& lhs, const auto& rhs)
@@ -2856,7 +2859,8 @@ namespace mathbench::report
                     : (result.moveNanoseconds / result.winnerNanoseconds -
                           1.0) *
                           100.0;
-            std::cout << "| " << result.capability << " | " << result.winner
+            std::cout << "| " << result.capability << " | "
+                      << result.comparisonBasis << " | " << result.winner
                       << " | " << std::fixed << std::setprecision(2)
                       << result.winnerNanoseconds << " | "
                       << result.moveNanoseconds << " | " << result.moveRank
@@ -2951,21 +2955,27 @@ int main(int argc, char** argv)
         using mathbench::report::run_capability;
 
         run_capability("Game loop / Normalize direction", true,
-            mathbench::workloads::normalize_direction);
+            mathbench::workloads::normalize_direction,
+            "Move checked; peers unchecked");
         run_capability("Game loop / Particle integration", true,
             mathbench::workloads::particle_integration);
         run_capability("Graphics / Camera basis", true,
-            mathbench::workloads::camera_basis);
+            mathbench::workloads::camera_basis,
+            "Move checked; peers unchecked");
         run_capability("Graphics / Quaternion direction rotation", true,
             mathbench::workloads::rotate_direction);
         run_capability("Geometry / Ray-AABB intersection latency", true,
-            mathbench::workloads::ray_aabb_intersection);
+            mathbench::workloads::ray_aabb_intersection,
+            "Shared full-precision raw-vector kernel");
         run_capability("Geometry / Ray-AABB intersection throughput", true,
-            mathbench::workloads::ray_aabb_batch);
+            mathbench::workloads::ray_aabb_batch,
+            "Shared full-precision raw-vector kernel");
         run_capability("Geometry / Ray-triangle intersection latency", true,
-            mathbench::workloads::ray_triangle_intersection);
+            mathbench::workloads::ray_triangle_intersection,
+            "Shared raw-vector kernel");
         run_capability("Geometry / Ray-triangle intersection throughput", true,
-            mathbench::workloads::ray_triangle_batch);
+            mathbench::workloads::ray_triangle_batch,
+            "Shared raw-vector kernel");
 
         run_capability("Transforms / Model-matrix construction", false,
             mathbench::matrices::construct_model_matrix);
