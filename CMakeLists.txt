@@ -94,16 +94,19 @@ endif()
 
 add_executable(vectormathbench_sse42)
 target_link_libraries(vectormathbench_sse42 PRIVATE vmb_common)
-set_property(TARGET vectormathbench_sse42 PROPERTY OUTPUT_NAME vectormathbench_sse42)
+set_property(TARGET vectormathbench_sse42 PROPERTY OUTPUT_NAME
+  vectormathbench_capabilities_sse42)
 
 add_executable(vectormathbench_avx)
 target_link_libraries(vectormathbench_avx PRIVATE vmb_common)
-set_property(TARGET vectormathbench_avx PROPERTY OUTPUT_NAME vectormathbench_avx)
+set_property(TARGET vectormathbench_avx PROPERTY OUTPUT_NAME
+  vectormathbench_capabilities_avx)
 
 
 add_executable(vectormathbench_avx2)
 target_link_libraries(vectormathbench_avx2 PRIVATE vmb_common)
-set_property(TARGET vectormathbench_avx2 PROPERTY OUTPUT_NAME vectormathbench_avx2)
+set_property(TARGET vectormathbench_avx2 PROPERTY OUTPUT_NAME
+  vectormathbench_capabilities_avx2)
 
 if (WIN32)
   target_compile_options(vectormathbench_sse42 PRIVATE /arch:SSE42)

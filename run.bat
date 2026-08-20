@@ -45,14 +45,14 @@ pushd build
     echo. >> BENCHMARKS.md
 
     echo ## SSE 4.2 >> BENCHMARKS.md
-    vectormathbench_sse42.exe >> BENCHMARKS.md
+    vectormathbench_capabilities_sse42.exe >> BENCHMARKS.md
 
     echo. >> BENCHMARKS.md
     echo ## AVX >> BENCHMARKS.md
-    vectormathbench_avx.exe >> BENCHMARKS.md
+    vectormathbench_capabilities_avx.exe >> BENCHMARKS.md
 
     echo. >> BENCHMARKS.md
     echo ## AVX2 >> BENCHMARKS.md
-    vectormathbench_avx2.exe >> BENCHMARKS.md
+    vectormathbench_capabilities_avx2.exe >> BENCHMARKS.md
 
 popd

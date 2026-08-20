@@ -9,7 +9,7 @@
 #include <glm/common.hpp>
 #include <glm/geometric.hpp>
 #include <glm/vec3.hpp>
-#include <move/math/vec3.hpp>
+#include <mv/math/Vec3.hpp>
 
 #include <DirectXMath.h>
 
@@ -341,7 +341,7 @@ namespace mathbench::geometry
     struct move_ops
     {
         using scalar = T;
-        using vector = move::math::vec3<T, move::math::Acceleration::RTM>;
+        using vector = mv::math::Vec3<T>;
 
         static vector make(scalar x, scalar y, scalar z)
         {
@@ -365,37 +365,37 @@ namespace mathbench::geometry
 
         static vector minimum(const vector& lhs, const vector& rhs)
         {
-            return vector::min(lhs, rhs);
+            return mv::math::Min(lhs, rhs);
         }
 
         static vector maximum(const vector& lhs, const vector& rhs)
         {
-            return vector::max(lhs, rhs);
+            return mv::math::Max(lhs, rhs);
         }
 
         static scalar dot(const vector& lhs, const vector& rhs)
         {
-            return vector::dot(lhs, rhs);
+            return mv::math::Dot(lhs, rhs);
         }
 
         static vector cross(const vector& lhs, const vector& rhs)
         {
-            return vector::cross(lhs, rhs);
+            return mv::math::Cross(lhs, rhs);
         }
 
         static scalar x(const vector& value)
         {
-            return value.get_x();
+            return value.X();
         }
 
         static scalar y(const vector& value)
         {
-            return value.get_y();
+            return value.Y();
         }
 
         static scalar z(const vector& value)
         {
-            return value.get_z();
+            return value.Z();
         }
     };
 

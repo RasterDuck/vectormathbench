@@ -1,8 +1,20 @@
 # Vector Math Benchmark
 
-This project benchmarks several open source vector math libraries against one another to establish a baseline for performance.  Currently, it tests [GLM](https://github.com/g-truc/glm), [DirectXMath](https://github.com/microsoft/DirectXMath), [SimpleMath from DirectXTK](https://github.com/microsoft/DirectXTK/blob/main/Inc/SimpleMath.h), [this fork of Sony's Vectormath](https://github.com/glampert/vectormath), [move::vectormath](https://github.com/move-engine/move-vectormath), and [Realtime Math](https://github.com/nfrechette/rtm).  It tests the performance of all libraries under SSE4.2, AVX, and AVX2.
+This project benchmarks several open source vector math libraries against one another to establish a baseline for performance.  Currently, it tests [GLM](https://github.com/g-truc/glm), [DirectXMath](https://github.com/microsoft/DirectXMath), [SimpleMath from DirectXTK](https://github.com/microsoft/DirectXTK/blob/main/Inc/SimpleMath.h), [this fork of Sony's Vectormath](https://github.com/glampert/vectormath), the current [`mv::math`](https://github.com/move-engine/move-vectormath) API, and [Realtime Math](https://github.com/nfrechette/rtm).  It tests the performance of all libraries under SSE4.2, AVX, and AVX2.
 
-Note that this repository was created with `cmake-init`, and much of what is here is boilerplate related to it.  The only really important things in the repository are `src/main.cpp`, which includes all of the benchmarking code, and [BENCHMARKS.md](BENCHMARKS.md), which contains the latest benchmarking results.
+The suite is intentionally split by question instead of treating every result as one undifferentiated ranking:
+
+- `vectormathbench_capabilities_*` compares equivalent game, graphics, vector,
+  matrix, and intersection capabilities across libraries and prints the winner
+  for every directly comparable single-precision capability.
+- `vectormathbench_core_operations_*` and
+  `vectormathbench_matrix_operations_*` are temporary `mv::math` versus legacy
+  Move regression gates for the API cutover.
+- `vectormathbench_geometry_queries_*` compares the typed Move geometry API to
+  equivalent raw kernels and external APIs where their contracts match.
+- `vectormathbench_representation_*` and
+  `vectormathbench_semantic_transforms_*` answer Move-specific representation,
+  storage, and invariant-type design questions rather than ranking libraries.
 
 # Benchmark coverage
 
@@ -38,9 +50,10 @@ Latency tables expose individual hit and miss paths. Throughput tables process
 256 varied rays with a realistic mixture of hits and misses and report the
 amortized cost per ray.
 
-At the end of a run, the executable prints a compact single-precision ranking
-summary. For every directly comparable capability it reports the fastest
-library, the `move::math` rank, and its gap from the winner. Double-precision
+At the end of a capability run, the executable prints a compact
+single-precision ranking summary. For every directly comparable capability it
+reports the fastest library, the current `mv::math` rank, and its gap from the
+winner. Double-precision
 rows remain in the detailed tables but are not combined with single-precision
 rankings. QVV operations also have separate tables from conventional matrix
 operations because they represent a different transform representation.
@@ -90,7 +103,7 @@ Use `--json PATH` and `--csv PATH` to save every nanobench measurement in
 machine-readable form:
 
 ```sh
-./build/vectormathbench_sse42 \
+./build/vectormathbench_capabilities_sse42 \
   --json benchmark-results/sse42.json \
   --csv benchmark-results/sse42.csv
 ```

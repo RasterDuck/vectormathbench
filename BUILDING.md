@@ -31,9 +31,9 @@ ctest --test-dir build --output-on-failure -C Release
 Run a benchmark variant and optionally save machine-readable results:
 
 ```sh
-./build/vectormathbench_sse42 \
-  --json benchmark-results/sse42.json \
-  --csv benchmark-results/sse42.csv
+./build/vectormathbench_capabilities_sse42 \
+  --json benchmark-results/capabilities-sse42.json \
+  --csv benchmark-results/capabilities-sse42.csv
 ```
 
 ### Building with MSVC

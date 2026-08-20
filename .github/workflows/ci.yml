@@ -55,13 +55,13 @@ jobs:
         run: |
           mkdir -p benchmark-results
           for isa in sse42 avx avx2; do
-            "./build/vectormathbench_${isa}" \
-              --json "benchmark-results/${isa}.json" \
-              --csv "benchmark-results/${isa}.csv" \
-              > "benchmark-results/${isa}.md"
+            "./build/vectormathbench_capabilities_${isa}" \
+              --json "benchmark-results/capabilities-${isa}.json" \
+              --csv "benchmark-results/capabilities-${isa}.csv" \
+              > "benchmark-results/capabilities-${isa}.md"
             {
-              echo "## ${isa}"
-              cat "benchmark-results/${isa}.md"
+              echo "## Cross-library capability rankings / ${isa}"
+              cat "benchmark-results/capabilities-${isa}.md"
             } >> "$GITHUB_STEP_SUMMARY"
           done
           for isa in sse42 avx avx2; do
@@ -100,7 +100,7 @@ jobs:
             "./build/vectormathbench_matrix_operations_${isa}" \
               > "benchmark-results/matrix-operations-${isa}.md"
             {
-              echo "## Move Mat3 old/new migration / ${isa}"
+              echo "## Move matrix old/new migration / ${isa}"
               cat "benchmark-results/matrix-operations-${isa}.md"
             } >> "$GITHUB_STEP_SUMMARY"
           done

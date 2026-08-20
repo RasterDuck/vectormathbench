@@ -36,6 +36,7 @@
 #include <move/math/vec2.hpp>
 #include <move/math/vec3.hpp>
 #include <move/math/vec4.hpp>
+#include <mv/math/Math.hpp>
 #include "simplemath.hpp"
 
 #include <rtm/macros.h>
@@ -302,6 +303,14 @@ namespace mathbench
         move::math::double4x4 mvMat4x4da;
         move::math::double4x4 mvMat4x4db;
         move::math::double4x4 mvMat4x4dc;
+
+        // mv::math current API
+        mv::math::Vec3f mvCurrentVec3f;
+        mv::math::Vec3d mvCurrentVec3d;
+        mv::math::Vec4f mvCurrentVec4f;
+        mv::math::Vec4d mvCurrentVec4d;
+        mv::math::Mat4f mvCurrentMat4f;
+        mv::math::Mat4d mvCurrentMat4d;
 
         // rtm
         rtm::vector4f rtmVec4f;
@@ -1115,22 +1124,23 @@ namespace mathbench
 
             using mvf_ops = geometry::move_ops<float>;
             using mvf_vec = mvf_ops::vector;
-            benchmark_ray_aabb_case<mvf_ops>(bench, "Ray-AABB hit move::float3",
-                mvf_vec(0.25f, 0.1f, -4.0f), mvf_vec(0.1f, 0.05f, 1.0f),
-                mvf_vec(-1.0f, -1.0f, -1.0f), mvf_vec(1.0f, 1.0f, 1.0f));
             benchmark_ray_aabb_case<mvf_ops>(bench,
-                "Ray-AABB miss move::float3", mvf_vec(4.0f, 4.0f, -4.0f),
+                "Ray-AABB hit mv::math::Vec3f", mvf_vec(0.25f, 0.1f, -4.0f),
+                mvf_vec(0.1f, 0.05f, 1.0f), mvf_vec(-1.0f, -1.0f, -1.0f),
+                mvf_vec(1.0f, 1.0f, 1.0f));
+            benchmark_ray_aabb_case<mvf_ops>(bench,
+                "Ray-AABB miss mv::math::Vec3f", mvf_vec(4.0f, 4.0f, -4.0f),
                 mvf_vec(0.1f, 0.05f, 1.0f), mvf_vec(-1.0f, -1.0f, -1.0f),
                 mvf_vec(1.0f, 1.0f, 1.0f));
 
             using mvd_ops = geometry::move_ops<double>;
             using mvd_vec = mvd_ops::vector;
             benchmark_ray_aabb_case<mvd_ops>(bench,
-                "Ray-AABB hit move::double3", mvd_vec(0.25, 0.1, -4.0),
+                "Ray-AABB hit mv::math::Vec3d", mvd_vec(0.25, 0.1, -4.0),
                 mvd_vec(0.1, 0.05, 1.0), mvd_vec(-1.0, -1.0, -1.0),
                 mvd_vec(1.0, 1.0, 1.0));
             benchmark_ray_aabb_case<mvd_ops>(bench,
-                "Ray-AABB miss move::double3", mvd_vec(4.0, 4.0, -4.0),
+                "Ray-AABB miss mv::math::Vec3d", mvd_vec(4.0, 4.0, -4.0),
                 mvd_vec(0.1, 0.05, 1.0), mvd_vec(-1.0, -1.0, -1.0),
                 mvd_vec(1.0, 1.0, 1.0));
 
@@ -1211,22 +1221,23 @@ namespace mathbench
             using mvf_ops = geometry::move_ops<float>;
             using mvf_vec = mvf_ops::vector;
             benchmark_ray_triangle_case<mvf_ops>(bench,
-                "Ray-triangle hit move::float3", mvf_vec(0.25f, 0.25f, -2.0f),
-                mvf_vec(0.0f, 0.0f, 1.0f), mvf_vec(0.0f, 0.0f, 0.0f),
-                mvf_vec(1.0f, 0.0f, 0.0f), mvf_vec(0.0f, 1.0f, 0.0f));
+                "Ray-triangle hit mv::math::Vec3f",
+                mvf_vec(0.25f, 0.25f, -2.0f), mvf_vec(0.0f, 0.0f, 1.0f),
+                mvf_vec(0.0f, 0.0f, 0.0f), mvf_vec(1.0f, 0.0f, 0.0f),
+                mvf_vec(0.0f, 1.0f, 0.0f));
             benchmark_ray_triangle_case<mvf_ops>(bench,
-                "Ray-triangle miss move::float3", mvf_vec(1.5f, 1.5f, -2.0f),
+                "Ray-triangle miss mv::math::Vec3f", mvf_vec(1.5f, 1.5f, -2.0f),
                 mvf_vec(0.0f, 0.0f, 1.0f), mvf_vec(0.0f, 0.0f, 0.0f),
                 mvf_vec(1.0f, 0.0f, 0.0f), mvf_vec(0.0f, 1.0f, 0.0f));
 
             using mvd_ops = geometry::move_ops<double>;
             using mvd_vec = mvd_ops::vector;
             benchmark_ray_triangle_case<mvd_ops>(bench,
-                "Ray-triangle hit move::double3", mvd_vec(0.25, 0.25, -2.0),
+                "Ray-triangle hit mv::math::Vec3d", mvd_vec(0.25, 0.25, -2.0),
                 mvd_vec(0.0, 0.0, 1.0), mvd_vec(0.0, 0.0, 0.0),
                 mvd_vec(1.0, 0.0, 0.0), mvd_vec(0.0, 1.0, 0.0));
             benchmark_ray_triangle_case<mvd_ops>(bench,
-                "Ray-triangle miss move::double3", mvd_vec(1.5, 1.5, -2.0),
+                "Ray-triangle miss mv::math::Vec3d", mvd_vec(1.5, 1.5, -2.0),
                 mvd_vec(0.0, 0.0, 1.0), mvd_vec(0.0, 0.0, 0.0),
                 mvd_vec(1.0, 0.0, 0.0), mvd_vec(0.0, 1.0, 0.0));
 
@@ -1325,9 +1336,9 @@ namespace mathbench
             benchmark_ray_aabb_batch<geometry::vectormath_ops>(
                 bench, "Ray-AABB mixed batch Vectormath");
             benchmark_ray_aabb_batch<geometry::move_ops<float>>(
-                bench, "Ray-AABB mixed batch move::float3");
+                bench, "Ray-AABB mixed batch mv::math::Vec3f");
             benchmark_ray_aabb_batch<geometry::move_ops<double>>(
-                bench, "Ray-AABB mixed batch move::double3");
+                bench, "Ray-AABB mixed batch mv::math::Vec3d");
             benchmark_ray_aabb_batch<geometry::rtm_ops<float>>(
                 bench, "Ray-AABB mixed batch rtm::vector4f");
             benchmark_ray_aabb_batch<geometry::rtm_ops<double>>(
@@ -1399,9 +1410,9 @@ namespace mathbench
             benchmark_ray_triangle_batch<geometry::vectormath_ops>(
                 bench, "Ray-triangle mixed batch Vectormath");
             benchmark_ray_triangle_batch<geometry::move_ops<float>>(
-                bench, "Ray-triangle mixed batch move::float3");
+                bench, "Ray-triangle mixed batch mv::math::Vec3f");
             benchmark_ray_triangle_batch<geometry::move_ops<double>>(
-                bench, "Ray-triangle mixed batch move::double3");
+                bench, "Ray-triangle mixed batch mv::math::Vec3d");
             benchmark_ray_triangle_batch<geometry::rtm_ops<float>>(
                 bench, "Ray-triangle mixed batch rtm::vector4f");
             benchmark_ray_triangle_batch<geometry::rtm_ops<double>>(
@@ -1452,24 +1463,34 @@ namespace mathbench
                         std::as_const(results.sonyVec3));
                 });
 
-            move::math::float3 mvDirection(3.0f, -2.0f, 7.0f);
-            bench.run("Normalize direction move::float3",
+            mv::math::Vec3f mvDirection(3.0f, -2.0f, 7.0f);
+            bench.run("Normalize direction mv::math::Vec3f checked",
                 [&]
                 {
                     ankerl::nanobench::doNotOptimizeAway(mvDirection);
-                    results.mvVec3f = mvDirection.normalized();
+                    const auto direction = mv::math::TryNormalize(mvDirection);
+                    if (!direction)
+                    {
+                        std::abort();
+                    }
+                    results.mvCurrentVec3f = direction->Vector();
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvVec3f));
+                        std::as_const(results.mvCurrentVec3f));
                 });
 
-            move::math::double3 mvDirectionD(3.0, -2.0, 7.0);
-            bench.run("Normalize direction move::double3",
+            mv::math::Vec3d mvDirectionD(3.0, -2.0, 7.0);
+            bench.run("Normalize direction mv::math::Vec3d checked",
                 [&]
                 {
                     ankerl::nanobench::doNotOptimizeAway(mvDirectionD);
-                    results.mvVec3d = mvDirectionD.normalized();
+                    const auto direction = mv::math::TryNormalize(mvDirectionD);
+                    if (!direction)
+                    {
+                        std::abort();
+                    }
+                    results.mvCurrentVec3d = direction->Vector();
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvVec3d));
+                        std::as_const(results.mvCurrentVec3d));
                 });
 
             rtm::vector4f rtmDirection =
@@ -1569,10 +1590,10 @@ namespace mathbench
                         std::as_const(results.sonyVec3));
                 });
 
-            move::math::float3 mvPosition(12.0f, 8.0f, -4.0f);
-            move::math::float3 mvVelocity(2.0f, 5.0f, -1.0f);
-            move::math::float3 mvAcceleration(0.0f, -9.81f, 0.0f);
-            bench.run("Particle integration move::float3",
+            mv::math::Vec3f mvPosition(12.0f, 8.0f, -4.0f);
+            mv::math::Vec3f mvVelocity(2.0f, 5.0f, -1.0f);
+            mv::math::Vec3f mvAcceleration(0.0f, -9.81f, 0.0f);
+            bench.run("Particle integration mv::math::Vec3f",
                 [&]
                 {
                     ankerl::nanobench::doNotOptimizeAway(mvPosition);
@@ -1580,15 +1601,15 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(mvAcceleration);
                     const auto velocity =
                         mvVelocity + mvAcceleration * deltaTime;
-                    results.mvVec3f = mvPosition + velocity * deltaTime;
+                    results.mvCurrentVec3f = mvPosition + velocity * deltaTime;
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvVec3f));
+                        std::as_const(results.mvCurrentVec3f));
                 });
 
-            move::math::double3 mvPositionD(12.0, 8.0, -4.0);
-            move::math::double3 mvVelocityD(2.0, 5.0, -1.0);
-            move::math::double3 mvAccelerationD(0.0, -9.81, 0.0);
-            bench.run("Particle integration move::double3",
+            mv::math::Vec3d mvPositionD(12.0, 8.0, -4.0);
+            mv::math::Vec3d mvVelocityD(2.0, 5.0, -1.0);
+            mv::math::Vec3d mvAccelerationD(0.0, -9.81, 0.0);
+            bench.run("Particle integration mv::math::Vec3d",
                 [&]
                 {
                     ankerl::nanobench::doNotOptimizeAway(mvPositionD);
@@ -1596,9 +1617,10 @@ namespace mathbench
                     ankerl::nanobench::doNotOptimizeAway(mvAccelerationD);
                     const auto velocity =
                         mvVelocityD + mvAccelerationD * deltaTimeD;
-                    results.mvVec3d = mvPositionD + velocity * deltaTimeD;
+                    results.mvCurrentVec3d =
+                        mvPositionD + velocity * deltaTimeD;
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvVec3d));
+                        std::as_const(results.mvCurrentVec3d));
                 });
 
             rtm::vector4f rtmPosition =
@@ -1719,42 +1741,60 @@ namespace mathbench
                         std::as_const(results.sonyVec3));
                 });
 
-            move::math::float3 mvEye(4.0f, 2.0f, -8.0f);
-            move::math::float3 mvTarget(1.0f, 3.0f, 2.0f);
-            move::math::float3 mvUp(0.0f, 1.0f, 0.0f);
-            bench.run("Camera basis move::float3",
+            mv::math::Vec3f mvEye(4.0f, 2.0f, -8.0f);
+            mv::math::Vec3f mvTarget(1.0f, 3.0f, 2.0f);
+            const mv::math::Direction3f mvUp = mv::math::Direction3f::AxisY();
+            bench.run("Camera basis mv::math::Vec3f checked",
                 [&]
                 {
                     ankerl::nanobench::doNotOptimizeAway(mvEye);
                     ankerl::nanobench::doNotOptimizeAway(mvTarget);
                     ankerl::nanobench::doNotOptimizeAway(mvUp);
-                    const auto forward = (mvTarget - mvEye).normalized();
-                    const auto right =
-                        move::math::float3::cross(mvUp, forward).normalized();
+                    const auto forward =
+                        mv::math::TryNormalize(mvTarget - mvEye);
+                    if (!forward)
+                    {
+                        std::abort();
+                    }
+                    const auto right = mv::math::TryNormalize(
+                        mv::math::Cross(mvUp.Vector(), forward->Vector()));
+                    if (!right)
+                    {
+                        std::abort();
+                    }
                     const auto correctedUp =
-                        move::math::float3::cross(forward, right);
-                    results.mvVec3f = right + correctedUp;
+                        mv::math::Cross(forward->Vector(), right->Vector());
+                    results.mvCurrentVec3f = right->Vector() + correctedUp;
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvVec3f));
+                        std::as_const(results.mvCurrentVec3f));
                 });
 
-            move::math::double3 mvEyeD(4.0, 2.0, -8.0);
-            move::math::double3 mvTargetD(1.0, 3.0, 2.0);
-            move::math::double3 mvUpD(0.0, 1.0, 0.0);
-            bench.run("Camera basis move::double3",
+            mv::math::Vec3d mvEyeD(4.0, 2.0, -8.0);
+            mv::math::Vec3d mvTargetD(1.0, 3.0, 2.0);
+            const mv::math::Direction3d mvUpD = mv::math::Direction3d::AxisY();
+            bench.run("Camera basis mv::math::Vec3d checked",
                 [&]
                 {
                     ankerl::nanobench::doNotOptimizeAway(mvEyeD);
                     ankerl::nanobench::doNotOptimizeAway(mvTargetD);
                     ankerl::nanobench::doNotOptimizeAway(mvUpD);
-                    const auto forward = (mvTargetD - mvEyeD).normalized();
-                    const auto right =
-                        move::math::double3::cross(mvUpD, forward).normalized();
+                    const auto forward =
+                        mv::math::TryNormalize(mvTargetD - mvEyeD);
+                    if (!forward)
+                    {
+                        std::abort();
+                    }
+                    const auto right = mv::math::TryNormalize(
+                        mv::math::Cross(mvUpD.Vector(), forward->Vector()));
+                    if (!right)
+                    {
+                        std::abort();
+                    }
                     const auto correctedUp =
-                        move::math::double3::cross(forward, right);
-                    results.mvVec3d = right + correctedUp;
+                        mv::math::Cross(forward->Vector(), right->Vector());
+                    results.mvCurrentVec3d = right->Vector() + correctedUp;
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvVec3d));
+                        std::as_const(results.mvCurrentVec3d));
                 });
 
             rtm::vector4f rtmEye = rtm::vector_set(4.0f, 2.0f, -8.0f, 0.0f);
@@ -1855,28 +1895,32 @@ namespace mathbench
                         std::as_const(results.sonyVec3));
                 });
 
-            move::math::float3 mvDirection(0.25f, 0.5f, 1.0f);
-            auto mvRotation = move::math::quatf::rotation_y(0.35f);
-            bench.run("Rotate direction move::math quaternion (float)",
+            mv::math::Vec3f mvDirection(0.25f, 0.5f, 1.0f);
+            const auto mvRotation = mv::math::Rotation3f::FromAxisAngle(
+                mv::math::Direction3f::AxisY(), mv::math::Radiansf(0.35f));
+            bench.run("Rotate direction mv::math::Rotation3f",
                 [&]
                 {
                     ankerl::nanobench::doNotOptimizeAway(mvDirection);
                     ankerl::nanobench::doNotOptimizeAway(mvRotation);
-                    results.mvVec3f = mvDirection * mvRotation;
+                    results.mvCurrentVec3f =
+                        mv::math::Rotate(mvRotation, mvDirection);
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvVec3f));
+                        std::as_const(results.mvCurrentVec3f));
                 });
 
-            move::math::double3 mvDirectionD(0.25, 0.5, 1.0);
-            auto mvRotationD = move::math::quatd::rotation_y(0.35);
-            bench.run("Rotate direction move::math quaternion (double)",
+            mv::math::Vec3d mvDirectionD(0.25, 0.5, 1.0);
+            const auto mvRotationD = mv::math::Rotation3d::FromAxisAngle(
+                mv::math::Direction3d::AxisY(), mv::math::Radiansd(0.35));
+            bench.run("Rotate direction mv::math::Rotation3d",
                 [&]
                 {
                     ankerl::nanobench::doNotOptimizeAway(mvDirectionD);
                     ankerl::nanobench::doNotOptimizeAway(mvRotationD);
-                    results.mvVec3d = mvDirectionD * mvRotationD;
+                    results.mvCurrentVec3d =
+                        mv::math::Rotate(mvRotationD, mvDirectionD);
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvVec3d));
+                        std::as_const(results.mvCurrentVec3d));
                 });
 
             rtm::vector4f rtmDirection =
@@ -2037,58 +2081,38 @@ namespace mathbench
                         std::as_const(results.sonyMat4a));
                 });
 
-            bench.run("Construct model matrix move::math (manual, float)",
+            bench.run("Construct model matrix mv::math::TrsTransform3f",
                 [&]
                 {
-                    using namespace move::math;
                     makeFloatInputsOpaque();
-                    results.mvMat4x4fa = mat4x4f::translation({tx, ty, tz}) *
-                                         mat4x4f::rotation_x(angle) *
-                                         mat4x4f::rotation_y(angle) *
-                                         mat4x4f::rotation_z(angle) *
-                                         mat4x4f::scale(sx, sy, sz);
+                    results.mvCurrentMat4f = mv::math::ToMat4(
+                        mv::math::TrsTransform3f(mv::math::Vec3f(tx, ty, tz),
+                            mv::math::Rotation3f::FromEuler(
+                                {mv::math::Radiansf(angle),
+                                    mv::math::Radiansf(angle),
+                                    mv::math::Radiansf(angle),
+                                    mv::math::EulerOrder::XYZ}),
+                            mv::math::Vec3f(sx, sy, sz)));
 
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvMat4x4fa));
+                        std::as_const(results.mvCurrentMat4f));
                 });
 
-            bench.run("Construct model matrix move::math (builtin, float)",
+            bench.run("Construct model matrix mv::math::TrsTransform3d",
                 [&]
                 {
-                    using namespace move::math;
-                    makeFloatInputsOpaque();
-                    results.mvMat4x4fa = mat4x4f::trs({tx, ty, tz},
-                        quatf::euler(angle, angle, angle), {sx, sy, sz});
-
-                    ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvMat4x4fa));
-                });
-
-            bench.run("Construct model matrix move::math (manual, double)",
-                [&]
-                {
-                    using namespace move::math;
                     makeDoubleInputsOpaque();
-                    results.mvMat4x4da = mat4x4d::translation({txD, tyD, tzD}) *
-                                         mat4x4d::rotation(quatd::euler(
-                                             angleD, angleD, angleD)) *
-                                         mat4x4d::scale(sxD, syD, szD);
+                    results.mvCurrentMat4d = mv::math::ToMat4(
+                        mv::math::TrsTransform3d(mv::math::Vec3d(txD, tyD, tzD),
+                            mv::math::Rotation3d::FromEuler(
+                                {mv::math::Radiansd(angleD),
+                                    mv::math::Radiansd(angleD),
+                                    mv::math::Radiansd(angleD),
+                                    mv::math::EulerOrder::XYZ}),
+                            mv::math::Vec3d(sxD, syD, szD)));
 
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvMat4x4da));
-                });
-
-            bench.run("Construct model matrix move::math (builtin, double)",
-                [&]
-                {
-                    using namespace move::math;
-                    makeDoubleInputsOpaque();
-                    results.mvMat4x4da = mat4x4d::trs(vec3d(txD, tyD, tzD),
-                        quatd::euler(angleD, angleD, angleD),
-                        vec3d(sxD, syD, szD));
-
-                    ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvMat4x4da));
+                        std::as_const(results.mvCurrentMat4d));
                 });
 
             bench.run("Construct rtm::qvvf (~transformation matrix)",
@@ -2195,12 +2219,15 @@ namespace mathbench
             const Vectormath::SSE::Point3 sonyEye(1.0f, 2.0f, 3.0f);
             const Vectormath::SSE::Point3 sonyTarget(4.0f, 5.0f, 6.0f);
             const Vectormath::Vector3 sonyUp(7.0f, 8.0f, 9.0f);
-            const move::math::fast_float3 mvEye(1.0f, 2.0f, 3.0f);
-            const move::math::fast_float3 mvTarget(4.0f, 5.0f, 6.0f);
-            const move::math::fast_float3 mvUp(7.0f, 8.0f, 9.0f);
-            const move::math::fast_double3 mvEyeD(1.0, 2.0, 3.0);
-            const move::math::fast_double3 mvTargetD(4.0, 5.0, 6.0);
-            const move::math::fast_double3 mvUpD(7.0, 8.0, 9.0);
+            const mv::math::Point3f mvEye(1.0f, 2.0f, 3.0f);
+            const mv::math::Point3f mvTarget(4.0f, 5.0f, 6.0f);
+            const mv::math::Direction3f mvUp =
+                mv::math::Direction3f::FromOr(mv::math::Vec3f(7.0f, 8.0f, 9.0f),
+                    mv::math::Direction3f::AxisY());
+            const mv::math::Point3d mvEyeD(1.0, 2.0, 3.0);
+            const mv::math::Point3d mvTargetD(4.0, 5.0, 6.0);
+            const mv::math::Direction3d mvUpD = mv::math::Direction3d::FromOr(
+                mv::math::Vec3d(7.0, 8.0, 9.0), mv::math::Direction3d::AxisY());
             const rtm::vector4f rtmEye =
                 rtm::vector_set(1.0f, 2.0f, 3.0f, 0.0f);
             const rtm::vector4f rtmTarget =
@@ -2259,32 +2286,40 @@ namespace mathbench
                         std::as_const(results.sonyMat4a));
                 });
 
-            bench.run("Construct view matrix move::math (float)",
+            bench.run("Construct view matrix mv::math checked (float)",
                 [&]
                 {
-                    using namespace move::math;
                     ankerl::nanobench::doNotOptimizeAway(mvEye);
                     ankerl::nanobench::doNotOptimizeAway(mvTarget);
                     ankerl::nanobench::doNotOptimizeAway(mvUp);
-                    results.mvMat4x4fa =
-                        mat4x4f::look_at(mvEye, mvTarget, mvUp);
+                    const auto view =
+                        mv::math::TryLookAtLH(mvEye, mvTarget, mvUp);
+                    if (!view)
+                    {
+                        std::abort();
+                    }
+                    results.mvCurrentMat4f = *view;
 
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvMat4x4fa));
+                        std::as_const(results.mvCurrentMat4f));
                 });
 
-            bench.run("Construct view matrix move::math (double)",
+            bench.run("Construct view matrix mv::math checked (double)",
                 [&]
                 {
-                    using namespace move::math;
                     ankerl::nanobench::doNotOptimizeAway(mvEyeD);
                     ankerl::nanobench::doNotOptimizeAway(mvTargetD);
                     ankerl::nanobench::doNotOptimizeAway(mvUpD);
-                    results.mvMat4x4da =
-                        mat4x4d::look_at(mvEyeD, mvTargetD, mvUpD);
+                    const auto view =
+                        mv::math::TryLookAtLH(mvEyeD, mvTargetD, mvUpD);
+                    if (!view)
+                    {
+                        std::abort();
+                    }
+                    results.mvCurrentMat4d = *view;
 
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvMat4x4da));
+                        std::as_const(results.mvCurrentMat4d));
                 });
 
             bench.run("Construct view matrix rtm::matrix4x4f",
@@ -2383,34 +2418,48 @@ namespace mathbench
                         std::as_const(results.sonyMat4a));
                 });
 
-            bench.run("Construct perspective matrix move::math (float)",
+            bench.run("Construct perspective matrix mv::math checked (float)",
                 [&]
                 {
-                    using namespace move::math;
                     ankerl::nanobench::doNotOptimizeAway(fov);
                     ankerl::nanobench::doNotOptimizeAway(aspect);
                     ankerl::nanobench::doNotOptimizeAway(nearPlane);
                     ankerl::nanobench::doNotOptimizeAway(farPlane);
-                    results.mvMat4x4fa =
-                        mat4x4f::perspective(fov, aspect, nearPlane, farPlane);
+                    const auto projection = mv::math::TryPerspectiveFov(
+                        mv::math::Radiansf(fov), aspect, nearPlane, farPlane,
+                        mv::math::Handedness::Left,
+                        mv::math::ClipDepth::ZeroToOne,
+                        mv::math::DepthDirection::Forward);
+                    if (!projection)
+                    {
+                        std::abort();
+                    }
+                    results.mvCurrentMat4f = *projection;
 
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvMat4x4fa));
+                        std::as_const(results.mvCurrentMat4f));
                 });
 
-            bench.run("Construct perspective matrix move::math (double)",
+            bench.run("Construct perspective matrix mv::math checked (double)",
                 [&]
                 {
-                    using namespace move::math;
                     ankerl::nanobench::doNotOptimizeAway(fovD);
                     ankerl::nanobench::doNotOptimizeAway(aspectD);
                     ankerl::nanobench::doNotOptimizeAway(nearPlaneD);
                     ankerl::nanobench::doNotOptimizeAway(farPlaneD);
-                    results.mvMat4x4da = mat4x4d::perspective(
-                        fovD, aspectD, nearPlaneD, farPlaneD);
+                    const auto projection = mv::math::TryPerspectiveFov(
+                        mv::math::Radiansd(fovD), aspectD, nearPlaneD,
+                        farPlaneD, mv::math::Handedness::Left,
+                        mv::math::ClipDepth::ZeroToOne,
+                        mv::math::DepthDirection::Forward);
+                    if (!projection)
+                    {
+                        std::abort();
+                    }
+                    results.mvCurrentMat4d = *projection;
 
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvMat4x4da));
+                        std::as_const(results.mvCurrentMat4d));
                 });
 
             bench.run("Construct perspective matrix rtm::matrix4x4f",
@@ -2508,34 +2557,50 @@ namespace mathbench
                         std::as_const(results.sonyMat4a));
                 });
 
-            bench.run("Construct ortho matrix move::math (float)",
+            bench.run("Construct ortho matrix mv::math checked (float)",
                 [&]
                 {
-                    using namespace move::math;
                     ankerl::nanobench::doNotOptimizeAway(width);
                     ankerl::nanobench::doNotOptimizeAway(height);
                     ankerl::nanobench::doNotOptimizeAway(nearPlane);
                     ankerl::nanobench::doNotOptimizeAway(farPlane);
-                    results.mvMat4x4fa = mat4x4f::orthographic(
-                        width, height, nearPlane, farPlane);
+                    const auto projection =
+                        mv::math::TryOrthographicOffCenter(-width * 0.5f,
+                            width * 0.5f, -height * 0.5f, height * 0.5f,
+                            nearPlane, farPlane, mv::math::Handedness::Left,
+                            mv::math::ClipDepth::ZeroToOne,
+                            mv::math::DepthDirection::Forward);
+                    if (!projection)
+                    {
+                        std::abort();
+                    }
+                    results.mvCurrentMat4f = *projection;
 
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvMat4x4fa));
+                        std::as_const(results.mvCurrentMat4f));
                 });
 
-            bench.run("Construct ortho matrix move::math (double)",
+            bench.run("Construct ortho matrix mv::math checked (double)",
                 [&]
                 {
-                    using namespace move::math;
                     ankerl::nanobench::doNotOptimizeAway(widthD);
                     ankerl::nanobench::doNotOptimizeAway(heightD);
                     ankerl::nanobench::doNotOptimizeAway(nearPlaneD);
                     ankerl::nanobench::doNotOptimizeAway(farPlaneD);
-                    results.mvMat4x4da = mat4x4d::orthographic(
-                        widthD, heightD, nearPlaneD, farPlaneD);
+                    const auto projection =
+                        mv::math::TryOrthographicOffCenter(-widthD * 0.5,
+                            widthD * 0.5, -heightD * 0.5, heightD * 0.5,
+                            nearPlaneD, farPlaneD, mv::math::Handedness::Left,
+                            mv::math::ClipDepth::ZeroToOne,
+                            mv::math::DepthDirection::Forward);
+                    if (!projection)
+                    {
+                        std::abort();
+                    }
+                    results.mvCurrentMat4d = *projection;
 
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvMat4x4da));
+                        std::as_const(results.mvCurrentMat4d));
                 });
 
             bench.run("Construct ortho matrix rtm::matrix4x4f",
@@ -2582,17 +2647,31 @@ namespace mathbench
             const Vectormath::Vector4 sonyInput(1.0f, 2.0f, 3.0f, 1.0f);
             const Vectormath::Matrix4 sonyMatrix =
                 Vectormath::Matrix4::rotationX(0.35f);
-            const move::math::fast_float4 mvInput(1.0f, 2.0f, 3.0f, 1.0f);
-            const move::math::float4x4 mvMatrix =
-                move::math::float4x4::rotation_x(0.35f);
-            const move::math::fast_double4 mvInputD(1.0, 2.0, 3.0, 1.0);
-            const move::math::double4x4 mvMatrixD =
-                move::math::double4x4::rotation_x(0.35);
+            const mv::math::Vec4f mvInput(1.0f, 2.0f, 3.0f, 1.0f);
+            const mv::math::Mat4f mvMatrix = mv::math::ToMat4(
+                mv::math::RigidTransform3f(mv::math::Rotation3f::FromAxisAngle(
+                                               mv::math::Direction3f::AxisX(),
+                                               mv::math::Radiansf(0.35f)),
+                    mv::math::Vec3f::Zero()));
+            const mv::math::Vec4d mvInputD(1.0, 2.0, 3.0, 1.0);
+            const mv::math::Mat4d mvMatrixD = mv::math::ToMat4(
+                mv::math::RigidTransform3d(mv::math::Rotation3d::FromAxisAngle(
+                                               mv::math::Direction3d::AxisX(),
+                                               mv::math::Radiansd(0.35)),
+                    mv::math::Vec3d::Zero()));
             const rtm::vector4f rtmInput =
                 rtm::vector_set(1.0f, 2.0f, 3.0f, 1.0f);
-            const rtm::matrix4x4f rtmMatrix = mvMatrix.to_rtm();
+            const rtm::matrix4x4f rtmMatrix =
+                rtm::matrix_cast(rtm::matrix_from_qvv(
+                    rtm::quat_from_axis_angle(
+                        rtm::vector_set(1.0f, 0.0f, 0.0f, 0.0f), 0.35f),
+                    rtm::vector_zero(), rtm::vector_set(1.0f)));
             const rtm::vector4d rtmInputD = rtm::vector_set(1.0, 2.0, 3.0, 1.0);
-            const rtm::matrix4x4d rtmMatrixD = mvMatrixD.to_rtm();
+            const rtm::matrix4x4d rtmMatrixD =
+                rtm::matrix_cast(rtm::matrix_from_qvv(
+                    rtm::quat_from_axis_angle(
+                        rtm::vector_set(1.0, 0.0, 0.0, 0.0), 0.35),
+                    rtm::vector_zero(), rtm::vector_set(1.0)));
 
             bench.run("Vector matrix multiply SimpleMath",
                 [&]
@@ -2638,26 +2717,24 @@ namespace mathbench
                         std::as_const(results.sonyVec4));
                 });
 
-            bench.run("Vector matrix multiply move::math (float)",
+            bench.run("Vector matrix multiply mv::math::Mat4f",
                 [&]
                 {
-                    using namespace move::math;
                     ankerl::nanobench::doNotOptimizeAway(mvInput);
                     ankerl::nanobench::doNotOptimizeAway(mvMatrix);
-                    results.mvVec4f = mvInput * mvMatrix;
+                    results.mvCurrentVec4f = mvInput * mvMatrix;
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvVec4f));
+                        std::as_const(results.mvCurrentVec4f));
                 });
 
-            bench.run("Vector matrix multiply move::math (double)",
+            bench.run("Vector matrix multiply mv::math::Mat4d",
                 [&]
                 {
-                    using namespace move::math;
                     ankerl::nanobench::doNotOptimizeAway(mvInputD);
                     ankerl::nanobench::doNotOptimizeAway(mvMatrixD);
-                    results.mvVec4d = mvInputD * mvMatrixD;
+                    results.mvCurrentVec4d = mvInputD * mvMatrixD;
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvVec4d));
+                        std::as_const(results.mvCurrentVec4d));
                 });
 
             bench.run("Vector matrix multiply rtm::matrix4x4f",
@@ -2740,18 +2817,39 @@ namespace mathbench
             const Vectormath::Matrix4 sonyRight =
                 Vectormath::Matrix4::translation(
                     Vectormath::Vector3(1.0f, 2.0f, 3.0f));
-            const move::math::float4x4 mvLeft =
-                move::math::float4x4::rotation_x(0.35f);
-            const move::math::float4x4 mvRight =
-                move::math::float4x4::translation({1.0f, 2.0f, 3.0f});
-            const move::math::double4x4 mvLeftD =
-                move::math::double4x4::rotation_x(0.35);
-            const move::math::double4x4 mvRightD =
-                move::math::double4x4::translation({1.0, 2.0, 3.0});
-            const rtm::matrix4x4f rtmLeft = mvLeft.to_rtm();
-            const rtm::matrix4x4f rtmRight = mvRight.to_rtm();
-            const rtm::matrix4x4d rtmLeftD = mvLeftD.to_rtm();
-            const rtm::matrix4x4d rtmRightD = mvRightD.to_rtm();
+            const mv::math::Mat4f mvLeft = mv::math::ToMat4(
+                mv::math::RigidTransform3f(mv::math::Rotation3f::FromAxisAngle(
+                                               mv::math::Direction3f::AxisX(),
+                                               mv::math::Radiansf(0.35f)),
+                    mv::math::Vec3f::Zero()));
+            const mv::math::Mat4f mvRight = mv::math::ToMat4(
+                mv::math::RigidTransform3f(mv::math::Rotation3f::Identity(),
+                    mv::math::Vec3f(1.0f, 2.0f, 3.0f)));
+            const mv::math::Mat4d mvLeftD = mv::math::ToMat4(
+                mv::math::RigidTransform3d(mv::math::Rotation3d::FromAxisAngle(
+                                               mv::math::Direction3d::AxisX(),
+                                               mv::math::Radiansd(0.35)),
+                    mv::math::Vec3d::Zero()));
+            const mv::math::Mat4d mvRightD = mv::math::ToMat4(
+                mv::math::RigidTransform3d(mv::math::Rotation3d::Identity(),
+                    mv::math::Vec3d(1.0, 2.0, 3.0)));
+            const rtm::matrix4x4f rtmLeft =
+                rtm::matrix_cast(rtm::matrix_from_qvv(
+                    rtm::quat_from_axis_angle(
+                        rtm::vector_set(1.0f, 0.0f, 0.0f, 0.0f), 0.35f),
+                    rtm::vector_zero(), rtm::vector_set(1.0f)));
+            const rtm::matrix4x4f rtmRight =
+                rtm::matrix_cast(rtm::matrix_from_qvv(rtm::quat_identity(),
+                    rtm::vector_set(1.0f, 2.0f, 3.0f, 0.0f),
+                    rtm::vector_set(1.0f)));
+            const rtm::matrix4x4d rtmLeftD =
+                rtm::matrix_cast(rtm::matrix_from_qvv(
+                    rtm::quat_from_axis_angle(
+                        rtm::vector_set(1.0, 0.0, 0.0, 0.0), 0.35),
+                    rtm::vector_zero(), rtm::vector_set(1.0)));
+            const rtm::matrix4x4d rtmRightD =
+                rtm::matrix_cast(rtm::matrix_from_qvv(rtm::quat_identity(),
+                    rtm::vector_set(1.0, 2.0, 3.0, 0.0), rtm::vector_set(1.0)));
 
             bench.run("Matrix matrix multiply SimpleMath",
                 [&]
@@ -2795,26 +2893,24 @@ namespace mathbench
                         std::as_const(results.sonyMat4a));
                 });
 
-            bench.run("Matrix matrix multiply move::math (float)",
+            bench.run("Matrix matrix multiply mv::math::Mat4f",
                 [&]
                 {
-                    using namespace move::math;
                     ankerl::nanobench::doNotOptimizeAway(mvLeft);
                     ankerl::nanobench::doNotOptimizeAway(mvRight);
-                    results.mvMat4x4fa = mvLeft * mvRight;
+                    results.mvCurrentMat4f = mvLeft * mvRight;
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvMat4x4fa));
+                        std::as_const(results.mvCurrentMat4f));
                 });
 
-            bench.run("Matrix matrix multiply move::math (double)",
+            bench.run("Matrix matrix multiply mv::math::Mat4d",
                 [&]
                 {
-                    using namespace move::math;
                     ankerl::nanobench::doNotOptimizeAway(mvLeftD);
                     ankerl::nanobench::doNotOptimizeAway(mvRightD);
-                    results.mvMat4x4da = mvLeftD * mvRightD;
+                    results.mvCurrentMat4d = mvLeftD * mvRightD;
                     ankerl::nanobench::doNotOptimizeAway(
-                        std::as_const(results.mvMat4x4da));
+                        std::as_const(results.mvCurrentMat4d));
                 });
 
             bench.run("Matrix matrix multiply rtm::matrix4x4f",
@@ -3003,9 +3099,15 @@ namespace mathbench::verification
             expected);
 
         const auto moveValue =
-            move::math::float3(3.0f, -2.0f, 7.0f).normalized();
-        require_vector("move::math normalization",
-            {moveValue.get_x(), moveValue.get_y(), moveValue.get_z()},
+            mv::math::TryNormalize(mv::math::Vec3f(3.0f, -2.0f, 7.0f));
+        if (!moveValue)
+        {
+            throw std::runtime_error(
+                "mv::math normalization rejected a finite non-zero vector");
+        }
+        require_vector("mv::math normalization",
+            {moveValue->Vector().X(), moveValue->Vector().Y(),
+                moveValue->Vector().Z()},
             expected);
 
         const auto rtmValue =
@@ -3066,16 +3168,15 @@ namespace mathbench::verification
                 float(sonyIntegrated.getZ())},
             expected);
 
-        const move::math::float3 movePosition(12.0f, 8.0f, -4.0f);
-        const move::math::float3 moveVelocity(2.0f, 5.0f, -1.0f);
-        const move::math::float3 moveAcceleration(0.0f, -9.81f, 0.0f);
+        const mv::math::Vec3f movePosition(12.0f, 8.0f, -4.0f);
+        const mv::math::Vec3f moveVelocity(2.0f, 5.0f, -1.0f);
+        const mv::math::Vec3f moveAcceleration(0.0f, -9.81f, 0.0f);
         const auto moveIntegrated =
             movePosition +
             (moveVelocity + moveAcceleration * float(deltaTime)) *
                 float(deltaTime);
-        require_vector("move::math particle integration",
-            {moveIntegrated.get_x(), moveIntegrated.get_y(),
-                moveIntegrated.get_z()},
+        require_vector("mv::math particle integration",
+            {moveIntegrated.X(), moveIntegrated.Y(), moveIntegrated.Z()},
             expected);
 
         const auto rtmPosition = rtm::vector_set(12.0f, 8.0f, -4.0f, 0.0f);
@@ -3138,17 +3239,24 @@ namespace mathbench::verification
                 float(sonyResult.getZ())},
             expected);
 
-        const move::math::float3 moveEye(4.0f, 2.0f, -8.0f);
-        const move::math::float3 moveTarget(1.0f, 3.0f, 2.0f);
-        const move::math::float3 moveUp(0.0f, 1.0f, 0.0f);
-        const auto moveForward = (moveTarget - moveEye).normalized();
+        const mv::math::Vec3f moveEye(4.0f, 2.0f, -8.0f);
+        const mv::math::Vec3f moveTarget(1.0f, 3.0f, 2.0f);
+        const auto moveForward = mv::math::TryNormalize(moveTarget - moveEye);
         const auto moveRight =
-            move::math::float3::cross(moveUp, moveForward).normalized();
+            moveForward ? mv::math::TryNormalize(mv::math::Cross(
+                              mv::math::Direction3f::AxisY().Vector(),
+                              moveForward->Vector()))
+                        : std::nullopt;
+        if (!moveForward || !moveRight)
+        {
+            throw std::runtime_error(
+                "mv::math camera basis rejected valid inputs");
+        }
         const auto moveResult =
-            moveRight + move::math::float3::cross(moveForward, moveRight);
-        require_vector("move::math camera basis",
-            {moveResult.get_x(), moveResult.get_y(), moveResult.get_z()},
-            expected);
+            moveRight->Vector() +
+            mv::math::Cross(moveForward->Vector(), moveRight->Vector());
+        require_vector("mv::math camera basis",
+            {moveResult.X(), moveResult.Y(), moveResult.Z()}, expected);
 
         const auto rtmEye = rtm::vector_set(4.0f, 2.0f, -8.0f, 0.0f);
         const auto rtmTarget = rtm::vector_set(1.0f, 3.0f, 2.0f, 0.0f);
@@ -3199,11 +3307,12 @@ namespace mathbench::verification
                 float(sonyResult.getZ())},
             expected);
 
-        const auto moveResult = move::math::float3(0.25f, 0.5f, 1.0f) *
-                                move::math::quatf::rotation_y(0.35f);
-        require_vector("move::math quaternion rotation",
-            {moveResult.get_x(), moveResult.get_y(), moveResult.get_z()},
-            expected);
+        const auto moveRotation = mv::math::Rotation3f::FromAxisAngle(
+            mv::math::Direction3f::AxisY(), mv::math::Radiansf(0.35f));
+        const auto moveResult =
+            mv::math::Rotate(moveRotation, mv::math::Vec3f(0.25f, 0.5f, 1.0f));
+        require_vector("mv::math quaternion rotation",
+            {moveResult.X(), moveResult.Y(), moveResult.Z()}, expected);
 
         const auto rtmRotation = rtm::quat_from_axis_angle(
             rtm::vector_set(0.0f, 1.0f, 0.0f, 0.0f), 0.35f);
@@ -3225,8 +3334,8 @@ namespace mathbench::verification
         verify_intersections<geometry::glm_ops>("GLM");
         verify_intersections<geometry::directxmath_ops>("DirectXMath");
         verify_intersections<geometry::vectormath_ops>("Sony Vectormath");
-        verify_intersections<geometry::move_ops<float>>("move::math float");
-        verify_intersections<geometry::move_ops<double>>("move::math double");
+        verify_intersections<geometry::move_ops<float>>("mv::math float");
+        verify_intersections<geometry::move_ops<double>>("mv::math double");
         verify_intersections<geometry::rtm_ops<float>>("RTM float");
         verify_intersections<geometry::rtm_ops<double>>("RTM double");
     }
@@ -3292,9 +3401,13 @@ namespace mathbench::report
 
     std::string library_name(std::string_view benchmarkName)
     {
+        if (benchmarkName.find("mv::math") != std::string_view::npos)
+        {
+            return "Move current";
+        }
         if (benchmarkName.find("move::") != std::string_view::npos)
         {
-            return "move::math";
+            return "Move legacy";
         }
         if (benchmarkName.find("SimpleMath") != std::string_view::npos)
         {
@@ -3331,7 +3444,10 @@ namespace mathbench::report
                benchmarkName.find("qvvd") != std::string_view::npos ||
                benchmarkName.find("matrix3x4d") != std::string_view::npos ||
                benchmarkName.find("matrix4x4d") != std::string_view::npos ||
-               benchmarkName.find("Mat4x4d") != std::string_view::npos;
+               benchmarkName.find("Mat4x4d") != std::string_view::npos ||
+               benchmarkName.find("Vec3d") != std::string_view::npos ||
+               benchmarkName.find("Rotation3d") != std::string_view::npos ||
+               benchmarkName.find("Mat4d") != std::string_view::npos;
     }
 
     std::string scenario_name(
@@ -3389,20 +3505,22 @@ namespace mathbench::report
                     return lhs.second < rhs.second;
                 });
 
-            const auto move = std::find_if(ordered.begin(), ordered.end(),
-                [](const auto& entry)
-                {
-                    return entry.first == "move::math";
-                });
-            if (ordered.empty() || move == ordered.end())
+            const auto moveImplementation =
+                std::find_if(ordered.begin(), ordered.end(),
+                    [](const auto& entry)
+                    {
+                        return entry.first == "Move current" ||
+                               entry.first == "Move legacy";
+                    });
+            if (ordered.empty() || moveImplementation == ordered.end())
             {
                 continue;
             }
 
             rankings.push_back({scenario, ordered.front().first,
-                ordered.front().second, move->second,
+                ordered.front().second, moveImplementation->second,
                 static_cast<std::size_t>(
-                    std::distance(ordered.begin(), move) + 1)});
+                    std::distance(ordered.begin(), moveImplementation) + 1)});
         }
     }
 
@@ -3430,7 +3548,7 @@ namespace mathbench::report
         std::cout
             << "\n## Capability winners (single-precision implementations)\n\n"
             << "| Capability | Fastest library | Fastest ns/op | "
-               "move::math ns/op | Move rank | Move gap |\n"
+               "Move ns/op | Move rank | Move gap |\n"
             << "|:--|:--|--:|--:|--:|--:|\n";
 
         std::sort(rankings.begin(), rankings.end(),
