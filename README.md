@@ -135,11 +135,12 @@ hot capability must gain a direct legacy/current comparison here before its
 legacy implementation is removed.
 
 The `vectormathbench_matrix_operations_*` executables apply the same migration
-gate to general matrices. They compare `Mat3f` vector transformation,
-multiplication, determinant, and inverse using identical well-conditioned
-inputs. The inverse table labels the new fallible finite-result contract and
-the legacy unchecked contract separately, since their validation work is not
-semantically interchangeable.
+gate to general matrices. They compare `Mat3f` and `Mat4f` vector
+transformation, multiplication, determinant, and inverse using identical
+well-conditioned inputs. Perspective and look-at construction are also
+compared for the legacy left-handed, zero-to-one convention. Checked new API
+rows and unchecked legacy rows are labeled separately, since their validation
+work is not semantically interchangeable.
 
 The `vectormathbench_geometry_queries_*` executables compare the typed CPU geometry API with equivalent
 raw-`Vec3f` kernels. They cover prepared one-ray/many-AABB traversal,

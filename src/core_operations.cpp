@@ -12,7 +12,9 @@
 #include <vector>
 
 #include <move/math/quat.hpp>
+#include <move/math/vec2.hpp>
 #include <move/math/vec3.hpp>
+#include <move/math/vec4.hpp>
 #include <mv/math/Core.hpp>
 
 namespace
@@ -26,6 +28,14 @@ namespace
         std::vector<mv::math::Vec3f> CurrentRight;
         std::vector<move::math::float3> LegacyLeft;
         std::vector<move::math::float3> LegacyRight;
+        std::vector<mv::math::Vec2f> CurrentLeft2;
+        std::vector<mv::math::Vec2f> CurrentRight2;
+        std::vector<move::math::float2> LegacyLeft2;
+        std::vector<move::math::float2> LegacyRight2;
+        std::vector<mv::math::Vec4f> CurrentLeft4;
+        std::vector<mv::math::Vec4f> CurrentRight4;
+        std::vector<move::math::float4> LegacyLeft4;
+        std::vector<move::math::float4> LegacyRight4;
     };
 
     template <typename T>
@@ -49,6 +59,14 @@ namespace
             std::vector<mv::math::Vec3f>(count),
             std::vector<move::math::float3>(count),
             std::vector<move::math::float3>(count),
+            std::vector<mv::math::Vec2f>(count),
+            std::vector<mv::math::Vec2f>(count),
+            std::vector<move::math::float2>(count),
+            std::vector<move::math::float2>(count),
+            std::vector<mv::math::Vec4f>(count),
+            std::vector<mv::math::Vec4f>(count),
+            std::vector<move::math::float4>(count),
+            std::vector<move::math::float4>(count),
         };
 
         for (std::size_t index = 0; index < count; ++index)
@@ -66,6 +84,20 @@ namespace
             inputs.LegacyLeft[index] = move::math::float3(leftX, leftY, leftZ);
             inputs.LegacyRight[index] =
                 move::math::float3(rightX, rightY, rightZ);
+            inputs.CurrentLeft2[index] = mv::math::Vec2f(leftX, leftY);
+            inputs.CurrentRight2[index] = mv::math::Vec2f(rightX, rightY);
+            inputs.LegacyLeft2[index] = move::math::float2(leftX, leftY);
+            inputs.LegacyRight2[index] = move::math::float2(rightX, rightY);
+            const float leftW = Seed(index, 3U) * 20.0F - 10.0F;
+            const float rightW = Seed(index + 17U, 3U) * 10.0F - 5.0F;
+            inputs.CurrentLeft4[index] =
+                mv::math::Vec4f(leftX, leftY, leftZ, leftW);
+            inputs.CurrentRight4[index] =
+                mv::math::Vec4f(rightX, rightY, rightZ, rightW);
+            inputs.LegacyLeft4[index] =
+                move::math::float4(leftX, leftY, leftZ, leftW);
+            inputs.LegacyRight4[index] =
+                move::math::float4(rightX, rightY, rightZ, rightW);
         }
         return inputs;
     }
@@ -83,6 +115,28 @@ namespace
         if (!NearlyEqual(current.X(), legacy.get_x(), tolerance) ||
             !NearlyEqual(current.Y(), legacy.get_y(), tolerance) ||
             !NearlyEqual(current.Z(), legacy.get_z(), tolerance))
+        {
+            std::abort();
+        }
+    }
+
+    void RequireEquivalent(const mv::math::Vec2f& current,
+        const move::math::float2& legacy, float tolerance = 2.0e-5F)
+    {
+        if (!NearlyEqual(current.X(), legacy.get_x(), tolerance) ||
+            !NearlyEqual(current.Y(), legacy.get_y(), tolerance))
+        {
+            std::abort();
+        }
+    }
+
+    void RequireEquivalent(const mv::math::Vec4f& current,
+        const move::math::float4& legacy, float tolerance = 2.0e-5F)
+    {
+        if (!NearlyEqual(current.X(), legacy.get_x(), tolerance) ||
+            !NearlyEqual(current.Y(), legacy.get_y(), tolerance) ||
+            !NearlyEqual(current.Z(), legacy.get_z(), tolerance) ||
+            !NearlyEqual(current.W(), legacy.get_w(), tolerance))
         {
             std::abort();
         }
@@ -123,6 +177,42 @@ namespace
                 (inputs.LegacyLeft[index] + inputs.LegacyRight[index]) * 0.37F;
             RequireEquivalent(currentChain, legacyChain);
 
+            const mv::math::Vec2f currentChain2 =
+                (inputs.CurrentLeft2[index] * inputs.CurrentRight2[index] +
+                    mv::math::Vec2f(2.5F, 2.5F)) /
+                (inputs.CurrentRight2[index] * inputs.CurrentRight2[index] +
+                    mv::math::Vec2f(1.0F, 1.0F));
+            const move::math::float2 legacyChain2 =
+                (inputs.LegacyLeft2[index] * inputs.LegacyRight2[index] +
+                    move::math::float2(2.5F, 2.5F)) /
+                (inputs.LegacyRight2[index] * inputs.LegacyRight2[index] +
+                    move::math::float2(1.0F, 1.0F));
+            RequireEquivalent(currentChain2, legacyChain2);
+
+            const mv::math::Vec3f currentComponentChain =
+                (inputs.CurrentLeft[index] * inputs.CurrentRight[index] +
+                    mv::math::Vec3f(2.5F, 2.5F, 2.5F)) /
+                (inputs.CurrentRight[index] * inputs.CurrentRight[index] +
+                    mv::math::Vec3f(1.0F, 1.0F, 1.0F));
+            const move::math::float3 legacyComponentChain =
+                (inputs.LegacyLeft[index] * inputs.LegacyRight[index] +
+                    move::math::float3(2.5F, 2.5F, 2.5F)) /
+                (inputs.LegacyRight[index] * inputs.LegacyRight[index] +
+                    move::math::float3(1.0F, 1.0F, 1.0F));
+            RequireEquivalent(currentComponentChain, legacyComponentChain);
+
+            const mv::math::Vec4f currentChain4 =
+                (inputs.CurrentLeft4[index] * inputs.CurrentRight4[index] +
+                    mv::math::Vec4f(2.5F, 2.5F, 2.5F, 2.5F)) /
+                (inputs.CurrentRight4[index] * inputs.CurrentRight4[index] +
+                    mv::math::Vec4f(1.0F, 1.0F, 1.0F, 1.0F));
+            const move::math::float4 legacyChain4 =
+                (inputs.LegacyLeft4[index] * inputs.LegacyRight4[index] +
+                    move::math::float4(2.5F, 2.5F, 2.5F, 2.5F)) /
+                (inputs.LegacyRight4[index] * inputs.LegacyRight4[index] +
+                    move::math::float4(1.0F, 1.0F, 1.0F, 1.0F));
+            RequireEquivalent(currentChain4, legacyChain4);
+
             if (!NearlyEqual(mv::math::Dot(inputs.CurrentLeft[index],
                                  inputs.CurrentRight[index]),
                     move::math::float3::dot(
@@ -158,6 +248,10 @@ namespace
         std::vector<move::math::float3> legacyOutput(count);
         std::vector<float> currentScalars(count);
         std::vector<float> legacyScalars(count);
+        std::vector<mv::math::Vec2f> currentOutput2(count);
+        std::vector<move::math::float2> legacyOutput2(count);
+        std::vector<mv::math::Vec4f> currentOutput4(count);
+        std::vector<move::math::float4> legacyOutput4(count);
         const std::string suffix = "/" + std::to_string(count);
 
         bench.batch(count).run("core/vec3-chain/mv" + suffix,
@@ -182,6 +276,96 @@ namespace
                         0.37F;
                 }
                 Observe(legacyOutput);
+            });
+
+        bench.batch(count).run("core/vec2-component-chain/mv" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0; index < count; ++index)
+                {
+                    currentOutput2[index] =
+                        (inputs.CurrentLeft2[index] *
+                                inputs.CurrentRight2[index] +
+                            mv::math::Vec2f(2.5F, 2.5F)) /
+                        (inputs.CurrentRight2[index] *
+                                inputs.CurrentRight2[index] +
+                            mv::math::Vec2f(1.0F, 1.0F));
+                }
+                Observe(currentOutput2);
+            });
+        bench.batch(count).run("core/vec2-component-chain/legacy" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0; index < count; ++index)
+                {
+                    legacyOutput2[index] = (inputs.LegacyLeft2[index] *
+                                                   inputs.LegacyRight2[index] +
+                                               move::math::float2(2.5F, 2.5F)) /
+                                           (inputs.LegacyRight2[index] *
+                                                   inputs.LegacyRight2[index] +
+                                               move::math::float2(1.0F, 1.0F));
+                }
+                Observe(legacyOutput2);
+            });
+
+        bench.batch(count).run("core/vec3-component-chain/mv" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0; index < count; ++index)
+                {
+                    currentOutput[index] =
+                        (inputs.CurrentLeft[index] *
+                                inputs.CurrentRight[index] +
+                            mv::math::Vec3f(2.5F, 2.5F, 2.5F)) /
+                        (inputs.CurrentRight[index] *
+                                inputs.CurrentRight[index] +
+                            mv::math::Vec3f(1.0F, 1.0F, 1.0F));
+                }
+                Observe(currentOutput);
+            });
+        bench.batch(count).run("core/vec3-component-chain/legacy" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0; index < count; ++index)
+                {
+                    legacyOutput[index] =
+                        (inputs.LegacyLeft[index] * inputs.LegacyRight[index] +
+                            move::math::float3(2.5F, 2.5F, 2.5F)) /
+                        (inputs.LegacyRight[index] * inputs.LegacyRight[index] +
+                            move::math::float3(1.0F, 1.0F, 1.0F));
+                }
+                Observe(legacyOutput);
+            });
+
+        bench.batch(count).run("core/vec4-component-chain/mv" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0; index < count; ++index)
+                {
+                    currentOutput4[index] =
+                        (inputs.CurrentLeft4[index] *
+                                inputs.CurrentRight4[index] +
+                            mv::math::Vec4f(2.5F, 2.5F, 2.5F, 2.5F)) /
+                        (inputs.CurrentRight4[index] *
+                                inputs.CurrentRight4[index] +
+                            mv::math::Vec4f(1.0F, 1.0F, 1.0F, 1.0F));
+                }
+                Observe(currentOutput4);
+            });
+        bench.batch(count).run("core/vec4-component-chain/legacy" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0; index < count; ++index)
+                {
+                    legacyOutput4[index] =
+                        (inputs.LegacyLeft4[index] *
+                                inputs.LegacyRight4[index] +
+                            move::math::float4(2.5F, 2.5F, 2.5F, 2.5F)) /
+                        (inputs.LegacyRight4[index] *
+                                inputs.LegacyRight4[index] +
+                            move::math::float4(1.0F, 1.0F, 1.0F, 1.0F));
+                }
+                Observe(legacyOutput4);
             });
 
         bench.batch(count).run("core/dot/mv" + suffix,
