@@ -130,8 +130,11 @@ raw-`Vec3f` kernels. They cover prepared one-ray/many-AABB traversal,
 per-query ray/AABB tests, predicate versus detailed ray/triangle queries, and
 point/segment closest points over cache- and working-set-sized batches. The
 point/segment capability also compares GLM and DirectXMath because both expose
-matching semantics. Each executable verifies semantic parity before collecting
-timings, and CI runs the parity-only mode on every ISA build.
+matching semantics. Capsule/capsule overlap compares the named Move operation
+with its explicitly decomposed sphere-swept-segment reduction; the comparison
+isolates whether the higher-level facade adds work. Each executable verifies
+semantic parity before collecting timings, and CI runs the parity-only mode on
+every ISA build.
 
 By default CMake fetches the exact Move revision recorded in `CMakeLists.txt`.
 During library development, configure against a local checkout instead:

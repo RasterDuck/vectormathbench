@@ -305,6 +305,17 @@ namespace
         return mv::math::Segment3f(start, start + displacement);
     }
 
+    [[nodiscard]] mv::math::Capsule3f MakeSemanticCapsule(std::size_t index)
+    {
+        const auto capsule = mv::math::Capsule3f::TryFromSegmentRadius(
+            MakeSemanticSegment(index), 0.1F + Seed(index, 26U) * 1.5F);
+        if (!capsule)
+        {
+            std::abort();
+        }
+        return *capsule;
+    }
+
     void BenchmarkRayAabb(ankerl::nanobench::Bench& bench, std::size_t count)
     {
         std::vector<mv::math::Ray3f> semanticRays(count);
@@ -542,6 +553,47 @@ namespace
             });
     }
 
+    void BenchmarkCapsulePairs(
+        ankerl::nanobench::Bench& bench, std::size_t count)
+    {
+        std::vector<mv::math::Capsule3f> first(count);
+        std::vector<mv::math::Capsule3f> second(count);
+        std::vector<std::uint8_t> output(count);
+        for (std::size_t index = 0U; index < count; ++index)
+        {
+            first[index] = MakeSemanticCapsule(index);
+            second[index] = MakeSemanticCapsule(index + count / 3U + 17U);
+        }
+
+        const std::string suffix = "/" + std::to_string(count);
+        bench.batch(count).run("phase-c/capsule-capsule/move" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0U; index < count; ++index)
+                {
+                    output[index] = static_cast<std::uint8_t>(
+                        mv::math::Intersects(first[index], second[index]));
+                }
+                Observe(output);
+            });
+
+        // Ericson's sphere-swept-volume reduction (RTCD 2005, section 4.5.1)
+        // written at the public primitive level to expose facade-only cost.
+        bench.batch(count).run("phase-c/capsule-capsule/decomposed" + suffix,
+            [&]
+            {
+                for (std::size_t index = 0U; index < count; ++index)
+                {
+                    const float radius =
+                        first[index].Radius() + second[index].Radius();
+                    output[index] = static_cast<std::uint8_t>(
+                        mv::math::DistanceSquared(first[index].CenterLine(),
+                            second[index].CenterLine()) <= radius * radius);
+                }
+                Observe(output);
+            });
+    }
+
     void VerifyParity()
     {
         constexpr std::size_t Count = 4096U;
@@ -624,6 +676,20 @@ namespace
             {
                 std::abort();
             }
+
+            const mv::math::Capsule3f firstCapsule = MakeSemanticCapsule(index);
+            const mv::math::Capsule3f secondCapsule =
+                MakeSemanticCapsule(index + Count / 3U + 17U);
+            const float combinedRadius =
+                firstCapsule.Radius() + secondCapsule.Radius();
+            const bool decomposed =
+                mv::math::DistanceSquared(
+                    firstCapsule.CenterLine(), secondCapsule.CenterLine()) <=
+                combinedRadius * combinedRadius;
+            if (mv::math::Intersects(firstCapsule, secondCapsule) != decomposed)
+            {
+                std::abort();
+            }
         }
     }
 }  // namespace
@@ -650,6 +716,7 @@ int main(int argumentCount, char** arguments)
         BenchmarkRayAabb(bench, count);
         BenchmarkRayTriangle(bench, count);
         BenchmarkPointSegment(bench, count);
+        BenchmarkCapsulePairs(bench, count);
     }
 
     return EXIT_SUCCESS;
